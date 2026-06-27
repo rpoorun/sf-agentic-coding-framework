@@ -8,6 +8,8 @@ metadata:
   sources:
     - forcedotcom/sf-skills :: platform-apex-generate
     - Clientell-Ai/salesforce-skills :: sf-apex
+    - DietrichGebert/ponytail (refactored via LEAN_CODE_STANDARDS.md)
+    - JuliusBrussee/caveman (refactored via LEAN_CODE_STANDARDS.md)
 ---
 
 # sf-platform-apex: Apex Development
@@ -18,7 +20,9 @@ metadata:
 | Cloud | Platform |
 | Version | 1.0 |
 | Synthesized | Yes — deduplicated and merged from the source(s) below |
-| Sources | forcedotcom/sf-skills :: platform-apex-generate; Clientell-Ai/salesforce-skills :: sf-apex |
+| Sources | forcedotcom/sf-skills :: platform-apex-generate; Clientell-Ai/salesforce-skills :: sf-apex; lean-coding discipline refactored from DietrichGebert/ponytail and JuliusBrussee/caveman |
+
+Before authoring, apply the [Lean Decision Ladder](../../standards/LEAN_CODE_STANDARDS.md#the-lean-decision-ladder-apexlwc-refactor-of-ponytail): prefer declarative Salesforce features, existing Selectors/Services/Utilities, and Apex standard-library calls over new Apex, and write the smallest correct class once the requirement and existing layering are understood. Lean does not relax bulkification, CRUD/FLS, or sharing requirements — see "Not Lazy About" in that file.
 
 Use this skill for production-grade Apex: new classes, selectors, services, async jobs,
 invocable methods, and triggers; and for evidence-based review of existing `.cls` OR `.trigger`.
@@ -171,8 +175,8 @@ Before finalizing, verify: CRUD/FLS enforced (SOQL + DML) · explicit sharing ke
 
 ### Constants & Literals
 
-- Use enums over string constants whenever possible; enum values follow `UPPER_SNAKE_CASE`
-- Extract repeated literal strings/numbers into `private static final` constants or a constants class
+- Mandatory pattern for repeated picklist values, API names, and other literals: see [APEX_CONSTANTS_FRAMEWORK.md](../../standards/APEX_CONSTANTS_FRAMEWORK.md) — `{SObject}Consts` singleton classes exposed via `Consts.{OBJECT}`. Template: `assets/Consts.cls` and `assets/concrete-consts/AccountConsts.cls`.
+- Use enums over string constants for purely internal/code-level states with no SObject field correspondence; enum values follow `UPPER_SNAKE_CASE`
 - Use `Label.` custom labels for user-facing strings
 - Use Custom Metadata for configurable values (thresholds, mappings, feature flags)
 - Never output HTML-escaped entities in code (e.g., `&#39;`); use literal single quotes `'` in Apex string literals
@@ -330,11 +334,12 @@ Method-level format:
 - Supported constructors: `()`, `('msg')`, `(cause)`, `('msg', cause)`
 
 ### Trigger
-- Template: `assets/trigger.cls`
-- One trigger per object; delegate all logic to handler/TAF action classes
-- Include all relevant DML contexts; if TAF: `new MetadataTriggerHandler().run();`
+- Mandatory pattern: see [APEX_TRIGGER_FRAMEWORK.md](../../standards/APEX_TRIGGER_FRAMEWORK.md). Template: `assets/trigger.cls`; base class: `assets/TriggerHandler.cls` (deploy once per org/package).
+- One trigger per object, zero logic in the trigger body; handler class named `{SObject}TriggerHandler extends TriggerHandler`, overriding only the context methods it needs
+- Use `setMaxLoopCount`/the bypass API from `TriggerHandler` for recursion control — do not hand-roll static recursion-guard booleans
 
-### Trigger Action (TAF)
+### Trigger Action (TAF) — Legacy Only
+- Use only if `Trigger_Action__mdt`-based actions are already deployed and in active use in this org; do not introduce TAF net-new now that `TriggerHandler` is the mandatory pattern
 - One class per concern per context; implement `TriggerAction.{Context}`
 - Register via `Trigger_Action__mdt` (actions are inactive without registration)
 - Name: `TA_{SObject}_{ActionName}`; prefer field-value comparison over static booleans for recursion
@@ -459,6 +464,7 @@ You are a Salesforce Apex specialist. Generate production-ready Apex code follow
 - One trigger per object, maximum
 - Trigger contains NO logic — delegates to a handler class
 - Handler class implements the logic with proper bulkification
+- `TriggerHandler` below is the vendored base class at `assets/TriggerHandler.cls` — see [APEX_TRIGGER_FRAMEWORK.md](../../standards/APEX_TRIGGER_FRAMEWORK.md), not a project-local class to redefine
 
 ```apex
 // Trigger

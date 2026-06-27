@@ -10,36 +10,13 @@ trigger {SObject}Trigger on {SObject} (
     after delete,
     after undelete
 ) {
-    // ─── Option A: Trigger Actions Framework (TAF) ───────────────────────
-    // Delegates to Trigger_Action__mdt-registered action classes.
-    // Each action class handles one concern in one context.
+    // ─── Mandatory pattern: extend TriggerHandler ────────────────────────
+    // See assets/TriggerHandler.cls and APEX_TRIGGER_FRAMEWORK.md.
+    new {SObject}TriggerHandler().run();
+
+    // ─── Legacy option: Trigger Actions Framework (TAF) ──────────────────
+    // Use only if Trigger_Action__mdt-based actions are already deployed
+    // and in active use in this org. Do not introduce TAF net-new.
     //
     // new MetadataTriggerHandler().run();
-
-    // ─── Option B: Custom Handler Pattern ────────────────────────────────
-    // Delegates to a single handler class that routes by context.
-    //
-    // {SObject}TriggerHandler handler = new {SObject}TriggerHandler();
-    //
-    // if (Trigger.isBefore) {
-    //     if (Trigger.isInsert) {
-    //         handler.beforeInsert(Trigger.new);
-    //     } else if (Trigger.isUpdate) {
-    //         handler.beforeUpdate(Trigger.new, Trigger.oldMap);
-    //     } else if (Trigger.isDelete) {
-    //         handler.beforeDelete(Trigger.old, Trigger.oldMap);
-    //     }
-    // } else if (Trigger.isAfter) {
-    //     if (Trigger.isInsert) {
-    //         handler.afterInsert(Trigger.new, Trigger.newMap);
-    //     } else if (Trigger.isUpdate) {
-    //         handler.afterUpdate(Trigger.new, Trigger.oldMap);
-    //     } else if (Trigger.isDelete) {
-    //         handler.afterDelete(Trigger.old, Trigger.oldMap);
-    //     } else if (Trigger.isUndelete) {
-    //         handler.afterUndelete(Trigger.new, Trigger.newMap);
-    //     }
-    // }
-
-    // TODO: Uncomment one option above and remove the other
 }

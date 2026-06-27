@@ -20,7 +20,7 @@ metadata:
 | Synthesized | Yes — deduplicated and merged from the source(s) below |
 | Sources | forcedotcom/sf-skills :: platform-docs-get; Clientell-Ai/salesforce-skills :: sf-docs |
 
-Use this skill to retrieve and ground answers in **official Salesforce documentation on the public web**.
+Use this skill to retrieve and ground answers in **official Salesforce documentation on the public web**. For writing or updating this *project's own* technical documentation (a `docs/` tree describing the implemented Apex, LWC, or config), use [DOCUMENTATION.md](../../standards/DOCUMENTATION.md) instead — that file governs project documentation authored about this codebase, not official Salesforce product docs.
 
 This skill provides a **reliable online retrieval playbook** for Salesforce docs that are hard to fetch, especially `help.salesforce.com`, JS-heavy `developer.salesforce.com`, Lightning Design System docs on `lightningdesignsystem.com`, and other official Salesforce-owned doc pages such as `architect.salesforce.com` and `admin.salesforce.com`.
 
