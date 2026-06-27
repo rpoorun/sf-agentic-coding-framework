@@ -48,7 +48,7 @@ Unless the user has requested analysis-only mode, agents may usually:
 - Create or edit files for the requested task.
 - Generate draft manifests, docs, or handoff notes.
 
-Dry-runs, validation deploys, and Apex test runs do not require separate confirmation because they are verification actions. They must still be reported with the target org, command shape, and result.
+Dry-runs, validation deploys, and Apex test runs do not require separate confirmation because they are verification actions. They must still be reported with the target org, command shape, and result. This permission to run without confirmation is independent from, and does not bypass, the mandatory pre-deploy conflict check and 95% Apex coverage gate in [DEPLOYMENT.md](../workflows/DEPLOYMENT.md) — a dry-run that fails the coverage gate is still a hard failure, not a confirmation-optional action.
 
 ## Analysis-Only Mode
 

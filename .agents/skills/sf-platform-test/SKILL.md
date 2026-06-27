@@ -23,6 +23,8 @@ metadata:
 
 Generate production-ready Apex test classes and run disciplined test-fix loops with coverage analysis.
 
+Coverage analysis run as part of a deploy (dry-run, validate, or real) must satisfy the 95% mandatory coverage gate in [DEPLOYMENT.md](../../workflows/DEPLOYMENT.md), not just the org-wide default minimum — treat a result below 95% for any class/trigger in deploy scope as a failure to fix, not a passing result to report.
+
 ## Core Principles
 
 1. **One behavior per method** — each test method validates a single scenario. Separate positive, negative, and bulk tests. NEVER combine related-but-distinct inputs (e.g., null and empty) in one method — create `_NullInput_` and `_EmptyInput_` as separate test methods
