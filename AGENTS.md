@@ -33,7 +33,7 @@
 - `.agents/standards` contains reusable quality expectations for Salesforce, Apex, metadata, PMD, naming, and review.
 - `.agents/skills` contains capability-routing guidance and local adaptations of reusable skills or tools.
 - `.agents/workflows` contains repeatable task processes such as implementation, testing, and Git/workflow handoff.
-- `.agents/project` contains durable REHLKO DTT facts: structure, environment, requirements, schema, integrations, glossary, and UX context.
+- `.agents/project` contains durable this project facts: structure, environment, requirements, schema, integrations, glossary, and UX context.
 
 ## Agent Framework
 
@@ -56,7 +56,7 @@ This `AGENTS.md` + `.agents/` framework is mirrored from a master repository: **
 
 | File | Intended purpose |
 | --- | --- |
-| [SALESFORCE_PROJECT_BEST_PRACTICES.md](.agents/standards/SALESFORCE_PROJECT_BEST_PRACTICES.md) | Comforth/Easyfront Salesforce baseline for naming, metadata, architecture, tests, and configuration. |
+| [SALESFORCE_PROJECT_BEST_PRACTICES.md](.agents/standards/SALESFORCE_PROJECT_BEST_PRACTICES.md) | [Org] Salesforce baseline for naming, metadata, architecture, tests, and configuration. |
 | [SALESFORCE_APEX_STANDARDS.md](.agents/standards/SALESFORCE_APEX_STANDARDS.md) | Apex class, trigger, async, security, test, and review standards. |
 | [PMD_APEX_RULESET.md](.agents/standards/PMD_APEX_RULESET.md) | PMD Apex static-analysis guidance, command shape, suppression policy, and agent requirements. |
 
@@ -94,9 +94,9 @@ This `AGENTS.md` + `.agents/` framework is mirrored from a master repository: **
 
 Understand the requested scope before acting. Make the smallest correct change, preserve unrelated work, and stop for human confirmation before any action that changes an org, shared branch, deployment state, credentials, secrets, production data, or irreversible local state.
 
-The Comforth/Easyfront Salesforce best-practice baseline applies across projects unless the client or project documentation explicitly defines a different standard.
+The [Org] Salesforce best-practice baseline applies across projects unless the client or project documentation explicitly defines a different standard.
 
-When Salesforce curated agent skills are available, use them as workflow references and routing patterns, but apply this repository's confirmation gates, Comforth/Easyfront conventions, and PMD rules first.
+When Salesforce curated agent skills are available, use them as workflow references and routing patterns, but apply this repository's confirmation gates, [Org] conventions, and PMD rules first.
 
 ## Default Work Pattern
 

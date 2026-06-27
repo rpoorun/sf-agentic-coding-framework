@@ -67,7 +67,7 @@ When instructions conflict, apply this order:
 1. Current user instruction.
 2. Client-specific project standard or ticket instruction.
 3. Repository-specific README, `AGENTS.md`, architecture decision, or established code pattern.
-4. Comforth/Easyfront Salesforce best-practice baseline.
+4. [Org] Salesforce best-practice baseline.
 5. The synthesized skill's primary guidance, then its merged supplemental guidance.
 6. General Salesforce platform practice.
 
@@ -77,13 +77,13 @@ PMD and security gates do not disappear because a skill suggests a faster path.
 
 | Work type | Skill folder (`.agents/skills/<name>`) | Local adaptation |
 | --- | --- | --- |
-| Apex classes, triggers, services, selectors, async jobs, invocables, REST resources | `sf-platform-apex` | Use Comforth/Easyfront naming and layering where the repo already follows it; PMD must remain clean or violations must be explained. |
+| Apex classes, triggers, services, selectors, async jobs, invocables, REST resources | `sf-platform-apex` | Use [Org] naming and layering where the repo already follows it; PMD must remain clean or violations must be explained. |
 | Apex tests, mocks, test data factories | `sf-platform-test` | Use `ClassName_TEST`, `@TestSetup`, no `SeeAllData=true`, meaningful assertions, positive/negative/bulk cases, and expected/actual assert ordering. |
 | Apex debug logs, governor limits, runtime troubleshooting | `sf-platform-debug` | Use for compile/parse failures, governor-limit failures, and log-driven diagnosis; delegate test-result analysis to `sf-platform-test`. |
 | SOQL/SOSL design or query review | `sf-platform-soql` | Prefer selectors or Data Managers; no non-selective broad queries; bind variables for dynamic filters. |
 | Metadata deploy, retrieve, validation, CI/CD, package.xml, rollback | `sf-platform-deploy` | Dry-runs, validations, and Apex test runs are allowed verification actions; real deploys still require confirmation. Keep scope manifest-based or source-dir targeted. |
 | Salesforce data create/update/delete/import/export, bulk operations, migration | `sf-platform-data` | Default to script generation unless the user explicitly asks for remote execution; remote org data writes require confirmation and cleanup guidance. |
-| Custom object/field/tab/application metadata, schema scaffolding | `sf-platform-schema` | Follow Comforth naming, descriptions, help text, domain prefixes, and required client translation behavior. |
+| Custom object/field/tab/application metadata, schema scaffolding | `sf-platform-schema` | Follow [Org] naming, descriptions, help text, domain prefixes, and required client translation behavior. |
 | Custom Lightning Types (Einstein/Agentforce action schemas) | `sf-platform-clt` | Use only when the task explicitly involves CLTs, widget renditions, or agent action input/output schemas. |
 | Lightning pages and FlexiPages | `sf-platform-flexipage` | Bootstrap or edit with valid Salesforce structure; do not handcraft broad XML unless editing a known existing file. |
 | List views | `sf-platform-listview` | Match existing filter/column conventions; confirm visibility (owner/all users) before widening. |
@@ -114,7 +114,7 @@ For any non-trivial Salesforce source change:
 
 1. Identify the task type and applicable `sf-{cloud}-{name}` skill via the router above (or `sf-meta-find` if ambiguous).
 2. Inspect current source conventions before introducing new patterns.
-3. Check whether client standards override Comforth/Easyfront defaults.
+3. Check whether client standards override [Org] defaults.
 4. Define the intended metadata and file scope.
 5. Make the smallest correct source change.
 6. Run local checks available without network or org mutation.
@@ -138,7 +138,7 @@ When using `sf-platform-apex`:
 - Use Custom Metadata, Custom Labels, describe calls, or existing project configuration where appropriate.
 - Keep old-code refactors incremental unless the task explicitly asks for a broader rewrite.
 
-When the repo uses Comforth/Easyfront layering:
+When the repo uses [Org] layering:
 
 - `SMXXX_ServiceName` contains business logic and calls Entity Managers.
 - `EMXXX_ObjectName` handles object data preparation/manipulation and calls Data Managers.
@@ -181,7 +181,7 @@ When using `sf-platform-soql`:
 
 Custom objects and fields (`sf-platform-schema`):
 
-- Names must follow Comforth/Easyfront conventions unless the client overrides.
+- Names must follow [Org] conventions unless the client overrides.
 - Descriptions are mandatory.
 - Help text should be included when it improves usability or picklist clarity.
 - Avoid abbreviations and unapproved underscores.
@@ -298,7 +298,7 @@ Files and metadata:
 
 Standards applied:
 - Client override:
-- Comforth/Easyfront:
+- [Org]:
 - Salesforce skill used (sf-{cloud}-{name}):
 - PMD/static analysis:
 

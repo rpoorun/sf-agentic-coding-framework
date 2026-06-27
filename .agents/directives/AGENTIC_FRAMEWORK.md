@@ -68,6 +68,22 @@ Procedure:
 5. Treat pushing to, branching, or opening a PR against the master repository as a Git/source-control action requiring explicit user confirmation under the existing confirmation gates (see [AGENT_GUARDRAILS.md](AGENT_GUARDRAILS.md) and [MANUAL_CONFIRMATION_GATES.md](MANUAL_CONFIRMATION_GATES.md)) — do not push or open a PR without that confirmation.
 6. After the user approves, perform the fork/branch/PR with the isolated content only, and report the resulting URL back to the user.
 
+### Sanitizing Instructions Before Any Master Framework Contribution
+
+Always sanitize instruction content before it is proposed, forked, branched, or pushed toward the master framework repository, even in a draft or preview. This applies whenever step 2 of Scenario 2 is performed, and any other time content from `.agents/` or `AGENTS.md` is shared outside the local install.
+
+Scan for and remove or genericize:
+
+- Client, customer, or program names (e.g. a literal company name embedded in a title, purpose statement, or example).
+- Org aliases, sandbox/production URLs, usernames, or email addresses — replace with the `{client}-{project}-{env}` placeholder pattern documented in [ENVIRONMENT.md](../project/ENVIRONMENT.md#org-alias-naming-convention).
+- Real ticket/case IDs, Jira keys, or support-case numbers — replace with a generic placeholder (e.g. `PROJ-123`) or drop the identifier entirely if it adds no instructional value.
+- Internal consultancy, vendor, or partner names used as a stand-in for "the project's baseline standard" — replace with a bracket placeholder such as `[Org]` and a note that the local install should substitute its own organization's name.
+- Any credential, token, secret, or PII, per [TRUST_DATA_SECURITY.md](TRUST_DATA_SECURITY.md) — these must never appear in any file regardless of destination.
+
+For every `.agents/project/*` file specifically: project files are local-only by definition (see Scenario 1, step 7) and must never be forked or pushed to the master repository at all, sanitized or not. If a pattern discovered in a project file is generally useful, extract the *generic lesson* into the appropriate `directives`, `standards`, `skills`, or `workflows` file as a boilerplate example (placeholders, not real facts) — do not push the project file itself.
+
+When in doubt whether a string is client-identifying, treat it as client-identifying and ask the user before including it in anything destined for the master repository.
+
 ## Framework Maintenance Rules
 
 - Use this framework before creating, moving, renaming, or expanding any file under `.agents` or any major section in `AGENTS.md`.
