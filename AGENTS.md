@@ -1,8 +1,19 @@
 # AI Agent Operating Guide
 
+| Field | Value |
+| --- | --- |
+| Framework | sf-agentic-coding-framework |
+| Version | 0.0.2 |
+| Author | Rishikesh Poorun |
+| Master repository | https://github.com/rpoorun/sf-agentic-coding-framework |
+| Last updated | 2026-06-27 |
+| License | Apache License 2.0 |
+
 ## Purpose And Use
 
 `AGENTS.md` is the first file AI-assisted coding agents must read in this repository. Use it as the router for mandatory directives, project facts, workflow steps, quality standards, and skill-routing guidance before changing source, metadata, documentation, org state, or Git state.
+
+If `.agents/project/*` is still empty/boilerplate (first install into this project), run [Project Bootstrap](.agents/workflows/PROJECT_BOOTSTRAP.md) before other work — it interviews the user to populate org, VCS, team, and process facts.
 
 ## Project Guidance
 
@@ -16,17 +27,18 @@
 ## Required Reading Order
 
 1. [Agentic framework](.agents/directives/AGENTIC_FRAMEWORK.md)
-2. [Agent guardrails](.agents/directives/AGENT_GUARDRAILS.md)
-3. [Trust, data, and security rules](.agents/directives/TRUST_DATA_SECURITY.md)
-4. [Manual confirmation gates](.agents/directives/MANUAL_CONFIRMATION_GATES.md)
-5. [Project structure](.agents/project/PROJECT_STRUCTURE.md)
-6. [Workflow](.agents/workflows/WORKFLOW.md)
-7. [Deployment workflow](.agents/workflows/DEPLOYMENT.md)
-8. [Pull request workflow](.agents/workflows/PULL_REQUEST.md)
-9. [Requirement and specification rules](.agents/project/SPECIFICATION.md)
-10. [Salesforce project best practices](.agents/standards/SALESFORCE_PROJECT_BEST_PRACTICES.md)
-11. [Salesforce skills](.agents/skills/SALESFORCE_SKILLS.md)
-12. [Salesforce Apex standards](.agents/standards/SALESFORCE_APEX_STANDARDS.md)
+2. [Project bootstrap](.agents/workflows/PROJECT_BOOTSTRAP.md) — only on first install, when `.agents/project/*` is still empty
+3. [Agent guardrails](.agents/directives/AGENT_GUARDRAILS.md)
+4. [Trust, data, and security rules](.agents/directives/TRUST_DATA_SECURITY.md)
+5. [Manual confirmation gates](.agents/directives/MANUAL_CONFIRMATION_GATES.md)
+6. [Project structure](.agents/project/PROJECT_STRUCTURE.md)
+7. [Workflow](.agents/workflows/WORKFLOW.md)
+8. [Deployment workflow](.agents/workflows/DEPLOYMENT.md)
+9. [Pull request workflow](.agents/workflows/PULL_REQUEST.md)
+10. [Requirement and specification rules](.agents/project/SPECIFICATION.md)
+11. [Salesforce project best practices](.agents/standards/SALESFORCE_PROJECT_BEST_PRACTICES.md)
+12. [Salesforce skills](.agents/skills/SALESFORCE_SKILLS.md)
+13. [Salesforce Apex standards](.agents/standards/SALESFORCE_APEX_STANDARDS.md)
 13. [PMD Apex ruleset guide](.agents/standards/PMD_APEX_RULESET.md)
 14. [Lean code standards](.agents/standards/LEAN_CODE_STANDARDS.md)
 15. [Apex trigger framework](.agents/standards/APEX_TRIGGER_FRAMEWORK.md)
@@ -80,6 +92,7 @@ This `AGENTS.md` + `.agents/` framework is mirrored from a master repository: **
 
 | File | Intended purpose |
 | --- | --- |
+| [PROJECT_BOOTSTRAP.md](.agents/workflows/PROJECT_BOOTSTRAP.md) | First-install interview (org, VCS, team, release process) that populates `.agents/project/*` when it is still empty boilerplate. |
 | [WORKFLOW.md](.agents/workflows/WORKFLOW.md) | Git workflow, task flow, branch conventions, PR expectations, and release handoff process. |
 | [DEPLOYMENT.md](.agents/workflows/DEPLOYMENT.md) | Mandatory pre-deploy org-conflict check/merge and the 95% Apex coverage gate for every sandbox/org deploy, dry-run included. |
 | [PULL_REQUEST.md](.agents/workflows/PULL_REQUEST.md) | Pull request template usage, final commit, back-merge, and review-readiness checklist. |
@@ -140,3 +153,18 @@ Human confirmation is required before:
 Dry-run deploys, deploy validations, and Apex test runs may be executed without additional confirmation unless the user explicitly requested strict read-only analysis or no org calls.
 
 For detailed gates, see [Manual confirmation gates](.agents/directives/MANUAL_CONFIRMATION_GATES.md).
+
+## Acknowledgements And Sources
+
+This framework's `.agents/skills/` and `.agents/standards/` content is built by synthesizing, refactoring, or vendoring (with attribution) the open-source work of the following projects. See [AGENTIC_FRAMEWORK.md](.agents/directives/AGENTIC_FRAMEWORK.md#installing-this-framework-into-a-new-repository) for how each one was used and how to re-pull updates.
+
+| Source | Author / Org | Used for |
+| --- | --- | --- |
+| [forcedotcom/sf-skills](https://github.com/forcedotcom/sf-skills) | Salesforce | Primary source for most `sf-platform-*`, `sf-design-*`, `sf-dx-*`, `sf-agentforce-*`, `sf-omnistudio-*`, `sf-integration-*`, `sf-tooling-*` skills — synthesized and renamed to this framework's `sf-{cloud}-{name}` convention. |
+| [Clientell-Ai/salesforce-skills](https://github.com/Clientell-Ai/salesforce-skills) | Clientell | Secondary/merged source for the same skills above (`sf-apex`, `sf-test`, `sf-flow`, `sf-lwc`, `sf-soql`, `sf-deploy`, `sf-data`, `sf-schema`, `sf-debug`, `sf-agentforce`, `sf-permissions`, `sf-integration`, `sf-docs`, `sf-diagram`, `sf-omnistudio`, `sf-find`, `sf-eval`, `sf-security`) — merged into the same synthesized skills, plus the sole source for `sf-security-audit`. |
+| [DietrichGebert/ponytail](https://github.com/DietrichGebert/ponytail) | Dietrich Gebert | Source doctrine (refactored, not copied) for the lean-coding decision ladder in [LEAN_CODE_STANDARDS.md](.agents/standards/LEAN_CODE_STANDARDS.md). |
+| [JuliusBrussee/caveman](https://github.com/JuliusBrussee/caveman) | Julius Brussee | Source doctrine (refactored, not copied) for the token-efficient communication and surgical-diff rules in [LEAN_CODE_STANDARDS.md](.agents/standards/LEAN_CODE_STANDARDS.md). |
+| [kevinohara80/sfdc-trigger-framework](https://github.com/kevinohara80/sfdc-trigger-framework) | Kevin M. O'Hara | `TriggerHandler` base class vendored verbatim (MIT License) — see [APEX_TRIGGER_FRAMEWORK.md](.agents/standards/APEX_TRIGGER_FRAMEWORK.md). |
+| [beyond-the-cloud-dev/apex-consts](https://github.com/beyond-the-cloud-dev/apex-consts) | Beyond The Cloud | `Consts`/`{SObject}Consts` constants pattern vendored verbatim (MIT License) — see [APEX_CONSTANTS_FRAMEWORK.md](.agents/standards/APEX_CONSTANTS_FRAMEWORK.md). |
+
+If you maintain one of these projects and want attribution adjusted, or you maintain a project this framework should credit and currently doesn't, open an issue or PR against [rpoorun/sf-agentic-coding-framework](https://github.com/rpoorun/sf-agentic-coding-framework).

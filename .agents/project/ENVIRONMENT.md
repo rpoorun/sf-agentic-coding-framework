@@ -8,6 +8,10 @@ This is a boilerplate template. Replace every `{client}` and `{project}` placeho
 
 This project uses named Salesforce CLI aliases for day-to-day org work. Do not store access tokens, refresh tokens, credentials, private keys, or session details in this repository.
 
+## Required Tooling
+
+See [PROJECT_BOOTSTRAP.md](../workflows/PROJECT_BOOTSTRAP.md#step-1--required-tooling-check) for the full check. At minimum this project requires: Salesforce CLI (`sf`), Git, and the `sfdx-git-delta` plugin for scoped delta deploys (see [DEPLOYMENT.md](../workflows/DEPLOYMENT.md)). Record locally-confirmed versions here once verified.
+
 ## Org Alias Naming Convention
 
 Name every Salesforce CLI org alias as:
