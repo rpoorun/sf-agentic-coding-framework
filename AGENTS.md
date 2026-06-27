@@ -21,16 +21,17 @@
 4. [Manual confirmation gates](.agents/directives/MANUAL_CONFIRMATION_GATES.md)
 5. [Project structure](.agents/project/PROJECT_STRUCTURE.md)
 6. [Workflow](.agents/workflows/WORKFLOW.md)
-7. [Pull request workflow](.agents/workflows/PULL_REQUEST.md)
-8. [Requirement and specification rules](.agents/project/SPECIFICATION.md)
-9. [Salesforce project best practices](.agents/standards/SALESFORCE_PROJECT_BEST_PRACTICES.md)
-10. [Salesforce skills](.agents/skills/SALESFORCE_SKILLS.md)
-11. [Salesforce Apex standards](.agents/standards/SALESFORCE_APEX_STANDARDS.md)
-12. [PMD Apex ruleset guide](.agents/standards/PMD_APEX_RULESET.md)
-13. [Lean code standards](.agents/standards/LEAN_CODE_STANDARDS.md)
-14. [Apex trigger framework](.agents/standards/APEX_TRIGGER_FRAMEWORK.md)
-15. [Apex constants framework](.agents/standards/APEX_CONSTANTS_FRAMEWORK.md)
-16. [Documentation standards](.agents/standards/DOCUMENTATION.md)
+7. [Deployment workflow](.agents/workflows/DEPLOYMENT.md)
+8. [Pull request workflow](.agents/workflows/PULL_REQUEST.md)
+9. [Requirement and specification rules](.agents/project/SPECIFICATION.md)
+10. [Salesforce project best practices](.agents/standards/SALESFORCE_PROJECT_BEST_PRACTICES.md)
+11. [Salesforce skills](.agents/skills/SALESFORCE_SKILLS.md)
+12. [Salesforce Apex standards](.agents/standards/SALESFORCE_APEX_STANDARDS.md)
+13. [PMD Apex ruleset guide](.agents/standards/PMD_APEX_RULESET.md)
+14. [Lean code standards](.agents/standards/LEAN_CODE_STANDARDS.md)
+15. [Apex trigger framework](.agents/standards/APEX_TRIGGER_FRAMEWORK.md)
+16. [Apex constants framework](.agents/standards/APEX_CONSTANTS_FRAMEWORK.md)
+17. [Documentation standards](.agents/standards/DOCUMENTATION.md)
 
 ## Documentation Layout
 
@@ -80,6 +81,7 @@ This `AGENTS.md` + `.agents/` framework is mirrored from a master repository: **
 | File | Intended purpose |
 | --- | --- |
 | [WORKFLOW.md](.agents/workflows/WORKFLOW.md) | Git workflow, task flow, branch conventions, PR expectations, and release handoff process. |
+| [DEPLOYMENT.md](.agents/workflows/DEPLOYMENT.md) | Mandatory pre-deploy org-conflict check/merge and the 95% Apex coverage gate for every sandbox/org deploy, dry-run included. |
 | [PULL_REQUEST.md](.agents/workflows/PULL_REQUEST.md) | Pull request template usage, final commit, back-merge, and review-readiness checklist. |
 | [TESTING.md](.agents/workflows/TESTING.md) | Verification protocols, test commands, mocking strategies, coverage expectations, and acceptance checks. |
 | [IMPLEMENTATION_PLAN.md](.agents/workflows/IMPLEMENTATION_PLAN.md) | Delivery sequencing, dependency ordering, implementation planning, rollout steps, and open task tracking. |

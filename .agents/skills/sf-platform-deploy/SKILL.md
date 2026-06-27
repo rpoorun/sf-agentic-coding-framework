@@ -24,6 +24,8 @@ metadata:
 
 Use this skill when the user needs **deployment orchestration**: dry-run validation, targeted or manifest-based deploys, CI/CD workflow advice, scratch-org management, failure triage, or safe rollout sequencing for Salesforce metadata.
 
+Before any dry-run, validate-only, or real deploy to a sandbox/org, follow [DEPLOYMENT.md](../../workflows/DEPLOYMENT.md): run the mandatory pre-deploy org-conflict check (retrieve and diff the target org's current metadata; merge org-only elements into local before deploying, never overwrite an existing org feature outside scope) and the 95% Apex coverage gate (hard failure, cancels the deploy including dry-runs, if coverage is below 95% for any class/trigger in scope).
+
 ## When This Skill Owns the Task
 
 Use `platform-metadata-deploy` when the work involves:
