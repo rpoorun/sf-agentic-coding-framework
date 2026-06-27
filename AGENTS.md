@@ -11,6 +11,7 @@
 - For Salesforce source work, read [Project structure](.agents/project/PROJECT_STRUCTURE.md), [Salesforce project best practices](.agents/standards/SALESFORCE_PROJECT_BEST_PRACTICES.md), and the relevant workflow file.
 - For Apex work, read [Salesforce Apex standards](.agents/standards/SALESFORCE_APEX_STANDARDS.md) and [PMD Apex ruleset guide](.agents/standards/PMD_APEX_RULESET.md).
 - For tool or skill routing, read [Salesforce skills](.agents/skills/SALESFORCE_SKILLS.md).
+- For writing or updating project technical documentation (`docs/` describing implemented Apex, LWC, or config), read [Documentation standards](.agents/standards/DOCUMENTATION.md) first — never document anything without verifying it against source per that file.
 
 ## Required Reading Order
 
@@ -26,6 +27,10 @@
 10. [Salesforce skills](.agents/skills/SALESFORCE_SKILLS.md)
 11. [Salesforce Apex standards](.agents/standards/SALESFORCE_APEX_STANDARDS.md)
 12. [PMD Apex ruleset guide](.agents/standards/PMD_APEX_RULESET.md)
+13. [Lean code standards](.agents/standards/LEAN_CODE_STANDARDS.md)
+14. [Apex trigger framework](.agents/standards/APEX_TRIGGER_FRAMEWORK.md)
+15. [Apex constants framework](.agents/standards/APEX_CONSTANTS_FRAMEWORK.md)
+16. [Documentation standards](.agents/standards/DOCUMENTATION.md)
 
 ## Documentation Layout
 
@@ -59,6 +64,10 @@ This `AGENTS.md` + `.agents/` framework is mirrored from a master repository: **
 | [SALESFORCE_PROJECT_BEST_PRACTICES.md](.agents/standards/SALESFORCE_PROJECT_BEST_PRACTICES.md) | [Org] Salesforce baseline for naming, metadata, architecture, tests, and configuration. |
 | [SALESFORCE_APEX_STANDARDS.md](.agents/standards/SALESFORCE_APEX_STANDARDS.md) | Apex class, trigger, async, security, test, and review standards. |
 | [PMD_APEX_RULESET.md](.agents/standards/PMD_APEX_RULESET.md) | PMD Apex static-analysis guidance, command shape, suppression policy, and agent requirements. |
+| [LEAN_CODE_STANDARDS.md](.agents/standards/LEAN_CODE_STANDARDS.md) | Lean-coding decision ladder and token-efficient collaboration rules, refactored for Apex/LWC from general-purpose sources. |
+| [APEX_TRIGGER_FRAMEWORK.md](.agents/standards/APEX_TRIGGER_FRAMEWORK.md) | Mandatory `TriggerHandler` base-class pattern, recursion control, and bypass API for every Apex trigger. |
+| [APEX_CONSTANTS_FRAMEWORK.md](.agents/standards/APEX_CONSTANTS_FRAMEWORK.md) | Mandatory `Consts`/`{SObject}Consts` singleton pattern for picklist values and other Apex constants. |
+| [DOCUMENTATION.md](.agents/standards/DOCUMENTATION.md) | How to write and maintain project technical documentation describing actual Apex, LWC, and configuration — source-verification rules, doc-tree structure, style, and content inclusion/exclusion. |
 
 ## Skill Reference Files
 

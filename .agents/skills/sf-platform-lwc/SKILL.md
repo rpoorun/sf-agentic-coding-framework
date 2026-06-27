@@ -8,6 +8,8 @@ metadata:
   sources:
     - forcedotcom/sf-skills :: experience-lwc-generate
     - Clientell-Ai/salesforce-skills :: sf-lwc
+    - DietrichGebert/ponytail (refactored via LEAN_CODE_STANDARDS.md)
+    - JuliusBrussee/caveman (refactored via LEAN_CODE_STANDARDS.md)
 ---
 
 # sf-platform-lwc: Lightning Web Components
@@ -18,7 +20,9 @@ metadata:
 | Cloud | Platform |
 | Version | 1.0 |
 | Synthesized | Yes — deduplicated and merged from the source(s) below |
-| Sources | forcedotcom/sf-skills :: experience-lwc-generate; Clientell-Ai/salesforce-skills :: sf-lwc |
+| Sources | forcedotcom/sf-skills :: experience-lwc-generate; Clientell-Ai/salesforce-skills :: sf-lwc; lean-coding discipline refactored from DietrichGebert/ponytail and JuliusBrussee/caveman |
+
+Before authoring, apply the [Lean Decision Ladder](../../standards/LEAN_CODE_STANDARDS.md#the-lean-decision-ladder-apexlwc-refactor-of-ponytail): prefer an existing Lightning Base Component, shared LWC utility, or `@wire` adapter over a new component or hand-rolled plumbing, and build the smallest correct bundle once the requirement is understood. Lean does not relax accessibility, loading/empty/error states, or CRUD/FLS-safe Apex calls — see "Not Lazy About" in that file.
 
 Use this skill when the user needs **Lightning Web Components**: LWC bundles, wire patterns, Apex/GraphQL integration, SLDS 2 styling, accessibility, performance work, or Jest unit tests.
 

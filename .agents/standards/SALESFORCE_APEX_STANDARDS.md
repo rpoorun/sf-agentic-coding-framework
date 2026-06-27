@@ -6,7 +6,7 @@ This file defines quality standards for Apex classes, triggers, async jobs, test
 
 These standards apply to Apex classes, triggers, tests, and related Salesforce metadata.
 
-These standards inherit the [Org] Salesforce best-practice baseline unless the client has an explicit project-specific convention. See [Salesforce project best practices](SALESFORCE_PROJECT_BEST_PRACTICES.md).
+These standards inherit the [Org] Salesforce best-practice baseline unless the client has an explicit project-specific convention. See [Salesforce project best practices](SALESFORCE_PROJECT_BEST_PRACTICES.md). Apply the [Lean Decision Ladder](LEAN_CODE_STANDARDS.md) before writing or expanding any class: prefer declarative features, existing classes, and Apex built-ins over new code, without relaxing bulkification, sharing, or CRUD/FLS rules below.
 
 Salesforce curated skills may provide implementation patterns, but generated or modified Apex must still satisfy this file and the local PMD ruleset.
 
