@@ -3,17 +3,17 @@
 | Field | Value |
 | --- | --- |
 | Framework | sf-agentic-coding-framework |
-| Version | 0.0.2 |
+| Version | 0.0.3 |
 | Author | Rishikesh Poorun |
 | Master repository | https://github.com/rpoorun/sf-agentic-coding-framework |
-| Last updated | 2026-06-27 |
+| Last updated | 2026-06-28 |
 | License | Apache License 2.0 |
 
 ## Purpose And Use
 
 `AGENTS.md` is the first file AI-assisted coding agents must read in this repository. Use it as the router for mandatory directives, project facts, workflow steps, quality standards, and skill-routing guidance before changing source, metadata, documentation, org state, or Git state.
 
-If `.agents/project/*` is still empty/boilerplate (first install into this project), run [Project Bootstrap](.agents/workflows/PROJECT_BOOTSTRAP.md) before other work — it interviews the user to populate org, VCS, team, and process facts.
+If `AGENTS.md`/`.agents/` are not yet tracked by git and no persistence decision is recorded in `.gitignore`, or `.agents/project/*` is still empty/boilerplate, run [Project Bootstrap](.agents/workflows/PROJECT_BOOTSTRAP.md) before other work — it asks whether this framework should be committed to the remote or kept local-only, then interviews the user to populate org, VCS, team, and process facts.
 
 ## Project Guidance
 
@@ -79,7 +79,7 @@ This `AGENTS.md` + `.agents/` framework is mirrored from a master repository: **
 | [PMD_APEX_RULESET.md](.agents/standards/PMD_APEX_RULESET.md) | PMD Apex static-analysis guidance, command shape, suppression policy, and agent requirements. |
 | [LEAN_CODE_STANDARDS.md](.agents/standards/LEAN_CODE_STANDARDS.md) | Lean-coding decision ladder and token-efficient collaboration rules, refactored for Apex/LWC from general-purpose sources. |
 | [APEX_TRIGGER_FRAMEWORK.md](.agents/standards/APEX_TRIGGER_FRAMEWORK.md) | Mandatory `TriggerHandler` base-class pattern, recursion control, and bypass API for every Apex trigger. |
-| [APEX_CONSTANTS_FRAMEWORK.md](.agents/standards/APEX_CONSTANTS_FRAMEWORK.md) | Mandatory `Consts`/`{SObject}Consts` singleton pattern for picklist values and other Apex constants. |
+| [APEX_CONSTANTS_FRAMEWORK.md](.agents/standards/APEX_CONSTANTS_FRAMEWORK.md) | Mandatory `Constants`/`{SObject}Constants` singleton pattern for picklist values and other Apex constants. |
 | [DOCUMENTATION.md](.agents/standards/DOCUMENTATION.md) | How to write and maintain project technical documentation describing actual Apex, LWC, and configuration — source-verification rules, doc-tree structure, style, and content inclusion/exclusion. |
 
 ## Skill Reference Files
@@ -165,6 +165,6 @@ This framework's `.agents/skills/` and `.agents/standards/` content is built by 
 | [DietrichGebert/ponytail](https://github.com/DietrichGebert/ponytail) | Dietrich Gebert | Source doctrine (refactored, not copied) for the lean-coding decision ladder in [LEAN_CODE_STANDARDS.md](.agents/standards/LEAN_CODE_STANDARDS.md). |
 | [JuliusBrussee/caveman](https://github.com/JuliusBrussee/caveman) | Julius Brussee | Source doctrine (refactored, not copied) for the token-efficient communication and surgical-diff rules in [LEAN_CODE_STANDARDS.md](.agents/standards/LEAN_CODE_STANDARDS.md). |
 | [kevinohara80/sfdc-trigger-framework](https://github.com/kevinohara80/sfdc-trigger-framework) | Kevin M. O'Hara | `TriggerHandler` base class vendored verbatim (MIT License) — see [APEX_TRIGGER_FRAMEWORK.md](.agents/standards/APEX_TRIGGER_FRAMEWORK.md). |
-| [beyond-the-cloud-dev/apex-consts](https://github.com/beyond-the-cloud-dev/apex-consts) | Beyond The Cloud | `Consts`/`{SObject}Consts` constants pattern vendored verbatim (MIT License) — see [APEX_CONSTANTS_FRAMEWORK.md](.agents/standards/APEX_CONSTANTS_FRAMEWORK.md). |
+| [beyond-the-cloud-dev/apex-consts](https://github.com/beyond-the-cloud-dev/apex-consts) | Beyond The Cloud | `Constants`/`{SObject}Constants` pattern (MIT License), adapted with every class renamed from the upstream `Consts` abbreviation to the full word `Constants` — see [APEX_CONSTANTS_FRAMEWORK.md](.agents/standards/APEX_CONSTANTS_FRAMEWORK.md). |
 
 If you maintain one of these projects and want attribution adjusted, or you maintain a project this framework should credit and currently doesn't, open an issue or PR against [rpoorun/sf-agentic-coding-framework](https://github.com/rpoorun/sf-agentic-coding-framework).

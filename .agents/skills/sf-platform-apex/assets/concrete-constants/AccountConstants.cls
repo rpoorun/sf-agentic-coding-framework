@@ -1,6 +1,6 @@
 @SuppressWarnings('PMD.FieldNamingConventions, PMD.EmptyStatementBlock')
-public class AccountConsts {
-    public static final AccountConsts INSTANCE = new AccountConsts();
+public class AccountConstants {
+    public static final AccountConstants INSTANCE = new AccountConstants();
 
     public final String API_NAME = Account.sObjectType.getDescribe().getName();
 
@@ -23,5 +23,5 @@ public class AccountConsts {
         public final String WARM = 'Warm';
     }
 
-    private AccountConsts() {}
+    private AccountConstants() {}
 }

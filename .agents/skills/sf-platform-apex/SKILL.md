@@ -24,6 +24,8 @@ metadata:
 
 Before authoring, apply the [Lean Decision Ladder](../../standards/LEAN_CODE_STANDARDS.md#the-lean-decision-ladder-apexlwc-refactor-of-ponytail): prefer declarative Salesforce features, existing Selectors/Services/Utilities, and Apex standard-library calls over new Apex, and write the smallest correct class once the requirement and existing layering are understood. Lean does not relax bulkification, CRUD/FLS, or sharing requirements — see "Not Lazy About" in that file.
 
+The first time in a session you touch a given class, retrieve it from the dev org first per [Pre-Development Retrieve](../../workflows/DEPLOYMENT.md#pre-development-retrieve-mandatory) — do not generate or edit on top of a local copy that may be stale relative to the org.
+
 Use this skill for production-grade Apex: new classes, selectors, services, async jobs,
 invocable methods, and triggers; and for evidence-based review of existing `.cls` OR `.trigger`.
 
@@ -175,7 +177,7 @@ Before finalizing, verify: CRUD/FLS enforced (SOQL + DML) · explicit sharing ke
 
 ### Constants & Literals
 
-- Mandatory pattern for repeated picklist values, API names, and other literals: see [APEX_CONSTANTS_FRAMEWORK.md](../../standards/APEX_CONSTANTS_FRAMEWORK.md) — `{SObject}Consts` singleton classes exposed via `Consts.{OBJECT}`. Template: `assets/Consts.cls` and `assets/concrete-consts/AccountConsts.cls`.
+- Mandatory pattern for repeated picklist values, API names, and other literals: see [APEX_CONSTANTS_FRAMEWORK.md](../../standards/APEX_CONSTANTS_FRAMEWORK.md) — `{SObject}Constants` singleton classes exposed via `Constants.{OBJECT}`. Use the full word `Constants`, never abbreviate to `Consts`. Template: `assets/Constants.cls` and `assets/concrete-constants/AccountConstants.cls`.
 - Use enums over string constants for purely internal/code-level states with no SObject field correspondence; enum values follow `UPPER_SNAKE_CASE`
 - Use `Label.` custom labels for user-facing strings
 - Use Custom Metadata for configurable values (thresholds, mappings, feature flags)

@@ -23,6 +23,8 @@ metadata:
 | Synthesized | Yes — deduplicated and merged from the source(s) below |
 | Sources | forcedotcom/sf-skills :: platform-custom-object-generate; forcedotcom/sf-skills :: platform-custom-field-generate; forcedotcom/sf-skills :: platform-custom-tab-generate; forcedotcom/sf-skills :: platform-custom-application-generate; Clientell-Ai/salesforce-skills :: sf-schema |
 
+The first time in a session you touch a given object/field/tab/application, retrieve it from the dev org first per [Pre-Development Retrieve](../../workflows/DEPLOYMENT.md#pre-development-retrieve-mandatory) — do not generate or edit metadata on top of a local copy that may be stale relative to the org.
+
 ## When to Use This Skill
 
 Use this skill when you need to:

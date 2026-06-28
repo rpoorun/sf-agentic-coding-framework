@@ -99,3 +99,11 @@ When proposing or completing work, be exact:
 - Name the org alias if an org was touched.
 - Name deploy or validation IDs when applicable.
 - State what was not done because it requires manual confirmation.
+
+## Chat Brevity While Working
+
+While the user is waiting in the chat session for work to complete (reading, searching, editing, running checks), keep interim status text to a maximum of one short phrase per update — state what is happening, not why or how, and skip narration of routine tool calls entirely when no update is needed.
+
+This brevity rule does **not** apply when the user must be asked something or given a decision to make: confirmation requests ([MANUAL_CONFIRMATION_GATES.md](MANUAL_CONFIRMATION_GATES.md)), conflict-resolution escalations ([DEPLOYMENT.md](../workflows/DEPLOYMENT.md)), clarifying questions, or the final summary of completed work. In those cases give the user as much detail as they need to decide: exact options, affected files, risks, and consequences — do not compress a decision point into one phrase for the sake of brevity.
+
+This governs the agent's own narration during a turn. It is independent of the terse-collaboration style in [LEAN_CODE_STANDARDS.md](../standards/LEAN_CODE_STANDARDS.md#token-efficient-collaboration-refactor-of-caveman), which covers review-comment formatting and surgical-diff discipline rather than in-progress status updates.

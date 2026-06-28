@@ -6,21 +6,21 @@ This file mandates how picklist values, API names, and other Apex string/value c
 
 ## Source
 
-This framework vendors the pattern from [beyond-the-cloud-dev/apex-consts](https://github.com/beyond-the-cloud-dev/apex-consts) (MIT License) directly — like the trigger framework, this is a small, Salesforce-native, dependency-free pattern with no adaptation needed, so the structure is vendored rather than refactored. See [AGENTIC_FRAMEWORK.md](../directives/AGENTIC_FRAMEWORK.md#installing-this-framework-into-a-new-repository) for how to re-pull updates during a framework install or refresh.
+This framework adapts the pattern from [beyond-the-cloud-dev/apex-consts](https://github.com/beyond-the-cloud-dev/apex-consts) (MIT License) — the lazy-singleton, one-class-per-object structure is vendored as-is, but every class name uses the complete word `Constants`, not the upstream library's abbreviated `Consts` (e.g. `AccountConstants`, not `AccountConsts`; root class `Constants`, not `Consts`) — this project's naming standard never abbreviates a class name. See [AGENTIC_FRAMEWORK.md](../directives/AGENTIC_FRAMEWORK.md#installing-this-framework-into-a-new-repository) for how to re-pull updates during a framework install or refresh.
 
-The canonical template lives at [`sf-platform-apex/assets/Consts.cls`](../skills/sf-platform-apex/assets/Consts.cls) and a worked example at [`sf-platform-apex/assets/concrete-consts/AccountConsts.cls`](../skills/sf-platform-apex/assets/concrete-consts/AccountConsts.cls). Add one `{SObject}Consts` class per object under `concrete-consts/` as needed; `AccountConsts.cls` is the pattern to copy, not the only object this applies to.
+The canonical template lives at [`sf-platform-apex/assets/Constants.cls`](../skills/sf-platform-apex/assets/Constants.cls) and a worked example at [`sf-platform-apex/assets/concrete-constants/AccountConstants.cls`](../skills/sf-platform-apex/assets/concrete-constants/AccountConstants.cls). Add one `{SObject}Constants` class per object under `concrete-constants/` as needed; `AccountConstants.cls` is the pattern to copy, not the only object this applies to.
 
 ## Mandatory Pattern
 
 Never hardcode a picklist value, SObject API name, or other repeated string/value literal inline in Apex business logic. Look up or create the constant in this structure instead:
 
-1. One **concrete consts class** per SObject, named `{SObject}Consts`, holding a private singleton `INSTANCE` and inner classes grouping related constants (one inner class per field or concern, e.g. `Type`, `Rating`, `Status`).
-2. One root `Consts` class exposing each concrete class through a lazily-initialized static property, named after the object in `UPPER_SNAKE_CASE` (or the object's plural/logical grouping name).
+1. One **concrete constants class** per SObject, named `{SObject}Constants` (full word, never `Consts`), holding a private singleton `INSTANCE` and inner classes grouping related constants (one inner class per field or concern, e.g. `Type`, `Rating`, `Status`).
+2. One root `Constants` class exposing each concrete class through a lazily-initialized static property, named after the object in `UPPER_SNAKE_CASE` (or the object's plural/logical grouping name).
 
 ```apex
-// AccountConsts.cls — one per SObject
-public class AccountConsts {
-    public static final AccountConsts INSTANCE = new AccountConsts();
+// AccountConstants.cls — one per SObject
+public class AccountConstants {
+    public static final AccountConstants INSTANCE = new AccountConstants();
 
     public final String API_NAME = Account.sObjectType.getDescribe().getName();
 
@@ -38,15 +38,15 @@ public class AccountConsts {
         public final String COLD = 'Cold';
     }
 
-    private AccountConsts() {}
+    private AccountConstants() {}
 }
 ```
 
 ```apex
-// Consts.cls — root accessor, one property per concrete consts class
-public class Consts {
-    public static final AccountConsts ACCOUNT {
-        get { return AccountConsts.INSTANCE; }
+// Constants.cls — root accessor, one property per concrete constants class
+public class Constants {
+    public static final AccountConstants ACCOUNT {
+        get { return AccountConstants.INSTANCE; }
     }
 }
 ```
@@ -56,24 +56,26 @@ Usage:
 ```apex
 Account acc = new Account(
     Name = 'Acme',
-    Type = Consts.ACCOUNT.TYPE.PROSPECT,
-    Rating = Consts.ACCOUNT.RATING.HOT
+    Type = Constants.ACCOUNT.TYPE.PROSPECT,
+    Rating = Constants.ACCOUNT.RATING.HOT
 );
 ```
 
 ## Why This Shape
 
-- **Lazy singleton per object**: accessing `Consts.ACCOUNT` only constructs `AccountConsts`; unrelated concrete classes (`ContactConsts`, `OpportunityConsts`) are never instantiated, keeping heap usage minimal in large transactions.
-- **One class per SObject (Single Responsibility)**: adding a new object's constants never requires touching another object's class; only `Consts.cls` gains one new property (Open/Closed).
+- **Lazy singleton per object**: accessing `Constants.ACCOUNT` only constructs `AccountConstants`; unrelated concrete classes (`ContactConstants`, `OpportunityConstants`) are never instantiated, keeping heap usage minimal in large transactions.
+- **One class per SObject (Single Responsibility)**: adding a new object's constants never requires touching another object's class; only `Constants.cls` gains one new property (Open/Closed).
 - **`API_NAME` via describe, not a literal**: `Account.sObjectType.getDescribe().getName()` stays correct if the object is ever renamed/namespaced (e.g. managed package installs), unlike a hardcoded `'Account'` string.
+- **Full words in class names, never abbreviated**: `AccountConstants`, not `AccountConsts` — matches this project's naming standard of full descriptive names over abbreviations (see [SALESFORCE_APEX_STANDARDS.md](SALESFORCE_APEX_STANDARDS.md)).
 
-## When To Add A New Concrete Consts Class
+## When To Add A New Concrete Constants Class
 
-Add a `{SObject}Consts` class the first time a picklist value, record-type developer name, or other repeated literal for that object appears more than once in the codebase, or the first time it appears in code generated by `sf-platform-apex`/`sf-platform-validation`/`sf-platform-schema`. Do not pre-populate a consts class with every possible picklist value speculatively — apply the [Lean Decision Ladder](LEAN_CODE_STANDARDS.md#the-lean-decision-ladder-apexlwc-refactor-of-ponytail): add only the values the current task actually needs, and extend the class later when the next value is needed.
+Add a `{SObject}Constants` class the first time a picklist value, record-type developer name, or other repeated literal for that object appears more than once in the codebase, or the first time it appears in code generated by `sf-platform-apex`/`sf-platform-validation`/`sf-platform-schema`. Do not pre-populate a constants class with every possible picklist value speculatively — apply the [Lean Decision Ladder](LEAN_CODE_STANDARDS.md#the-lean-decision-ladder-apexlwc-refactor-of-ponytail): add only the values the current task actually needs, and extend the class later when the next value is needed.
 
 ## Review Checklist
 
 - No bare string/value literal for a picklist, record-type developer name, or SObject/field API name appears inline in generated or modified Apex business logic.
-- The constant exists in (or was added to) `{SObject}Consts` and exposed through `Consts.{OBJECT}`.
+- The constant exists in (or was added to) `{SObject}Constants` and exposed through `Constants.{OBJECT}`.
 - `API_NAME` fields use `SObjectType.getDescribe().getName()`, not a literal.
-- A new concrete consts class follows the existing naming and inner-class grouping convention rather than introducing a new shape.
+- Every class name uses the full word `Constants` — reject `Consts`, `Const`, or any other abbreviation during review.
+- A new concrete constants class follows the existing naming and inner-class grouping convention rather than introducing a new shape.
