@@ -1,3 +1,10 @@
+/**
+ * @description Lazy singleton holding Account picklist values and the object's API name. Adapted from beyond-the-cloud-dev/apex-consts.
+ * @author {Author}
+ * @date {YYYY-MM-DD}
+ * @group Constants
+ * @see AccountConstantsTest
+ */
 @SuppressWarnings('PMD.FieldNamingConventions, PMD.EmptyStatementBlock')
 public class AccountConstants {
     public static final AccountConstants INSTANCE = new AccountConstants();

@@ -66,7 +66,7 @@ Account acc = new Account(
 - **Lazy singleton per object**: accessing `Constants.ACCOUNT` only constructs `AccountConstants`; unrelated concrete classes (`ContactConstants`, `OpportunityConstants`) are never instantiated, keeping heap usage minimal in large transactions.
 - **One class per SObject (Single Responsibility)**: adding a new object's constants never requires touching another object's class; only `Constants.cls` gains one new property (Open/Closed).
 - **`API_NAME` via describe, not a literal**: `Account.sObjectType.getDescribe().getName()` stays correct if the object is ever renamed/namespaced (e.g. managed package installs), unlike a hardcoded `'Account'` string.
-- **Full words in class names, never abbreviated**: `AccountConstants`, not `AccountConsts` — matches this project's naming standard of full descriptive names over abbreviations (see [SALESFORCE_APEX_STANDARDS.md](SALESFORCE_APEX_STANDARDS.md)).
+- **Full words in class names, never abbreviated**: `AccountConstants` (not `AccountConsts`), `LeadConstants` (not `LeadConsts`), `OpportunityConstants` (not `OpportunityConsts`) — every `{SObject}Constants` class, for every object, always spells out the full word `Constants`. Matches this project's naming standard of full descriptive names over abbreviations (see [SALESFORCE_APEX_STANDARDS.md](SALESFORCE_APEX_STANDARDS.md)).
 
 ## When To Add A New Concrete Constants Class
 

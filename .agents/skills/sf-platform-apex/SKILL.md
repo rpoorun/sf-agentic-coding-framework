@@ -212,14 +212,17 @@ Additional naming rules:
 
 ### ApexDoc
 
-- Required on the class header and every `public`/`global` method
-- Include: brief description, `@param`, `@return`, `@throws`, `@example` where helpful
+Required on **every** class/interface/trigger header and **every** method (not just `public`/`global`) — see [SALESFORCE_APEX_STANDARDS.md](../../standards/SALESFORCE_APEX_STANDARDS.md#apexdoc-comment-block-mandatory) for the full mandated header shape: description, `@author`, `@date` (last modified), `@group`, `@param`/`@return` for every input/output, and `@see` linking the related test class.
 
 Class-level format:
 
 ```apex
 /**
- * Provides services for geolocation and address conversion.
+ * @description Provides services for geolocation and address conversion.
+ * @author Jane Doe
+ * @date 2026-06-28
+ * @group Geolocation
+ * @see GeolocationServiceTest
  */
 public with sharing class GeolocationService { }
 ```
@@ -228,8 +231,11 @@ Method-level format:
 
 ```apex
 /**
- * @param paramName Description of the parameter
- * @return Description of the return value
+ * @description Converts a street address into latitude/longitude coordinates.
+ * @author Jane Doe
+ * @date 2026-06-28
+ * @param address The street address to geocode.
+ * @return The resolved Geolocation, or null if the address could not be resolved.
  * @example
  * List<Account> results = AccountService.deduplicateAccounts(accountIds);
  */

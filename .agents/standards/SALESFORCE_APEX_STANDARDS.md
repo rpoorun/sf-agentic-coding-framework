@@ -22,6 +22,47 @@ Salesforce curated skills may provide implementation patterns, but generated or 
 - Keep methods small enough to test and review.
 - Prefer clear names over comments that restate the code.
 
+## ApexDoc Comment Block (Mandatory)
+
+Every class, interface, and trigger header, and every method on it (not only `public`/`global` members), must carry an ApexDoc-style comment block immediately above it. This applies to generated and hand-written Apex alike, and to existing classes being modified — add or update the header when you touch the class, even if the task is otherwise unrelated to documentation.
+
+Required tags:
+
+| Tag | Required on | Content |
+| --- | --- | --- |
+| `@description` | Class and every method | What the class/method does, in one or two sentences — the *why* if it's non-obvious, not a restatement of the signature. |
+| `@author` | Class | Who authored the class. Use the actual committer/requester name provided in the session; never leave a placeholder. |
+| `@date` | Class, and on a method if that method's logic was modified independently of the class as a whole | Last-modified date, `YYYY-MM-DD`. Update this date whenever the class or method body changes — it must reflect the most recent substantive edit, not the original creation date. |
+| `@group` | Class | The logical grouping/domain the class belongs to (e.g. `Geolocation`, `Account Management`, `Trigger Handlers`) — keeps generated ApexDoc/SObject API documentation navigable. |
+| `@param` | Every method parameter | One line per parameter, named, describing what it represents — not just its type. |
+| `@return` | Every method with a non-`void` return type | What the return value represents, including the meaning of `null`/empty-collection results where relevant. |
+| `@see` | Class, and any method with dedicated test coverage beyond the class-level test class | The related test class (e.g. `@see AccountServiceTest`) so coverage is discoverable directly from the header — see [sf-platform-test](../skills/sf-platform-test/SKILL.md) for how that test class is generated. |
+| `@throws` | Any method that intentionally throws | The exception type and the condition that triggers it. |
+| `@example` | Where it meaningfully clarifies usage | A short real call pattern; omit if the method name and signature already make usage obvious. |
+
+```apex
+/**
+ * @description Deduplicates Account records sharing the same normalized name and address.
+ * @author Jane Doe
+ * @date 2026-06-28
+ * @group Account Management
+ * @see AccountDeduplicationBatchTest
+ */
+public with sharing class AccountDeduplicationBatch implements Database.Batchable<SObject> {
+
+    /**
+     * @description Builds the query locator scoping the batch to active, non-merged Accounts.
+     * @author Jane Doe
+     * @date 2026-06-28
+     * @param bc The batch context provided by the platform.
+     * @return A QueryLocator over the Account records eligible for deduplication.
+     */
+    public Database.QueryLocator start(Database.BatchableContext bc) { ... }
+}
+```
+
+This requirement is independent of, and in addition to, the `@TestSetup`/coverage rules in [Test Rules](#test-rules) below — the `@see` tag documents *which* test class provides coverage, it does not replace having one.
+
 ## Trigger Rules
 
 - One trigger per object when possible.
@@ -123,6 +164,7 @@ Design entry points in three clear tiers:
 
 Before considering Apex ready:
 
+- Every class, interface, trigger, and method touched has a complete ApexDoc block per [ApexDoc Comment Block (Mandatory)](#apexdoc-comment-block-mandatory): description, author, current last-modified date, group, params/return, and a `@see` to the related test class.
 - PMD has no unreviewed high-priority issues.
 - Tests cover the changed behavior.
 - No SOQL or DML is inside loops.
