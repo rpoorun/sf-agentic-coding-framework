@@ -2,13 +2,24 @@
 
 ## Purpose And Use
 
-This file owns the first-time setup interview that runs when this framework is installed into a project whose `.agents/project/*` files are still empty boilerplate. Read it the first time `AGENTS.md` is read in a session, before any other implementation work, whenever the detection condition below is met. Put the bootstrap detection rule, the required-tooling check, and the interview question set here; put the durable answers themselves in the relevant `.agents/project/*` file, never in this file.
+This file owns two first-time checks: (1) whether this framework itself should be committed to the repository's remote or kept local-only, and (2) the setup interview that runs when `.agents/project/*` is still empty boilerplate. Read it the first time `AGENTS.md` is read in a session, before any other implementation work, whenever either detection condition below is met. Put the bootstrap detection rules, the framework-persistence question, the required-tooling check, and the interview question set here; put the durable answers themselves in the relevant `.agents/project/*` file (or `.gitignore` for the persistence decision), never in this file.
 
 ## Detection: Is This Project Still Unconfigured?
 
 Treat the project as **not yet bootstrapped** if `.agents/project/ENVIRONMENT.md` still contains only its boilerplate placeholders (e.g. `{client name}-{project name}-{env}`, "Not yet documented") and/or most other `.agents/project/*.md` files still read "No durable ... details have been documented here yet." If the project is already configured (real org aliases, real architecture notes, etc. are present), skip this entire workflow and proceed with the normal [Default Work Pattern](../../AGENTS.md#default-work-pattern).
 
 When the detection condition is met, run this workflow before starting the user's actual task, unless the user's request is itself trivial/read-only (e.g. "what does this repo do") — in that case answer the request first, then offer to run the bootstrap interview.
+
+## Step 0 — Framework Persistence (Runs Once, Independent Of The Detection Above)
+
+This step has its own trigger, separate from the project-config detection above: run it the first time this framework is read in this repository's git context, regardless of whether `.agents/project/*` is already populated. Skip it if the decision has already been recorded (see below).
+
+Detection: run this check if `AGENTS.md` and `.agents/` are currently untracked by git (`git status --porcelain AGENTS.md .agents` shows them as `??`) **and** `.gitignore` does not yet contain a `# sf-agentic-coding-framework` marker line. If either `AGENTS.md`/`.agents/` are already tracked/committed, or the marker line already exists in `.gitignore`, the decision was already made — skip this step.
+
+1. Ask the user: "Should this AI-agent instruction framework (`AGENTS.md` and `.agents/`) be committed to this repository's remote and shared with the team, or kept local-only on this machine?"
+2. **If shared/remote**: take no special action — `AGENTS.md` and `.agents/` will be staged and committed normally as part of whatever the user later approves per [WORKFLOW.md](WORKFLOW.md) and [AGENT_GUARDRAILS.md](../directives/AGENT_GUARDRAILS.md). Record the decision by adding a `# sf-agentic-coding-framework: tracked in git (shared) — see PROJECT_BOOTSTRAP.md` comment line near the top of `.gitignore` (creating the file if it doesn't exist) so this question is not asked again.
+3. **If local-only**: add `AGENTS.md` and `.agents/` to `.gitignore` (with the same marker comment, e.g. `# sf-agentic-coding-framework: local-only, do not commit — see PROJECT_BOOTSTRAP.md`), then check whether they are already committed in this repo's history (`git log --oneline -- AGENTS.md .agents`). If they are, tell the user that `.gitignore` alone will not stop already-tracked files from being tracked, and ask whether to untrack them now via `git rm --cached -r AGENTS.md .agents` (leaves the files on disk, removes them from the index) — this is a Git write and requires explicit confirmation per [MANUAL_CONFIRMATION_GATES.md](../directives/MANUAL_CONFIRMATION_GATES.md) before running it.
+4. Either way, proceed to Step 1 below in the same turn — this question does not block the rest of bootstrap.
 
 ## Step 1 — Required Tooling Check
 

@@ -2,7 +2,28 @@
 
 ## Purpose And Use
 
-This file owns the repeatable pre-deploy conflict-check and test-coverage gates for any Salesforce sandbox or org deployment. Read it before running `sf project deploy validate`, `sf project deploy start`, or any dry-run/quick-deploy variant. Put deployment-time conflict detection, org/local merge rules, and Apex coverage gates here; put the day-to-day Git/task sequence in [WORKFLOW.md](WORKFLOW.md), and the manual-approval gates for the deploy command itself in [MANUAL_CONFIRMATION_GATES.md](../directives/MANUAL_CONFIRMATION_GATES.md).
+This file owns the repeatable environment-config check, pre-development retrieve, pre-deploy conflict-check, and test-coverage gates for any Salesforce sandbox or org work. Read it before generating new Apex/LWC/metadata, and before running `sf project deploy validate`, `sf project deploy start`, or any dry-run/quick-deploy variant. Put generation-time and deployment-time conflict detection, org/local merge rules, and Apex coverage gates here; put the day-to-day Git/task sequence in [WORKFLOW.md](WORKFLOW.md), and the manual-approval gates for the deploy command itself in [MANUAL_CONFIRMATION_GATES.md](../directives/MANUAL_CONFIRMATION_GATES.md).
+
+## Environment Config Check (Mandatory, Runs First)
+
+Before any deploy attempt — and before the [Pre-Development Retrieve](#pre-development-retrieve-mandatory) step, since that also needs a target org — check [ENVIRONMENT.md](../project/ENVIRONMENT.md):
+
+1. If it does not exist, or still contains only its boilerplate placeholders (e.g. `{client}-{project}-{env}`, "Not yet documented" — see the detection condition in [PROJECT_BOOTSTRAP.md](PROJECT_BOOTSTRAP.md#detection-is-this-project-still-unconfigured)), do not guess an org alias and do not proceed with the deploy.
+2. Ask the user which authenticated org should be the default development org for this deploy. If none is authenticated yet, point them to `sf org login web --alias <alias>` (or the appropriate auth flow) first.
+3. Once the user names an org/alias, ask a second, separate question: should this be saved as the project's default dev org in `ENVIRONMENT.md` for future sessions, or used for this deploy only? Do not persist it without an explicit yes — some users may be naming a one-off target (e.g. a personal scratch org) that should not become the recorded default.
+4. If the user says yes, write the alias into `ENVIRONMENT.md`'s Connected Orgs table (replacing the placeholder row), following the `{client name}-{project name}-{env}` naming convention already documented there. If the user says no, proceed with the named org for the current task only and leave `ENVIRONMENT.md` untouched.
+5. If `ENVIRONMENT.md` already has a real (non-boilerplate) default dev org recorded, skip this check and use it — do not re-ask every deploy.
+
+This check is narrower than the full [Project Bootstrap](PROJECT_BOOTSTRAP.md) interview: it only resolves the org needed to proceed with the current deploy, it does not run the full first-install question set. If the project is entirely unconfigured (not just missing the org), prefer running the full bootstrap interview instead of this single question.
+
+## Pre-Development Retrieve (Mandatory)
+
+The first time in a session that work begins on a given Apex class, LWC component, or metadata member, retrieve that member from the development org before generating or editing it — even if local source already exists for it. This catches changes made directly in the org (declaratively, by another developer, or by a prior session) that local source does not yet reflect, before new generated code is layered on top of a stale local copy.
+
+1. Identify the target member(s) about to be created or edited and the development org alias.
+2. Retrieve those specific member(s) from the dev org (`sf project retrieve start`, scoped to the member(s) — not a full retrieve).
+3. If the org version differs from local, treat it exactly like the [Pre-Deploy Conflict Check](#pre-deploy-conflict-check-mandatory) below: merge org-only elements into local before generating new code, and escalate to the user per [Conflict Resolution](#conflict-resolution) if the same element conflicts.
+4. Only after the retrieve-and-merge step is clean does code generation begin. This is a one-time check per member per session — do not re-retrieve on every subsequent edit to the same member within the same session unless the user indicates the org may have changed (e.g. another developer is also active).
 
 ## Pre-Deploy Conflict Check (Mandatory)
 

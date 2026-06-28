@@ -24,6 +24,8 @@ metadata:
 
 Before authoring, apply the [Lean Decision Ladder](../../standards/LEAN_CODE_STANDARDS.md#the-lean-decision-ladder-apexlwc-refactor-of-ponytail): prefer an existing Lightning Base Component, shared LWC utility, or `@wire` adapter over a new component or hand-rolled plumbing, and build the smallest correct bundle once the requirement is understood. Lean does not relax accessibility, loading/empty/error states, or CRUD/FLS-safe Apex calls — see "Not Lazy About" in that file.
 
+The first time in a session you touch a given component, retrieve it from the dev org first per [Pre-Development Retrieve](../../workflows/DEPLOYMENT.md#pre-development-retrieve-mandatory) — do not generate or edit on top of a local copy that may be stale relative to the org.
+
 Use this skill when the user needs **Lightning Web Components**: LWC bundles, wire patterns, Apex/GraphQL integration, SLDS 2 styling, accessibility, performance work, or Jest unit tests.
 
 ## When This Skill Owns the Task
