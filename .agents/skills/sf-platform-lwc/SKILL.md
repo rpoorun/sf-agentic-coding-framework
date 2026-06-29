@@ -103,6 +103,30 @@ Use:
 
 ---
 
+## JSDoc Comment Block (Mandatory)
+
+Every exported class/component and every non-trivial method/function in generated or modified JS must carry a JSDoc header using the same author-identity rule as Apex (see [SALESFORCE_APEX_STANDARDS.md](../../standards/SALESFORCE_APEX_STANDARDS.md#apexdoc-comment-block-mandatory)):
+
+```js
+/**
+ * @description       : {What this component/class does and why.}
+ * @author            : {author_name} <{author_email}>
+ * @group             : {Logical grouping, e.g. UI Components}
+ * @last modified on  : {DD-MM-YYYY}
+ * @last modified by  : {author_name} <{author_email}>
+ */
+export default class ExampleComponent extends LightningElement { ... }
+
+/**
+ * @description {What this method does and why, if non-obvious.}
+ * @author      {author_name}
+ * @param       {recordId} The record Id to load.
+ * @return      {Promise<Object>} Resolves with the loaded record data.
+ */
+```
+
+If `.agents/project/ENVIRONMENT.md` does not yet have an author name/email recorded, ask the user before generating the first header in the session — same rule as Apex, never write an AI/tool name as the author.
+
 ## High-Signal Rules
 
 - prefer platform base components over reinventing controls

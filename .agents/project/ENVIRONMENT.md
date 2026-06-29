@@ -8,6 +8,17 @@ This is a boilerplate template. Replace every `{client}` and `{project}` placeho
 
 This project uses named Salesforce CLI aliases for day-to-day org work. Do not store access tokens, refresh tokens, credentials, private keys, or session details in this repository.
 
+## Author Identity
+
+Used as the `@author`/`@last modified by` value in every generated Apex and LWC comment header — see [SALESFORCE_APEX_STANDARDS.md](../standards/SALESFORCE_APEX_STANDARDS.md#author-identity-required). If this is blank, the agent must ask the user for it before generating the first class/method comment header in the session, then ask separately whether to persist it here.
+
+| Field | Value |
+| --- | --- |
+| Author name | Not yet configured |
+| Author email | Not yet configured |
+
+Never write an AI/model/tool name (e.g. `OpenAI`, `Anthropic`, `Claude`, `ChatGPT`, `Copilot`) as the author. This file may contain a real personal email for local use — but per [AGENTIC_FRAMEWORK.md](../directives/AGENTIC_FRAMEWORK.md#sanitizing-instructions-before-any-master-framework-contribution), never carry a real name/email from this section into anything proposed back to the master framework repository.
+
 ## Required Tooling
 
 See [PROJECT_BOOTSTRAP.md](../workflows/PROJECT_BOOTSTRAP.md#step-1--required-tooling-check) for the full check. At minimum this project requires: Salesforce CLI (`sf`), Git, and the `sfdx-git-delta` plugin for scoped delta deploys (see [DEPLOYMENT.md](../workflows/DEPLOYMENT.md)). Record locally-confirmed versions here once verified.

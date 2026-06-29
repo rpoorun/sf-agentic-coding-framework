@@ -100,6 +100,10 @@ When proposing or completing work, be exact:
 - Name deploy or validation IDs when applicable.
 - State what was not done because it requires manual confirmation.
 
+## Code Comment Authorship
+
+Generated Apex and LWC comment headers (`@author`/`@last modified by`) must use the project's configured human author identity from [ENVIRONMENT.md](../project/ENVIRONMENT.md#author-identity) — see [SALESFORCE_APEX_STANDARDS.md](../standards/SALESFORCE_APEX_STANDARDS.md#author-identity-required) for the full rule and the just-in-time question to ask when it is missing. Never attribute generated code comments to an AI model, assistant, or tool (e.g. `OpenAI`, `Anthropic`, `Claude`, `ChatGPT`, `GPT`, `Copilot`, `Gemini`, `AI Assistant`) under any circumstance.
+
 ## Chat Brevity While Working
 
 While the user is waiting in the chat session for work to complete (reading, searching, editing, running checks), keep interim status text to a maximum of one short phrase per update — state what is happening, not why or how, and skip narration of routine tool calls entirely when no update is needed.
