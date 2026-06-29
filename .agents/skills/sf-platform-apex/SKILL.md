@@ -38,6 +38,7 @@ Gather or infer before authoring:
 - Class name (derive using the naming table below)
 - Net-new vs refactor/fix; any org/API constraints
 - Deployment targets (default to runSpecifiedTests and use generated tests where applicable)
+- **Access grant for new top-level (outer) classes**: if the prompt does not already say which Permission Set(s) should grant Apex Class Access to the new class, ask the user before finishing the task — do not guess or silently skip it, and do not grant access by default. Ask: "Which Permission Set(s) should have Apex Class Access to `{ClassName}`?" If the user has no Permission Set in mind, offer Profile-based access as a fallback but note it is less recommended (broader, harder to audit, conflicts with least-privilege — see [SALESFORCE_APEX_STANDARDS.md](../../standards/SALESFORCE_APEX_STANDARDS.md) and `sf-platform-permissions`). Skip this question only for inner/nested classes, test classes, and trigger handler classes that are never called directly from Flow/LWC/API (no direct Apex Class Access entry needed). Delegate the actual Permission Set/Profile metadata edit to `sf-platform-permissions`.
 
 Defaults unless specified:
 - Sharing: `with sharing` (see sharing rules per type below)
@@ -385,6 +386,7 @@ Deliverables per class:
 - `{ClassName}.cls-meta.xml` (default API version `66.0` or higher unless specified)
 - `{ClassName}Test.cls` (generated via `platform-apex-test-generate` skill)
 - `{ClassName}Test.cls-meta.xml` (generated via `platform-apex-test-generate` skill)
+- For new top-level classes: the Permission Set(s) (or, if the user chose the less-recommended fallback, Profile) granted Apex Class Access, per the answer gathered in Required Inputs — generated/updated via `sf-platform-permissions`
 
 Deliverables per trigger:
 - `{TriggerName}.trigger`
@@ -406,6 +408,7 @@ Report in this order:
 Apex work: <summary>
 Files: <paths>
 Design: <pattern / framework choices>
+Access: <Permission Set(s) granted Apex Class Access for each new top-level class, or "N/A -- inner/test/trigger-handler class">
 Workflow: all steps completed (1-8); any N/A justified
 Risks: <security, bulkification, async, dependency notes>
 Analyzer: <REQUIRED -- paste actual run_code_analyzer output or state "run_code_analyzer=unavailable: <reason>">
