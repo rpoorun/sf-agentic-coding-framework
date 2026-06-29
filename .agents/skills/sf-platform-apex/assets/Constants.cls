@@ -3,12 +3,13 @@
 // See .agents/standards/APEX_CONSTANTS_FRAMEWORK.md for usage rules.
 // Add one static property below per {SObject}Constants class created under concrete-constants/.
 /**
- * @description Root accessor exposing each {SObject}Constants singleton via a lazily-initialized static property.
- * @author {Author}
- * @date {YYYY-MM-DD}
- * @group Constants
- * @see ConstantsTest
- */
+ * @description       : Root accessor exposing each {SObject}Constants singleton via a lazily-initialized static property.
+ * @author            : {author_name} <{author_email}>
+ * @group             : Constants
+ * @last modified on  : {DD-MM-YYYY}
+ * @last modified by  : {author_name} <{author_email}>
+ * @test              : ConstantsTest
+ **/
 @SuppressWarnings('PMD.PropertyNamingConventions')
 public class Constants {
     public static final AccountConstants ACCOUNT {

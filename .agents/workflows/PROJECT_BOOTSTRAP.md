@@ -59,6 +59,10 @@ Ask the questions below **one at a time**, waiting for each answer before asking
 8. "What is the client/customer identifier and the project identifier to use in the org alias convention `{client name}-{project name}-{env}`?" (See [ENVIRONMENT.md](../project/ENVIRONMENT.md#org-alias-naming-convention).)
 9. "Does this project already follow a specific Apex/LWC naming or layering convention beyond this framework's defaults, or should the framework defaults in [SALESFORCE_APEX_STANDARDS.md](../standards/SALESFORCE_APEX_STANDARDS.md) apply as-is?"
 
+### E. Author identity
+
+10. "What name and email should be used as the `@author`/`@last modified by` value in generated Apex and LWC comment headers?" (See [ENVIRONMENT.md](../project/ENVIRONMENT.md#author-identity).) This question is also asked just-in-time, independent of this full interview, the first time the framework needs to generate a class/method comment header and no author is recorded yet — see [Author Identity (Required)](../standards/SALESFORCE_APEX_STANDARDS.md#author-identity-required).
+
 ## Step 3 — Persist The Answers
 
 After the interview, propose where each answer will be written (per the existing permission-to-persist rule in [AGENTIC_FRAMEWORK.md](../directives/AGENTIC_FRAMEWORK.md)) before writing:
@@ -69,6 +73,7 @@ After the interview, propose where each answer will be written (per the existing
 | Git remote, branch convention | [PROJECT_STRUCTURE.md](../project/PROJECT_STRUCTURE.md) and/or [WORKFLOW.md](WORKFLOW.md). |
 | Team size, conflict resolution, release tooling | [WORKFLOW.md](WORKFLOW.md) — add a "Project Process" section documenting the team's actual conflict-resolution and release process (this supersedes generic guidance, it does not duplicate it). |
 | Naming/layering conventions | [SALESFORCE_PROJECT_BEST_PRACTICES.md](../standards/SALESFORCE_PROJECT_BEST_PRACTICES.md), only if the project's convention differs from the framework default — note the override there rather than rewriting the default. |
+| Author name/email | [ENVIRONMENT.md](../project/ENVIRONMENT.md#author-identity) — only after the user explicitly agrees to persist it; otherwise use it for the current session's generated comment headers only. |
 
 Never write personal credentials, tokens, or session details discovered during this interview into any tracked file — see [TRUST_DATA_SECURITY.md](../directives/TRUST_DATA_SECURITY.md).
 

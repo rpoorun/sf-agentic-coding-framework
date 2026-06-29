@@ -3,10 +3,10 @@
 | Field | Value |
 | --- | --- |
 | Framework | sf-agentic-coding-framework |
-| Version | 0.0.4 |
+| Version | 0.0.5 |
 | Author | Rishikesh Poorun |
 | Master repository | https://github.com/rpoorun/sf-agentic-coding-framework |
-| Last updated | 2026-06-28 |
+| Last updated | 2026-06-29 |
 | License | Apache License 2.0 |
 
 ## Purpose And Use

@@ -212,18 +212,19 @@ Additional naming rules:
 
 ### ApexDoc
 
-Required on **every** class/interface/trigger header and **every** method (not just `public`/`global`) — see [SALESFORCE_APEX_STANDARDS.md](../../standards/SALESFORCE_APEX_STANDARDS.md#apexdoc-comment-block-mandatory) for the full mandated header shape: description, `@author`, `@date` (last modified), `@group`, `@param`/`@return` for every input/output, and `@see` linking the related test class.
+Required on **every** class/interface/trigger header and **every** method (not just `public`/`global`), in the exact tag set and alignment below — see [SALESFORCE_APEX_STANDARDS.md](../../standards/SALESFORCE_APEX_STANDARDS.md#apexdoc-comment-block-mandatory) for the full rules. Before generating the first header in a session, confirm an author name/email is configured in [ENVIRONMENT.md](../../project/ENVIRONMENT.md#author-identity) — if not, ask the user; never write an AI/tool name as the author.
 
 Class-level format:
 
 ```apex
 /**
- * @description Provides services for geolocation and address conversion.
- * @author Jane Doe
- * @date 2026-06-28
- * @group Geolocation
- * @see GeolocationServiceTest
- */
+ * @description       : {What this class does and why.}
+ * @author            : {author_name} <{author_email}>
+ * @group             : {Logical grouping, e.g. UTILS}
+ * @last modified on  : {DD-MM-YYYY}
+ * @last modified by  : {author_name} <{author_email}>
+ * @test              : {RelatedTestClassName}
+ **/
 public with sharing class GeolocationService { }
 ```
 
@@ -231,13 +232,10 @@ Method-level format:
 
 ```apex
 /**
- * @description Converts a street address into latitude/longitude coordinates.
- * @author Jane Doe
- * @date 2026-06-28
- * @param address The street address to geocode.
- * @return The resolved Geolocation, or null if the address could not be resolved.
- * @example
- * List<Account> results = AccountService.deduplicateAccounts(accountIds);
+ * @description {What this method does and why, if non-obvious.}
+ * @author      {author_name}
+ * @param       address The street address to geocode.
+ * @return      The resolved Geolocation, or null if the address could not be resolved.
  */
 ```
 
