@@ -90,6 +90,7 @@ Usually exclude:
 - local PMD reports
 - scratch scripts
 - generated package files not requested by the user
+- `.agents/.update-check` (the daily update-check marker — operational state, never framework content)
 
 ## Communication Standard
 
