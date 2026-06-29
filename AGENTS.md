@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | Framework | sf-agentic-coding-framework |
-| Version | 0.0.6 |
+| Version | 0.0.7 |
 | Author | Rishikesh Poorun |
 | Master repository | https://github.com/rpoorun/sf-agentic-coding-framework |
 | Last updated | 2026-06-29 |
@@ -14,6 +14,8 @@
 `AGENTS.md` is the first file AI-assisted coding agents must read in this repository. Use it as the router for mandatory directives, project facts, workflow steps, quality standards, and skill-routing guidance before changing source, metadata, documentation, org state, or Git state.
 
 If `AGENTS.md`/`.agents/` are not yet tracked by git and no persistence decision is recorded in `.gitignore`, or `.agents/project/*` is still empty/boilerplate, run [Project Bootstrap](.agents/workflows/PROJECT_BOOTSTRAP.md) before other work — it asks whether this framework should be committed to the remote or kept local-only, then interviews the user to populate org, VCS, team, and process facts.
+
+In a local install, also run the [Daily Update Check](.agents/directives/AGENTIC_FRAMEWORK.md#daily-update-check-automatic) once per calendar day to see whether the master repository has a newer framework version.
 
 ## Project Guidance
 
@@ -65,7 +67,7 @@ This `AGENTS.md` + `.agents/` framework is mirrored from a master repository: **
 
 | File | Intended purpose |
 | --- | --- |
-| [AGENTIC_FRAMEWORK.md](.agents/directives/AGENTIC_FRAMEWORK.md) | Governing framework for classifying, maintaining, and reusing agent instructions. |
+| [AGENTIC_FRAMEWORK.md](.agents/directives/AGENTIC_FRAMEWORK.md) | Governing framework for classifying, maintaining, and reusing agent instructions; also owns the daily master-repo update check and the pull/contribute-back sync workflow. |
 | [AGENT_GUARDRAILS.md](.agents/directives/AGENT_GUARDRAILS.md) | Mandatory repo-wide behavioral guardrails, source-control safety, org safety, and communication rules. |
 | [TRUST_DATA_SECURITY.md](.agents/directives/TRUST_DATA_SECURITY.md) | Trust boundaries, data handling, security, sanitization, logging, and mutation rules. |
 | [MANUAL_CONFIRMATION_GATES.md](.agents/directives/MANUAL_CONFIRMATION_GATES.md) | Actions that require human approval before proceeding. |

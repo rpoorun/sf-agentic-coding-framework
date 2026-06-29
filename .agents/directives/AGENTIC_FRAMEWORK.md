@@ -47,6 +47,18 @@ This repository (`AGENTS.md` plus `.agents/`) is itself a reusable framework. It
 
 Once this framework is cloned or installed into a client/project repository (a "local install"), that local install diverges over time: it picks up project-specific facts in `.agents/project/`, client-specific overrides in standards/workflows, and possibly new or re-synthesized skills. Two sync directions are expected and must be handled differently.
 
+### Daily Update Check (Automatic)
+
+In a local install (this check does not apply when working directly in the master repository itself — compare the local install's `AGENTS.md` "Master repository" field against the repo currently being worked in; skip if they match), check once per calendar day whether the master framework has a newer version than what's installed locally:
+
+1. Track the last check date in a local-only marker file, `.agents/.update-check` (one line: `YYYY-MM-DD`). This file is operational state, not framework content — it must never be proposed for contribution back to the master repo, and should be added to `.gitignore` alongside the framework-persistence decision from [PROJECT_BOOTSTRAP.md](../workflows/PROJECT_BOOTSTRAP.md#step-0--framework-persistence-runs-once-independent-of-the-detection-above) if local-only tracking was chosen.
+2. At the start of the first turn in a session, compare today's date to the marker file. If the marker already shows today's date, skip the rest of this check for the remainder of the day.
+3. Otherwise, read the master repository's current version with a lightweight, read-only fetch — no full clone needed. For example: `gh api repos/rpoorun/sf-agentic-coding-framework/contents/AGENTS.md --jq '.content' | base64 -d | grep -m1 '| Version |'` (or `curl` against the raw file URL). This is a read-only network call and does not require confirmation under [MANUAL_CONFIRMATION_GATES.md](MANUAL_CONFIRMATION_GATES.md).
+4. Compare the master's version to the local install's `AGENTS.md` "Version" field. Update the marker file with today's date regardless of the outcome, so the check does not repeat later the same day.
+5. If the master version is newer, **do not silently apply it**: tell the user a newer framework version is available (state both version numbers) and run [Scenario 1](#scenario-1--pulling-framework-updates-into-a-local-install-update--upgrade) below to fetch, diff, and classify the changes. The minor/major classification and approval gates in Scenario 1 still apply in full — the only thing this daily check automates is *noticing* the update exists; it never skips the approval step for major changes or conflicts.
+6. If the user is mid-task when the check fires, mention the available update briefly (one phrase, per [Chat Brevity While Working](AGENT_GUARDRAILS.md#chat-brevity-while-working)) and offer to run the update now or after the current task — do not interrupt unrelated work to force the update through immediately.
+7. If the read-only version check itself fails (no network, repo unreachable, rate-limited), do not block or retry-loop; note it once and continue normally. Do not update the marker file on a failed check, so it retries on the next turn instead of waiting a full day.
+
 ### Scenario 1 — Pulling Framework Updates Into A Local Install (Update / Upgrade)
 
 Trigger: the user of a local install wants the latest directives, standards, skills, or workflow updates from the master framework repository (new release, or `main`/`master` HEAD).
