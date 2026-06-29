@@ -22,7 +22,7 @@ metadata:
 
 ## When to Use This Skill
 
-Use when generating or editing permission set metadata, or when granting object, field, user, and app permissions.
+Use when generating or editing permission set metadata, or when granting object, field, user, and app permissions. Also use this skill when `sf-platform-apex` asks the user which Permission Set should receive Apex Class Access for a newly generated top-level class, and the user names a Permission Set (or, less recommended, a Profile) — apply the access grant via this skill rather than hand-editing the class metadata.
 
 ## Step 1: Define Core Properties
 
