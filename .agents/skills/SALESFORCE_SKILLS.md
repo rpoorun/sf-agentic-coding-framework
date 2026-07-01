@@ -91,7 +91,7 @@ PMD and security gates do not disappear because a skill suggests a faster path.
 | Sharing rules | `sf-platform-sharing` | Apply least-privilege sharing; security-review criteria-based and owner-based rules that widen access. |
 | Validation rules | `sf-platform-validation` | Preserve existing formula logic unless the user asks to replace it; use CDATA for formulas containing XML-sensitive characters. |
 | Platform/official documentation lookup | `sf-platform-docs` | Use to ground answers in official Salesforce documentation before generating metadata or code. |
-| Flows, Process Builder migration | `sf-platform-flow` | Prefer grounded org metadata and draft-safe deployment; active vs draft state must be reported. |
+| Flows, Process Builder migration | `sf-platform-flow` | Prefer grounded org metadata and draft-safe local generation. New or regenerated Flow metadata must default to Draft unless the user explicitly requests activation. Active vs draft state must be reported. |
 | Lightning Web Components | `sf-platform-lwc` | Use SLDS, accessible states, no unsafe client trust, no console logs at delivery, and preserve existing project conventions. |
 | SLDS application | `sf-design-slds-apply` | Do not override Salesforce base component internals; prefer styling hooks and SLDS tokens. |
 | SLDS validation | `sf-design-slds-validate` | Run before delivery on any UI work; treat failures the same as a failing lint/test gate. |
@@ -206,6 +206,7 @@ Flows and FlexiPages (`sf-platform-flow`, `sf-platform-flexipage`):
 
 - Prefer official generation/bootstrap paths where available.
 - Do not manually invent complex Flow XML if grounded generation tooling is required by the environment.
+- Generate or correct local Flow metadata with `<status>Draft</status>` by default. Use `<status>Active</status>` only when the current user instruction explicitly and clearly asks to activate the flow or preserve an already-active source state.
 - Distinguish draft, latest, and active Flow versions.
 - Validate page component references and target objects before deployment.
 
@@ -227,7 +228,7 @@ Preferred deployment order:
 2. Permission sets.
 3. Apex.
 4. Flows as draft.
-5. Flow activation and post-deploy verification.
+5. Flow activation and post-deploy verification, only after explicit approval for activation.
 
 ## Data Operation Adaptation
 

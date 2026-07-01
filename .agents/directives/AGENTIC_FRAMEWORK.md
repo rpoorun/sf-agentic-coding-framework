@@ -86,6 +86,24 @@ Procedure:
 5. Treat pushing to, branching, or opening a PR against the master repository as a Git/source-control action requiring explicit user confirmation under the existing confirmation gates (see [AGENT_GUARDRAILS.md](AGENT_GUARDRAILS.md) and [MANUAL_CONFIRMATION_GATES.md](MANUAL_CONFIRMATION_GATES.md)) — do not push or open a PR without that confirmation.
 6. After the user approves, perform the fork/branch/PR with the isolated content only, and report the resulting URL back to the user.
 
+### Code And Metadata Generation Lessons
+
+When the reusable learning comes from generating or correcting Apex, LWC, Flow, metadata, deployment instructions, tests, or permission/security configuration in a local install, treat it as a candidate upstream improvement when it is not tied to one client, org, ticket, object model, or business process.
+
+Use this contribution path:
+
+1. Extract the generic lesson from the local install. Keep the behavior pattern, safety rule, validation step, or implementation constraint; remove all project names, ticket IDs, org aliases, record IDs, URLs, user names, and client-specific examples.
+2. Classify the target file in the master framework:
+   - skill behavior or generation constraints -> `.agents/skills/<skill>/SKILL.md` and, when routing changes, `.agents/skills/SALESFORCE_SKILLS.md`;
+   - mandatory safety or confirmation behavior -> `.agents/directives/*`;
+   - ordered delivery or PR/deploy process -> `.agents/workflows/*`;
+   - reusable quality expectations -> `.agents/standards/*`.
+3. Work in a dedicated branch or fork of `https://github.com/rpoorun/sf-agentic-coding-framework`, never directly in a client repository branch.
+4. Edit only the generic master-framework files needed for the learned rule. Do not include `.agents/project/*`, local install files, retrieved Salesforce metadata, generated package files, or project-specific docs.
+5. Add a concise changelog entry describing the reusable learning.
+6. Re-check the diff for sanitized content and scope before committing.
+7. Push the branch or fork and open a pull request against the master framework's integration branch, usually `develop`, with a PR body that states the source learning in generic terms and names the affected skill/directive/workflow files.
+
 ### Sanitizing Instructions Before Any Master Framework Contribution
 
 Always sanitize instruction content before it is proposed, forked, branched, or pushed toward the master framework repository, even in a draft or preview. This applies whenever step 2 of Scenario 2 is performed, and any other time content from `.agents/` or `AGENTS.md` is shared outside the local install.
