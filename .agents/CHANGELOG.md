@@ -6,6 +6,14 @@ This file records all notable changes to `sf-agentic-coding-framework` in human-
 
 ---
 
+## [Unreleased]
+
+### Added
+- Draft-safe Flow generation guidance: generated or corrected Flow metadata now defaults to `<status>Draft</status>` unless the user explicitly requests activation, with the rule recorded in `SALESFORCE_SKILLS.md` and `sf-platform-flow/SKILL.md`.
+- Generic contribution-back workflow for reusable lessons learned during Apex, LWC, Flow, metadata, deployment, test, or permission/security generation in local installs.
+
+---
+
 ## [0.0.8] — 2026-07-01
 
 ### Added
