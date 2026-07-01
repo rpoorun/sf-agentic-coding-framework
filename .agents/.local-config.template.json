@@ -1,0 +1,11 @@
+{
+  "_info": "Template only — copy this file to .local-config.json in the same directory. That copy is gitignored and must never be committed. Edit .local-config.json with real values; this template stays generic and IS tracked in git so new installs know the expected shape.",
+  "identity": {
+    "author_name": "",
+    "author_email": ""
+  },
+  "update_check": {
+    "last_checked_utc": "",
+    "last_known_version": ""
+  }
+}

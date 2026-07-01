@@ -1,0 +1,11 @@
+# sf-agentic-coding-framework: framework persistence decision recorded here — see PROJECT_BOOTSTRAP.md
+
+# Local-only agent config: personal identity, credentials, and update-check state — never commit
+.agents/.local-config.json
+
+# Legacy single-line update-check marker (superseded by .local-config.json in v0.0.8)
+.agents/.update-check
+
+# Salesforce DX scratch directories
+.sfdx/
+.sf/
