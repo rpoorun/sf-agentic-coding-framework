@@ -24,6 +24,16 @@ metadata:
 
 Generate Salesforce Flow metadata by running the required 3-step MCP pipeline (fetchGroundedObjectMetadata → flowElementSelection → flowElementGeneration) and return the flow XML.
 
+## Draft-Safe Generation Rule
+
+Generated or corrected local Flow metadata must default to Draft. Unless the current user instruction explicitly and clearly asks to activate the flow, set the final XML to:
+
+```xml
+<status>Draft</status>
+```
+
+Use `<status>Active</status>` only when the user explicitly requests activation or explicitly asks to preserve an already-active source state. This `<status>` safety normalization is the only permitted post-generation XML edit before writing the local file; do not alter other generated nodes unless the user is fixing validation or deployment errors. Always report whether the delivered Flow source is Draft, latest, or active.
+
 ## When to Use This Skill
 
 Use this skill when you need to:
@@ -108,6 +118,7 @@ Generates flow metadata element by element. This step is **mandatory** and must 
 - DO NOT modify the content, values, or child nodes inside any block.
 - DO NOT add new nodes, tags, attributes, or text (do not add missing labels, X/Y coordinates, etc.).
 - DO NOT remove any existing nodes.
+- Exception: after the final XML is generated, normalize only the top-level `<status>` value to `Draft` unless the user explicitly requested activation or preserving an active source state.
 
 ## inflightMetadata Format
 **DATA TYPE: ARRAY (not string)**
@@ -356,6 +367,7 @@ Call repeatedly with the same `operationId` until `isComplete` is `true` or erro
 - **NEVER** skip any step in the pipeline. All 3 steps are required.
 - **NEVER** try to generate flow metadata without calling all 3 steps.
 - **NEVER** deviate from this pipeline under any circumstance — even if you think you know the flow structure.
+- Generated local Flow metadata must be delivered as Draft by default. Use Active only when the user explicitly requests activation or preserving an active source state.
 - For single flow requests: you MUST use the user prompt as `userPrompt`.
 - For multiple flow requests: you MUST run a separate 3-step pipeline for each flow **SEQUENTIALLY (one after another, NEVER in parallel)**, and you MUST execute ALL of them — do NOT stop after the first flow.
 - You MUST put flow requirements in `userPrompt`, NOT in `inflightMetadata`.
@@ -383,7 +395,9 @@ Call repeatedly with the same `operationId` until `isComplete` is `true` or erro
 - [ ] **Step 3** is called in a loop with the same `operationId` from Step 2 until `isComplete` is `true` or errors are returned — **no pausing, no asking the user to continue, no matter how many iterations**
 - [ ] **Multi-flow**: Each flow's full pipeline is completed before starting the next flow's pipeline (no interleaving)
 - [ ] **result** field is used to extract the XML flow metadata only when `isComplete` is `true`
+- [ ] **Draft-safe status**: the final local Flow XML uses `<status>Draft</status>` unless the user explicitly requested activation or preserving active source state
 - [ ] **No additions to XML**: NO elements, attributes, or properties were added that were not present in the original pipeline output. Nothing was inserted (no `<label>`, `<description>`, or any other node). The final XML must be identical to what the pipeline returned.
+- [ ] **Status exception only**: the only safety normalization allowed before writing local XML is changing the top-level `<status>` value to `Draft`
 - [ ] **Error fix exception**: If the user explicitly requested fixes to validation/deployment errors, targeted manual edits to the XML are permitted and the "No additions to XML" / "No manual metadata" constraints do not apply to those edits.
 
 ---
@@ -452,7 +466,7 @@ Every record-triggered flow should start with a Decision element checking:
     <triggerType>RecordBeforeSave</triggerType>
     <objectType>Account</objectType>
     <triggerOrder>1</triggerOrder>
-    <status>Active</status>
+    <status>Draft</status>
     <!-- Elements go here -->
 </Flow>
 ```
