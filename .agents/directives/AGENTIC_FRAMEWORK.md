@@ -51,11 +51,11 @@ Once this framework is cloned or installed into a client/project repository (a "
 
 In a local install (this check does not apply when working directly in the master repository itself — compare the local install's `AGENTS.md` "Master repository" field against the repo currently being worked in; skip if they match), check once per calendar day whether the master framework has a newer version than what's installed locally:
 
-1. Track the last check date in a local-only marker file, `.agents/.update-check` (one line: `YYYY-MM-DD`). This file is operational state, not framework content — it must never be proposed for contribution back to the master repo, and should be added to `.gitignore` alongside the framework-persistence decision from [PROJECT_BOOTSTRAP.md](../workflows/PROJECT_BOOTSTRAP.md#step-0--framework-persistence-runs-once-independent-of-the-detection-above) if local-only tracking was chosen.
-2. At the start of the first turn in a session, compare today's date to the marker file. If the marker already shows today's date, skip the rest of this check for the remainder of the day.
+1. Track the last check in a local-only configuration file, `.agents/.local-config.json`. Read the `update_check.last_checked_utc` field (ISO 8601 UTC datetime, e.g. `"2026-07-01T08:00:00Z"`). If the file does not yet exist, create it from `.agents/.local-config.template.json` (tracked template in the same folder) before proceeding. This file is operational state, not framework content — it must never be proposed for contribution back to the master repo, and must be listed in `.gitignore` regardless of the framework-persistence decision (see [PROJECT_BOOTSTRAP.md](../workflows/PROJECT_BOOTSTRAP.md#step-0--framework-persistence-runs-once-independent-of-the-detection-above)).
+2. At the start of the first turn in a session, extract the calendar date from `last_checked_utc` and compare to today's local date. If the recorded date is already today, skip the rest of this check for the remainder of the session.
 3. Otherwise, read the master repository's current version with a lightweight, read-only fetch — no full clone needed. For example: `gh api repos/rpoorun/sf-agentic-coding-framework/contents/AGENTS.md --jq '.content' | base64 -d | grep -m1 '| Version |'` (or `curl` against the raw file URL). This is a read-only network call and does not require confirmation under [MANUAL_CONFIRMATION_GATES.md](MANUAL_CONFIRMATION_GATES.md).
-4. Compare the master's version to the local install's `AGENTS.md` "Version" field. Update the marker file with today's date regardless of the outcome, so the check does not repeat later the same day.
-5. If the master version is newer, **do not silently apply it**: tell the user a newer framework version is available (state both version numbers) and run [Scenario 1](#scenario-1--pulling-framework-updates-into-a-local-install-update--upgrade) below to fetch, diff, and classify the changes. The minor/major classification and approval gates in Scenario 1 still apply in full — the only thing this daily check automates is *noticing* the update exists; it never skips the approval step for major changes or conflicts.
+4. Compare the master's version to the local install's `AGENTS.md` "Version" field. Update `.agents/.local-config.json` — set `update_check.last_checked_utc` to the current UTC datetime and `update_check.last_known_version` to the master version just read — regardless of the outcome, so the check does not repeat later the same day.
+5. If the master version is newer, **do not silently apply it**: tell the user a newer framework version is available (state both version numbers), relay the relevant [CHANGELOG.md](../CHANGELOG.md) entries so the user understands what changed, and run [Scenario 1](#scenario-1--pulling-framework-updates-into-a-local-install-update--upgrade) below to fetch, diff, and classify the changes. After the merge is approved and applied, re-run [Step 1 — Required Tooling Check](../workflows/PROJECT_BOOTSTRAP.md#step-1--required-tooling-check) to catch any new tool dependencies introduced by the updated framework version. The minor/major classification and approval gates in Scenario 1 still apply in full — the only thing this daily check automates is *noticing* the update exists; it never skips the approval step for major changes or conflicts.
 6. If the user is mid-task when the check fires, mention the available update briefly (one phrase, per [Chat Brevity While Working](AGENT_GUARDRAILS.md#chat-brevity-while-working)) and offer to run the update now or after the current task — do not interrupt unrelated work to force the update through immediately.
 7. If the read-only version check itself fails (no network, repo unreachable, rate-limited), do not block or retry-loop; note it once and continue normally. Do not update the marker file on a failed check, so it retries on the next turn instead of waiting a full day.
 
@@ -101,6 +101,20 @@ Scan for and remove or genericize:
 For every `.agents/project/*` file specifically: project files are local-only by definition (see Scenario 1, step 7) and must never be forked or pushed to the master repository at all, sanitized or not. If a pattern discovered in a project file is generally useful, extract the *generic lesson* into the appropriate `directives`, `standards`, `skills`, or `workflows` file as a boilerplate example (placeholders, not real facts) — do not push the project file itself.
 
 When in doubt whether a string is client-identifying, treat it as client-identifying and ask the user before including it in anything destined for the master repository.
+
+## Pre-Merge Checklist (Required Before Every Merge To `main`)
+
+Before proposing or executing a merge from `develop` (or any feature branch) to `main`, confirm all of the following:
+
+1. **Bump the version** in `AGENTS.md` (the `| Version |` header field) and in `README.md` if it also carries a version field.
+2. **Update `CHANGELOG.md`** (`.agents/CHANGELOG.md`) — add a new `## [x.y.z] — YYYY-MM-DD` entry above the previous version. The entry must:
+   - List every user-visible change in the merge as bullet points under `### Added`, `### Changed`, or `### Removed` sub-headings.
+   - Be self-contained enough that a user reading only that entry understands what arrived in this version without needing to read the diff.
+   - Be accurate and complete — relay this entry to the user during the next [Daily Update Check](#daily-update-check-automatic) notification.
+3. **Sanitize** any `.agents/project/*` content or client-identifying detail per the [Sanitizing Instructions](#sanitizing-instructions-before-any-master-framework-contribution) section.
+4. **Run any local checks** available (lint, format) and confirm no stale cross-links.
+
+This checklist applies when working in the master repository (`https://github.com/rpoorun/sf-agentic-coding-framework`) and is a confirmation-gated action per [MANUAL_CONFIRMATION_GATES.md](MANUAL_CONFIRMATION_GATES.md).
 
 ## Framework Maintenance Rules
 

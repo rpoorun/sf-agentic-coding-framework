@@ -4,6 +4,54 @@
 
 This file defines mandatory behavior for all AI-assisted work in this repository. Read and apply it before analysis, edits, Salesforce org access, Git writes, dependency work, or handoff notes. Put non-negotiable agent behavior, source-control safety, org safety, dependency safety, generated-file handling, and communication rules here.
 
+## Prime Directives
+
+These nine rules apply to every prompt, every task, every session. They take precedence over any skill, standard, or workflow instruction. Read them before acting on any user request.
+
+### 1 — Never Execute A Prompt Verbatim
+
+Do not treat a user's words as a literal script to follow step by step. A prompt is an expression of intent, not a command sequence. Always interpret what the user is trying to achieve before deciding how to act.
+
+### 2 — Understand Context Before Acting
+
+Before touching any file, org, or tool: identify the business problem, the affected Salesforce components, the current state of the codebase or org, and how the requested change fits into what already exists. A well-understood problem rarely needs as much new code as the prompt implies.
+
+### 3 — Decompose And Question Whether The Request Is Truly Required
+
+Break every request into its smallest meaningful parts. For each part, ask: is this actually required to solve the stated problem? Is it already solved elsewhere in the codebase or the org? Would a simpler change or a declarative alternative (Flow, validation rule, formula field, permission set, etc.) achieve the same outcome with less custom code? If yes, propose that first.
+
+### 4 — Prefer Existing And Standard Implementations Over Generating Custom Code
+
+Before writing any Apex class, LWC component, or Flow: search the current codebase for an existing implementation that already covers the requirement (fully or partially). If none exists locally, check whether a standard Salesforce platform feature (standard object, standard field, built-in automation, out-of-the-box component, AppExchange managed package) already solves the problem. Only propose generating custom code after confirming that neither the existing codebase nor the standard platform covers the need. State what was searched and why it was ruled out before proceeding to generation.
+
+### 5 — Never Assume — Always Query Back To The User
+
+If any aspect of the request is ambiguous — the object, the field, the business rule, the target org, the intended behavior on edge cases, the release scope — stop and ask. Do not guess and proceed. A wrong assumption discovered after code is generated or deployed costs more than the time saved by not asking.
+
+### 6 — Pre-Generation Gate: Doubts + At Least Two Alternatives
+
+Before generating any Apex class, LWC component, Flow, or significant metadata change, surface the following to the user in a single structured message:
+
+- **Open questions / doubts** — every ambiguity, missing input, or edge case that has not been answered yet. Number them.
+- **Alternative A** — a description of the first solution approach, including its pros and cons relative to the requirement.
+- **Alternative B** — a description of a meaningfully different second approach, including its pros and cons. A third alternative may be added if a distinct option exists.
+- **Recommendation** — which alternative you recommend and why, in one sentence.
+- **Confirmation ask** — "Which approach should I proceed with, and should I resolve open questions X, Y, Z before starting?"
+
+Do not begin generating files until the user has selected an approach and cleared any blocking open questions. This gate applies even when the request seems clear — it surfaces assumptions before they become defects.
+
+### 7 — Conflict Verification Before Any Org Deployment
+
+Before deploying to any Salesforce org (sandbox, scratch, UAT, production, or any other), retrieve the current org version of every component in the deploy scope and diff it against the local version. Classify any difference as: local-only (safe to deploy), org-only (must be merged in first), or same-component conflict (requires user decision before proceeding). Never deploy over an org-side change without the user's explicit acknowledgement of what will be overwritten. See [DEPLOYMENT.md](../workflows/DEPLOYMENT.md) for the full procedure.
+
+### 8 — Persist User Decisions Into The Agent Instructions
+
+When the user makes a decision in response to a question or alternative presented under Prime Directive 6, evaluate whether that decision is durable and reusable — a naming choice, an architectural pattern preference, a process rule, a platform constraint. If it is, propose persisting it as a concrete example or rule in the appropriate `.agents` file (standard, workflow, project fact, or skill adaptation) before moving on. Name the exact destination file and the exact text to add, and ask for permission before writing. Do not silently discard decisions that future iterations would benefit from knowing.
+
+### 9 — Track Generated File Iterations In Memory Only
+
+Every time a file (Apex class, LWC component, Flow, metadata) is generated or modified in a session, track the iteration count for that file in working memory. The first generation of a file is iteration 1; each subsequent modification of the same file in the same session increments the count. When reporting on a file, reference its current iteration number so the user knows how many rounds of change have occurred (e.g. "AccountService.cls — iteration 2"). Iteration numbers are session-scoped working memory only — never write them into file names, class names, comments, metadata, or any persisted file. They exist solely to give the user and the agent a shared reference point during a work session.
+
 ## Scope Discipline
 
 - Treat the user's current instruction as the source of truth.
@@ -90,7 +138,7 @@ Usually exclude:
 - local PMD reports
 - scratch scripts
 - generated package files not requested by the user
-- `.agents/.update-check` (the daily update-check marker — operational state, never framework content)
+- `.agents/.local-config.json` (local-only identity, credentials, and update-check operational state — never framework content; see `.agents/.local-config.template.json` for the tracked shape reference)
 
 ## Communication Standard
 

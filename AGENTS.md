@@ -3,10 +3,10 @@
 | Field | Value |
 | --- | --- |
 | Framework | sf-agentic-coding-framework |
-| Version | 0.0.7 |
+| Version | 0.0.8 |
 | Author | Rishikesh Poorun |
 | Master repository | https://github.com/rpoorun/sf-agentic-coding-framework |
-| Last updated | 2026-06-29 |
+| Last updated | 2026-07-01 |
 | License | Apache License 2.0 |
 
 ## Purpose And Use
@@ -68,6 +68,7 @@ This `AGENTS.md` + `.agents/` framework is mirrored from a master repository: **
 | File | Intended purpose |
 | --- | --- |
 | [AGENTIC_FRAMEWORK.md](.agents/directives/AGENTIC_FRAMEWORK.md) | Governing framework for classifying, maintaining, and reusing agent instructions; also owns the daily master-repo update check and the pull/contribute-back sync workflow. |
+| [CHANGELOG.md](.agents/CHANGELOG.md) | Per-version history of all notable framework changes; updated before every merge to `main`; relayed to the user when a newer version is detected during the daily update check. |
 | [AGENT_GUARDRAILS.md](.agents/directives/AGENT_GUARDRAILS.md) | Mandatory repo-wide behavioral guardrails, source-control safety, org safety, and communication rules. |
 | [TRUST_DATA_SECURITY.md](.agents/directives/TRUST_DATA_SECURITY.md) | Trust boundaries, data handling, security, sanitization, logging, and mutation rules. |
 | [MANUAL_CONFIRMATION_GATES.md](.agents/directives/MANUAL_CONFIRMATION_GATES.md) | Actions that require human approval before proceeding. |
@@ -118,7 +119,19 @@ This `AGENTS.md` + `.agents/` framework is mirrored from a master repository: **
 
 ## Prime Directive
 
-Understand the requested scope before acting. Make the smallest correct change, preserve unrelated work, and stop for human confirmation before any action that changes an org, shared branch, deployment state, credentials, secrets, production data, or irreversible local state.
+Nine mandatory behavioral rules govern every prompt, every task, every session — defined in full in [AGENT_GUARDRAILS.md](.agents/directives/AGENT_GUARDRAILS.md#prime-directives). In summary:
+
+1. **Never execute a prompt verbatim** — interpret intent, not literal words.
+2. **Understand context before acting** — know the problem, the codebase state, and what already exists.
+3. **Decompose and question** — is this truly required? Does a simpler or declarative alternative exist?
+4. **Prefer existing and standard implementations** — search the codebase and platform before generating custom code.
+5. **Never assume** — if anything is ambiguous, stop and ask.
+6. **Pre-generation gate** — before generating any file, present open questions and at least two alternatives with pros/cons; wait for the user to choose before proceeding.
+7. **Conflict verification before any deploy** — retrieve and diff org state against local source; never overwrite org-side changes without explicit user acknowledgement.
+8. **Persist user decisions** — durable decisions made during a session should be proposed for storage in the appropriate `.agents` file before the session moves on.
+9. **Iteration tracking in memory only** — track how many times each file has been generated or modified in the session; never write iteration numbers into files or file names.
+
+Make the smallest correct change, preserve unrelated work, and stop for human confirmation before any action that changes an org, shared branch, deployment state, credentials, secrets, production data, or irreversible local state.
 
 The [Org] Salesforce best-practice baseline applies across projects unless the client or project documentation explicitly defines a different standard.
 

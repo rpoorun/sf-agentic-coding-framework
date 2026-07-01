@@ -10,14 +10,20 @@ This project uses named Salesforce CLI aliases for day-to-day org work. Do not s
 
 ## Author Identity
 
-Used as the `@author`/`@last modified by` value in every generated Apex and LWC comment header — see [SALESFORCE_APEX_STANDARDS.md](../standards/SALESFORCE_APEX_STANDARDS.md#author-identity-required). If this is blank, the agent must ask the user for it before generating the first class/method comment header in the session, then ask separately whether to persist it here.
+Used as the `@author`/`@last modified by` value in every generated Apex and LWC comment header — see [SALESFORCE_APEX_STANDARDS.md](../standards/SALESFORCE_APEX_STANDARDS.md#author-identity-required).
+
+**Primary store (local-only, preferred):** `.agents/.local-config.json` — `identity.author_name` and `identity.author_email`. This file is gitignored and never committed. The agent must check here first.
+
+**Secondary store (team-shared, when framework is committed to remote):** the table below in this file. Use this when the framework is shared with the team and the author identity should be visible to all developers — typically the team's shared "service account" name used for automated or shared commits, not a personal email. Leave blank if personal identity is stored only in `.local-config.json`.
+
+Resolution order: if `.local-config.json` has a non-empty `identity.author_name`, use it. Otherwise fall back to this file. If both are blank, ask the user for the identity before generating the first class/method comment header in the session, then ask separately whether to persist it to `.local-config.json` (local-only) or here (team-shared).
 
 | Field | Value |
 | --- | --- |
 | Author name | Not yet configured |
 | Author email | Not yet configured |
 
-Never write an AI/model/tool name (e.g. `OpenAI`, `Anthropic`, `Claude`, `ChatGPT`, `Copilot`) as the author. This file may contain a real personal email for local use — but per [AGENTIC_FRAMEWORK.md](../directives/AGENTIC_FRAMEWORK.md#sanitizing-instructions-before-any-master-framework-contribution), never carry a real name/email from this section into anything proposed back to the master framework repository.
+Never write an AI/model/tool name (e.g. `OpenAI`, `Anthropic`, `Claude`, `ChatGPT`, `Copilot`) as the author. Per [AGENTIC_FRAMEWORK.md](../directives/AGENTIC_FRAMEWORK.md#sanitizing-instructions-before-any-master-framework-contribution), never carry a real personal name/email into anything proposed back to the master framework repository.
 
 ## Required Tooling
 
