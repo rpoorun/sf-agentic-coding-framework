@@ -1,5 +1,11 @@
 {
   "_info": "Template only — copy this file to .local-config.json in the same directory. That copy is gitignored and must never be committed. Edit .local-config.json with real values; this template stays generic and IS tracked in git so new installs know the expected shape.",
+  "_convention": {
+    "rule": "All local-only configuration lives in this single file. Skills and integrations that need user-specific values (credentials, URLs, preferences) MUST add a namespaced top-level key here rather than creating separate local files or folders.",
+    "how_to_add": "1. Add a new top-level key to this template with empty placeholder values. 2. Document the key in the skill's SKILL.md under 'Credential Loading' or 'Local Config'. 3. The install flow for the skill reads .local-config.json, detects blank fields under its key, and prompts the user only for what is missing. 4. Never create parallel local config files or directories.",
+    "naming": "Use lowercase, short, descriptive key names (e.g. 'jira', 'slack', 'github'). Nest related fields one level deep. Do not nest deeper than two levels.",
+    "security": "Keys that hold secrets (tokens, passwords, private keys) must be named clearly (e.g. 'api_token', 'secret'). The install flow must never echo secret values back to the user. The SKILL.md must document which fields are sensitive."
+  },
   "identity": {
     "author_name": "",
     "author_email": ""
@@ -7,5 +13,11 @@
   "update_check": {
     "last_checked_utc": "",
     "last_known_version": ""
+  },
+  "jira": {
+    "base_url": "",
+    "email": "",
+    "api_token": "",
+    "project_prefixes": []
   }
 }
