@@ -25,6 +25,7 @@ In a local install, also run the [Daily Update Check](.agents/directives/AGENTIC
 - For Apex work, read [Salesforce Apex standards](.agents/standards/SALESFORCE_APEX_STANDARDS.md) and [PMD Apex ruleset guide](.agents/standards/PMD_APEX_RULESET.md).
 - For tool or skill routing, read [Salesforce skills](.agents/skills/SALESFORCE_SKILLS.md).
 - For writing or updating project technical documentation (`docs/` describing implemented Apex, LWC, or config), read [Documentation standards](.agents/standards/DOCUMENTATION.md) first — never document anything without verifying it against source per that file.
+- For Jira ticket work, sprint tracking, or agile board management, read [Jira skill](.agents/skills/jira-management/SKILL.md), [Jira workflow](.agents/workflows/JIRA.MD), and [Project tracking](.agents/workflows/PROJECT_TRACKING.MD). To install Jira skills or set up Jira access, follow the Install / Setup Flow in the Jira skill.
 
 ## Required Reading Order
 
@@ -90,6 +91,7 @@ This `AGENTS.md` + `.agents/` framework is mirrored from a master repository: **
 | File | Intended purpose |
 | --- | --- |
 | [SALESFORCE_SKILLS.md](.agents/skills/SALESFORCE_SKILLS.md) | Naming convention, synthesis procedure, and routing rules for the `sf-{cloud}-{name}` agent skills. |
+| [jira-management SKILL.md](.agents/skills/jira-management/SKILL.md) | Read-only Jira Cloud integration: `fetch`, `analyse`, `build`, `deploy`, `test`, `comment` commands for ticket-driven Salesforce development. Activate on ticket keys (e.g. `DTT-115`), "install Jira skills", or any `{command} jira {KEY}` pattern. |
 
 ## Workflow Reference Files
 
@@ -101,6 +103,8 @@ This `AGENTS.md` + `.agents/` framework is mirrored from a master repository: **
 | [PULL_REQUEST.md](.agents/workflows/PULL_REQUEST.md) | Pull request template usage, final commit, back-merge, and review-readiness checklist. |
 | [TESTING.md](.agents/workflows/TESTING.md) | Verification protocols, test commands, mocking strategies, coverage expectations, and acceptance checks. |
 | [IMPLEMENTATION_PLAN.md](.agents/workflows/IMPLEMENTATION_PLAN.md) | Delivery sequencing, dependency ordering, implementation planning, rollout steps, and open task tracking. |
+| [JIRA.MD](.agents/workflows/JIRA.MD) | Jira Cloud workflow: credential setup, auth testing, ticket fetching, ADF parsing, local file creation, board updates, and write-action confirmation gates. |
+| [PROJECT_TRACKING.MD](.agents/workflows/PROJECT_TRACKING.MD) | Local ticket tracking: per-ticket Markdown file template, agile board lane structure, and Jira-to-lane status mapping. |
 
 ## Project-Specific Reference Files
 
