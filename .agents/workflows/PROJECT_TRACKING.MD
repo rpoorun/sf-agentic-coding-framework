@@ -2,7 +2,69 @@
 
 ## Purpose and Use
 
-This workflow defines how Jira tickets are tracked locally as Markdown files and managed on a local agile board. Local tracking provides offline access to ticket context and a persistent record of implementation decisions.
+This workflow owns local ticket management: creating and updating ticket Markdown files, managing the agile board, and routing ticket-scoped commands to the framework's existing workflows. It is source-agnostic — ticket data can come from the [Jira skill](../skills/jira-management/SKILL.md), another integration, or manual input.
+
+This workflow does **not** own:
+- Jira API access → owned by the [Jira skill](../skills/jira-management/SKILL.md) and [JIRA.MD](JIRA.MD)
+- Requirements validation → owned by [SPECIFICATION.md](../project/SPECIFICATION.md)
+- Implementation planning → owned by [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md)
+- Deployment and conflict checks → owned by [DEPLOYMENT.md](DEPLOYMENT.md)
+- Testing strategy → owned by [TESTING.md](TESTING.md)
+
+## Single File Principle
+
+**One ticket = one file = one source of truth.**
+
+Every ticket is represented by exactly one Markdown file at `.agents/project/tickets/{KEY}.md`. This file is the central record for the ticket across the entire lifecycle. Every operation — regardless of which skill, workflow, or framework layer performs it — reads from and writes back to this same file:
+
+- The **Jira skill** initialises the file with ticket metadata, description, acceptance criteria, solution, dependencies, and comments.
+- The **`analyse` command** writes the implementation plan, impact assessment, file scope, and test scenarios into the same file.
+- The **`build` command** updates the file with the deployment manifest, pre/post steps, and build status.
+- The **`test` command** writes test results and coverage data to the QA Notes section of the same file.
+- The **`deploy` command** records the deployment outcome and timestamp in the same file.
+- The **`comment` command** reads the same file to compose a review summary.
+
+No operation creates a separate file for its output. No workflow splits ticket context across multiple locations. The ticket file accumulates all context progressively — each step enriches what the previous step wrote — so any agent or developer opening the file sees the complete picture: what the ticket asks for, how it was analysed, what was built, how it was tested, and whether it was deployed.
+
+When re-syncing from Jira (or any source), incoming data is merged into the existing file. Manually-written sections (Implementation Plan, QA Notes, Handoff Notes, etc.) are always preserved — they are never overwritten by a sync.
+
+## Command Routing
+
+When the user says a command followed by a ticket key (e.g. `analyse DTT-115`), this workflow receives the request and delegates to the appropriate framework workflow. The ticket key acts as a **context anchor** — it tells the workflow which local ticket file to read/write, but the execution logic belongs to the framework.
+
+| User Command | This Workflow Does | Then Delegates To |
+| --- | --- | --- |
+| `fetch {KEY}` | Invokes the [Jira fetch workflow](JIRA.MD), then creates/updates the local ticket file and board | [JIRA.MD](JIRA.MD) (API call) |
+| `analyse {KEY}` | Ensures ticket is synced, reads ticket context | [SPECIFICATION.md](../project/SPECIFICATION.md) (requirement validation) → [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) (plan production) |
+| `build {KEY}` | Ensures analysis exists, reads implementation plan from ticket file | Framework standards (code generation) → [DEPLOYMENT.md](DEPLOYMENT.md) (dry deploy + coverage gate) |
+| `deploy {KEY}` | Reads deployment manifest from ticket file, presents to user | [DEPLOYMENT.md](DEPLOYMENT.md) (full deploy with confirmation) |
+| `test {KEY}` | Reads ticket scope for targeted test run | [DEPLOYMENT.md](DEPLOYMENT.md) (dry deploy) → [TESTING.md](TESTING.md) (test strategy) |
+| `comment {KEY}` | Reads ticket file, composes review comment, outputs to chat | None — self-contained, local-only |
+
+---
+
+## Ticket Sync
+
+When ticket data arrives (from the Jira fetch workflow or any other source):
+
+### If a local ticket file exists at `.agents/project/tickets/{KEY}.md`:
+1. Read the local file
+2. Compare the incoming `updated` timestamp against the local `Last Synced`
+3. Identify changes: field updates, new comments, status changes
+4. Summarise what changed since last sync in chat
+5. Ask the user to approve the update
+6. On approval, merge new data into the local file **preserving manually-written sections** (Implementation Plan, QA Notes, Handoff Notes, etc.)
+
+### If no local file exists:
+1. Present the ticket summary in chat
+2. Create a new ticket file using the template below
+3. Populate all available sections from the incoming data
+4. Leave implementation-specific sections as placeholders
+
+### After any create/update:
+Update the agile board lane to match the ticket's current status.
+
+---
 
 ## Local Ticket Files
 
@@ -12,8 +74,6 @@ One self-contained Markdown file per ticket:
 ```
 .agents/project/tickets/{KEY}.md
 ```
-
-Example: `.agents/project/tickets/PROJECT-123.md`
 
 ### Ticket File Template
 
@@ -40,23 +100,23 @@ Example: `.agents/project/tickets/PROJECT-123.md`
 
 ## Description
 
-{Parsed ADF description in Markdown}
+{Parsed description in Markdown}
 
 ## Acceptance Criteria
 
-{Parsed from custom field, or "Not specified"}
+{Parsed from ticket, or "Not specified"}
 
 ## Solution
 
-{Parsed from custom field, or "Not specified"}
+{Parsed from ticket, or "Not specified"}
 
 ## Rules & Conditions
 
-{Parsed from custom field, or "Not specified"}
+{Parsed from ticket, or "Not specified"}
 
 ## Scope
 
-{Parsed from custom field, or "Not specified"}
+{Parsed from ticket, or "Not specified"}
 
 ## Dependencies
 
@@ -72,11 +132,11 @@ Example: `.agents/project/tickets/PROJECT-123.md`
 
 ## Implementation Plan
 
-{Agent or developer notes on how to implement. Updated as work progresses.}
+{Populated by the `analyse` command via IMPLEMENTATION_PLAN.md workflow.}
 
 ## File Scope
 
-{List of files expected to be created or modified for this ticket.}
+{List of files expected to be created or modified. Populated during analysis.}
 
 ## Repo/Org Evidence
 
@@ -84,11 +144,11 @@ Example: `.agents/project/tickets/PROJECT-123.md`
 
 ## Deployment & Validation Plan
 
-{Steps to deploy and verify the change.}
+{Populated by the `build` command. Deployment manifest, pre/post steps.}
 
 ## QA Notes
 
-{Testing observations, edge cases found, test results.}
+{Populated by the `test` command. Test results, coverage, edge cases.}
 
 ## Pending Work
 
@@ -103,9 +163,95 @@ Example: `.agents/project/tickets/PROJECT-123.md`
 
 - Do not store raw API responses or sensitive payloads
 - Do not include auth tokens, headers, or credentials
-- Keep comments summarized — full comment history stays in Jira
-- Update `Last Synced` whenever re-fetching from Jira
-- Preserve manually added sections (Implementation Plan, QA Notes, etc.) when re-syncing
+- Keep comments summarised — full comment history stays in the source system
+- Update `Last Synced` whenever re-syncing from the source
+- Preserve manually added sections when re-syncing
+
+---
+
+## Ticket-Scoped Commands
+
+### `analyse {KEY}`
+
+1. **Ensure ticket is synced** — if the local file is missing or stale, run `fetch {KEY}` first.
+2. **Run requirement validation** — apply the gates in [SPECIFICATION.md](../project/SPECIFICATION.md): verify base objects, field definitions, metadata members, and flag ambiguities.
+3. **Delegate to [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md)** — using the validated requirements and ticket context, produce:
+   - Implementation plan with ordered steps and file-level scope
+   - Impact assessment — components affected, potential overrides, conflicts
+   - Manual steps — pre-deploy and post-deploy actions
+   - Test scenarios — derived from acceptance criteria
+   - Risk assessment — deployment conflicts, data migration, permission changes
+4. **Diff local repo against dev org** — retrieve relevant metadata into `.agents/temp/retrieve-{KEY}/` (see [Temp Workspace](../directives/AGENT_GUARDRAILS.md#temp-workspace)), diff against local source, document affected metadata.
+5. **Save to ticket file** — write the implementation plan, file scope, and impact assessment into the local ticket file.
+6. **Report in chat** — summarise the analysis and flag blockers or questions.
+7. **Do not modify any source files** — analysis only.
+
+### `build {KEY}`
+
+1. **Ensure analysis exists** — if no Implementation Plan in the ticket file, run `analyse {KEY}` first.
+2. **Check dependencies** — read issue links from the ticket file. If blocking tickets are unresolved, warn the user.
+3. **Implement** — follow the Implementation Plan step by step. Generate or modify Salesforce metadata and Apex code locally following the framework's existing standards ([Salesforce Apex Standards](../standards/SALESFORCE_APEX_STANDARDS.md), [Lean Code Standards](../standards/LEAN_CODE_STANDARDS.md), [Trigger Framework](../standards/APEX_TRIGGER_FRAMEWORK.md), etc.).
+4. **Build test classes** — create or extend Apex tests to cover new/modified code.
+5. **Delegate to [DEPLOYMENT.md](DEPLOYMENT.md)** — run a dry deploy with the framework's full deployment workflow:
+   - Pre-deploy conflict check (mandatory)
+   - `sf project deploy start --dry-run` with test execution
+   - 95% coverage gate (mandatory)
+   - If errors occur, fix locally and re-run
+6. **Build deployment manifest** — save to the ticket file: components, dependencies, deployment order, pre/post manual steps, test classes, expected coverage.
+7. **Stop — do not deploy.** If deployment conflicts were detected, advise the user in chat.
+
+### `deploy {KEY}`
+
+1. **Read deployment manifest** from the ticket file. If none exists, tell the user to run `build {KEY}` first.
+2. **Present manifest in chat** — components, dependencies, pre-deploy manual steps, post-deploy manual steps, expected test coverage.
+3. **Delegate to [DEPLOYMENT.md](DEPLOYMENT.md)** — execute the full deployment workflow:
+   - Environment config check
+   - Pre-deploy conflict check
+   - User confirmation (required by [MANUAL_CONFIRMATION_GATES.md](../directives/MANUAL_CONFIRMATION_GATES.md))
+   - `sf project deploy start` to the default dev org
+   - 95% coverage gate
+   - Reporting
+4. **Update ticket file** — record deployment outcome, timestamp, and post-deploy observations.
+
+### `test {KEY}`
+
+1. **Identify test scope** from the ticket file — test classes associated with the ticket's implementation.
+2. **Delegate to [DEPLOYMENT.md](DEPLOYMENT.md)** — run a dry deploy with test execution only:
+   - `sf project deploy start --dry-run` with relevant test classes
+   - 95% coverage gate
+3. **Do not persist** any changes to the org.
+4. **Update ticket file** — write test results to the QA Notes section.
+5. Follow any project-specific testing guidance in [TESTING.md](TESTING.md) when populated.
+
+### `comment {KEY}`
+
+This command is self-contained — it does not delegate to another workflow.
+
+1. Read the local ticket file.
+2. Compose a structured review comment:
+   ```
+   ## Implementation Summary
+   - Components: {list of created/modified files}
+   - Branch: {current branch name}
+
+   ## Testing
+   - Test classes: {list}
+   - Coverage: {percentage}
+   - All tests passing: {yes/no}
+
+   ## Manual Setup Required
+   - {permission set assignments, custom settings, etc.}
+
+   ## How to Verify
+   1. {step-by-step verification instructions}
+
+   ## Notes
+   - {known limitations, follow-up items}
+   ```
+3. Output the comment in chat as a copyable text block.
+4. **Do not post to Jira or any external system.** Remind the user to paste it manually.
+
+---
 
 ## Local Agile Board
 
@@ -124,8 +270,6 @@ The board lives under `.agents/project/board/` with these lane files:
 
 ### Lane File Format
 
-Each lane file uses a Markdown table:
-
 ```markdown
 | Ticket | Title | Jira Status | Local Status | Owner | Last Checked | Notes |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -134,16 +278,15 @@ Each lane file uses a Markdown table:
 
 ### Board Update Rules
 
-- When a ticket is fetched for the first time, add it to the lane matching its Jira status
-- When a ticket's status changes, move it from the old lane to the new one (remove from old, add to new)
-- `Local Status` can differ from `Jira Status` — it reflects what the local developer sees
-- `Last Checked` is the date the ticket was last synced from Jira
+- When a ticket is fetched for the first time, add it to the lane matching its status
+- When a ticket's status changes, remove it from the old lane and add it to the new one
+- `Local Status` can differ from the source system status — it reflects local developer context
+- `Last Checked` is the date the ticket was last synced
 - Keep `Notes` concise — one line max
-- The `INDEX.MD` file provides an overview and does not duplicate lane contents
 
-### Jira Status to Lane Mapping
+### Status to Lane Mapping
 
-| Jira Status (case-insensitive) | Board Lane |
+| Status (case-insensitive) | Board Lane |
 | --- | --- |
 | To Do, Open, Backlog, New | BACKLOG |
 | In Progress, In Development, Active | IN-PROGRESS |
@@ -151,4 +294,4 @@ Each lane file uses a Markdown table:
 | In Review, Code Review, Review, PR Open | CODE-REVIEW |
 | Done, Closed, Resolved, Complete | DONE |
 
-For unrecognized statuses, default to `BACKLOG` and add a note.
+For unrecognised statuses, default to `BACKLOG` and add a note.
