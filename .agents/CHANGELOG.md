@@ -13,6 +13,9 @@ This file records all notable changes to `sf-agentic-coding-framework` in human-
 ## [0.0.9] — 2026-07-06
 
 ### Added
+- **Installation Manifest** in `AGENTS.md`: portable section containing the framework source URL, registered plugins table, and step-by-step installation procedure. Any user who copies `AGENTS.md` into a new repo can pull the entire framework and all registered plugins from their source URLs.
+
+### Added
 - **Read-only Jira skill** (`jira-management` v2.0): Jira Cloud API integration layer — credential setup, auth testing, project prefix discovery, ticket retrieval, ADF parsing. Strictly read-only (GET only). Owns only the API connection; does not own local tracking or execution workflows.
 - **Guided install flow**: credential prompts, auth test against `/rest/api/3/myself`, and automatic project prefix discovery so ticket keys (e.g. `DTT-115`, `COP-42`) are recognised without the `jira` keyword.
 - **Implicit ticket key recognition**: once project prefixes are learned, `fetch DTT-115` is equivalent to `fetch jira DTT-115`.
