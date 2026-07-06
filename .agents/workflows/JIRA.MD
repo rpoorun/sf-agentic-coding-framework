@@ -96,9 +96,10 @@ The `jira` keyword is optional once project prefixes are known. `fetch DTT-115` 
 
 4. **Diff local repo against dev org**
    - Identify which Salesforce metadata types are in scope based on the ticket
-   - Run `sf project retrieve start` for the relevant metadata (with framework confirmation gates)
+   - Retrieve the relevant metadata into the temp workspace: `sf project retrieve start --output-dir .agents/temp/retrieve-{KEY}/ ...` (with framework confirmation gates)
    - Diff the retrieved org state against local source
    - Document existing metadata that will be affected
+   - The retrieved metadata in `.agents/temp/retrieve-{KEY}/` is transient — it must never be staged or committed (see [Temp Workspace](../directives/AGENT_GUARDRAILS.md#temp-workspace))
 
 5. **Produce implementation plan**
    Save to the local ticket file:
