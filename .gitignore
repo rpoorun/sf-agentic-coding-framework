@@ -3,6 +3,10 @@
 # Local-only agent config: personal identity, credentials, and update-check state — never commit
 .agents/.local-config.json
 
+# Agent temp workspace: retrieved metadata, dry-deploy output, coverage reports, framework update
+# scratch, and any other transient data. Must be cleaned before branch checkout or merge.
+.agents/temp/
+
 # Legacy single-line update-check marker (superseded by .local-config.json in v0.0.8)
 .agents/.update-check
 
