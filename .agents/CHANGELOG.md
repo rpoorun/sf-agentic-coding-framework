@@ -8,9 +8,22 @@ This file records all notable changes to `sf-agentic-coding-framework` in human-
 
 ## [Unreleased]
 
+---
+
+## [0.0.9] — 2026-07-05
+
 ### Added
-- Draft-safe Flow generation guidance: generated or corrected Flow metadata now defaults to `<status>Draft</status>` unless the user explicitly requests activation, with the rule recorded in `SALESFORCE_SKILLS.md` and `sf-platform-flow/SKILL.md`.
-- Generic contribution-back workflow for reusable lessons learned during Apex, LWC, Flow, metadata, deployment, test, or permission/security generation in local installs.
+- **Read-only Jira skill pack** (`jira-management`): six intent-based commands (`fetch`, `analyse`, `build`, `deploy`, `test`, `comment`) for ticket-driven Salesforce development. All Jira API calls are strictly GET-only — the skill never modifies the Jira platform.
+- **Guided install flow**: credential setup, auth test against `/rest/api/3/myself`, and automatic project prefix discovery so ticket keys (e.g. `DTT-115`, `COP-42`) are recognised without the `jira` keyword.
+- **Implicit ticket key recognition**: once project prefixes are learned, `fetch DTT-115` is equivalent to `fetch jira DTT-115`.
+- **Local ticket tracking** (`.agents/project/tickets/{KEY}.md`): structured Markdown template with metadata, description, acceptance criteria, solution, dependencies, implementation plan, deployment manifest, QA notes, and handoff sections.
+- **Local agile board** (`.agents/project/board/`): lane-based status tracking with Jira-to-lane status mapping across Backlog, In Progress, Blocked, Code Review, and Done.
+- **Jira workflow** (`.agents/workflows/JIRA.MD`): full command workflows including local-vs-remote diff on fetch, org diff on analyse, dry deploy on build, and confirmation gate on deploy.
+- **Project tracking workflow** (`.agents/workflows/PROJECT_TRACKING.MD`): ticket file template, board structure, and update rules.
+- **Centralised local config convention**: `_convention` block in `.local-config.template.json` documents how future skills should add their config to the single local config file, preventing folder sprawl and redundant gitignore entries.
+- **Temp workspace convention** (`.agents/temp/`): gitignored standard location for all transient data — retrieved org metadata, dry-deploy output, coverage reports, PMD scans, and framework update clones. Cleanup rules enforced before branch checkout, before merge, and after workflow completion. Documented in `AGENT_GUARDRAILS.md`; referenced from `AGENTIC_FRAMEWORK.md` (framework update procedure) and `JIRA.MD` (analyse workflow).
+- Draft-safe Flow generation guidance: generated or corrected Flow metadata now defaults to `<status>Draft</status>` unless the user explicitly requests activation.
+- Generic contribution-back workflow for reusable lessons learned during local installs.
 
 ---
 
