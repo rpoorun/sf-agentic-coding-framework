@@ -1,57 +1,69 @@
 ---
 name: jira-management
-description: "Read-only Jira Cloud integration: fetch tickets, track locally as Markdown, analyse requirements, plan implementations, build and deploy Salesforce metadata, and generate review comments. Activate when the user mentions Jira tickets, ticket keys (e.g. DTT-115, COP-42), sprint work, or says 'install Jira skills'."
+description: "Read-only Jira Cloud API integration: connect to Jira, fetch ticket details, parse ADF content, and deliver structured ticket data. Activate when the user says 'install Jira skills', 'init Jira', 'fetch jira {KEY}', or mentions a ticket key matching a known project prefix."
 metadata:
-  version: "1.1"
-  category: "Project Management"
+  version: "2.0"
+  category: "Integration"
   api: "Jira Cloud REST API v3"
 ---
 
-# jira-management: Jira Ticket Retrieval & Local Tracking
+# jira-management: Jira Cloud Integration
 
 | Field | Value |
 | --- | --- |
 | Skill ID | `jira-management` |
-| Category | Project Management |
-| Version | 1.1 |
+| Category | Integration |
+| Version | 2.0 |
 | API | Jira Cloud REST API v3 |
 
 ## Prime Directive
 
-**This skill is strictly read-only on the Jira platform.** The agent must never create, update, transition, comment on, link, or delete any resource in Jira. All Jira API calls must be HTTP GET. No POST, PUT, PATCH, or DELETE requests to Jira are permitted under any circumstances, regardless of what the user asks. If the user requests a Jira write action, explain that this skill is read-only and suggest they perform the action manually in Jira.
+**This skill is strictly read-only on the Jira platform.** All Jira API calls must be HTTP GET. No POST, PUT, PATCH, or DELETE requests to Jira are permitted under any circumstances. If the user requests a Jira write action, explain that this skill is read-only and suggest they perform the action manually in Jira.
 
-The skill writes only to local files (`.agents/project/tickets/`, `.agents/project/board/`) and to the local dev org via standard Salesforce deploy commands governed by the framework's existing deployment workflow.
+## Scope
+
+This skill owns **only** the Jira API connection layer:
+- Credential setup and auth testing
+- Project prefix discovery
+- Ticket retrieval and field extraction
+- ADF (Atlassian Document Format) parsing
+- Comment and issue link retrieval
+
+This skill does **not** own:
+- Local ticket file creation or management → owned by [PROJECT_TRACKING.MD](../../workflows/PROJECT_TRACKING.MD)
+- Agile board updates → owned by [PROJECT_TRACKING.MD](../../workflows/PROJECT_TRACKING.MD)
+- Ticket analysis, implementation, deployment, testing → owned by the framework's existing workflows, invoked through [PROJECT_TRACKING.MD](../../workflows/PROJECT_TRACKING.MD)
+- Comment generation for Jira → owned by [PROJECT_TRACKING.MD](../../workflows/PROJECT_TRACKING.MD)
 
 ## When to Use
 
 - User says "install Jira skills" or "init Jira"
-- User mentions a ticket key matching a known project prefix (e.g. `DTT-115`, `COP-42`, `CAPCEESF-100`)
-- User says `fetch jira`, `analyse jira`, `build jira`, `deploy jira`, `test jira`, or `comment jira` followed by a ticket key
-- User says a **command + bare ticket key** without the `jira` keyword (e.g. `fetch DTT-115`, `analyse COP-42`) — once project prefixes are discovered during install, any input matching `{command} {PREFIX}-{number}` is implicitly a Jira command
-- User asks about sprint work, backlog, or ticket status
+- User says `fetch jira {KEY}` or `fetch {KEY}` (once prefixes are known)
+- User asks "what is DTT-115 about?" (implicit fetch)
+- Another workflow or skill needs raw ticket data from Jira (internal invocation)
 
 ## Ticket Key Recognition
 
-After the install flow discovers project prefixes and stores them in `.agents/.local-config.json` under `jira.project_prefixes`, the agent must treat any token matching `{PREFIX}-{number}` (case-insensitive) as a Jira ticket reference. The `jira` keyword becomes optional:
+After the install flow discovers project prefixes and stores them in `.agents/.local-config.json` under `jira.project_prefixes`, the agent must treat any token matching `{PREFIX}-{number}` (case-insensitive) as a Jira ticket reference. The `jira` keyword is optional:
 
 | User says | Interpreted as |
 | --- | --- |
-| `fetch jira DTT-115` | `fetch jira DTT-115` |
-| `fetch DTT-115` | `fetch jira DTT-115` |
-| `fetch dtt-115` | `fetch jira DTT-115` |
-| `analyse COP-42` | `analyse jira COP-42` |
-| `build CAPCEESF-100` | `build jira CAPCEESF-100` |
-| `what is DTT-115 about?` | Treat as an implicit `fetch jira DTT-115` |
+| `fetch jira DTT-115` | Fetch ticket `DTT-115` from Jira |
+| `fetch DTT-115` | Fetch ticket `DTT-115` from Jira |
+| `fetch dtt-115` | Fetch ticket `DTT-115` from Jira |
+| `what is DTT-115 about?` | Implicit fetch of `DTT-115` |
 
-The prefix match is case-insensitive. The ticket key should be normalised to uppercase when used in API calls and file names (e.g. `dtt-115` → `DTT-115`).
+The prefix match is case-insensitive. Normalise the key to uppercase for API calls and file names.
+
+Commands that are **not** Jira API operations (`analyse`, `build`, `deploy`, `test`, `comment`) are recognised by the same prefix matching but routed to [PROJECT_TRACKING.MD](../../workflows/PROJECT_TRACKING.MD), not this skill.
 
 ## Install / Setup Flow
 
-When a user says **"install Jira skills"** or **"init Jira"**, follow this guided flow:
+When a user says **"install Jira skills"** or **"init Jira"**:
 
 ### Step 1 — Check Existing Config
 
-Read `.agents/.local-config.json` and inspect the `jira` block. Identify which fields are missing or blank:
+Read `.agents/.local-config.json` and inspect the `jira` block. Identify which fields are blank:
 - `base_url`
 - `email`
 - `api_token`
@@ -81,8 +93,6 @@ Write each value into `.agents/.local-config.json`. **Never echo the API token.*
 
 ### Step 3 — Test Connection
 
-Run a read-only auth check:
-
 ```
 GET {base_url}/rest/api/3/myself
 ```
@@ -95,64 +105,48 @@ Do not print the response body, auth headers, or token.
 
 ### Step 4 — Discover Project Prefixes
 
-After auth succeeds, retrieve the list of accessible Jira projects:
-
 ```
 GET {base_url}/rest/api/3/project?expand=description&status=live
 ```
 
-Extract each project's `key` and `name`. These are the ticket naming prefixes (e.g. `DTT`, `COP`, `CAPCEESF`). Present them to the user:
+Extract each project's `key` and `name`. Present them:
 
 > **Discovered Jira projects:**
 > | Project Key | Project Name |
 > | --- | --- |
 > | DTT | Digital Transformation Team |
 > | COP | Customer Operations Platform |
-> | CAPCEESF | Cap Cee Salesforce |
 >
-> Ticket references like `DTT-115`, `COP-42`, or `CAPCEESF-100` will be recognised automatically.
+> Ticket references like `DTT-115` or `COP-42` will be recognised automatically.
 
-Store the discovered prefixes in `.agents/.local-config.json` under `jira.project_prefixes` so future sessions can recognise ticket keys without re-querying:
-
-```json
-{
-  "jira": {
-    "base_url": "...",
-    "email": "...",
-    "api_token": "...",
-    "project_prefixes": ["DTT", "COP", "CAPCEESF"]
-  }
-}
-```
+Store prefixes in `.agents/.local-config.json` under `jira.project_prefixes`.
 
 ### Step 5 — Read the Board
 
-Attempt to fetch the active sprint or board to show current ticket state:
+Attempt to fetch the active sprint or board:
 
 ```
 GET {base_url}/rest/agile/1.0/board?type=scrum
 ```
 
-If a board is found, retrieve the active sprint's issues and display a summary in chat. If no board or sprint is found, skip this step silently.
+If a board is found, display a summary. If not, skip silently.
 
 ### Step 6 — Confirm Setup & Show Command Glossary
 
-Present the skill summary and available commands:
-
 > **Jira skills installed successfully.**
 >
-> This skill provides **read-only access** to your Jira platform. It can download ticket details, track them locally, analyse requirements, and generate implementation plans — but it will **never modify anything in Jira**. Comments for Jira are generated locally for you to copy-paste manually.
+> This skill provides **read-only access** to your Jira platform. It will **never modify anything in Jira**. Comments for Jira are generated locally for you to copy-paste manually.
 >
 > **Available commands** (examples use your project prefixes):
 >
-> | Command | What it does |
-> | --- | --- |
-> | `fetch jira DTT-115` | Pull latest ticket details from Jira, diff against local copy if one exists, summarise changes, and create/update the local ticket file |
-> | `analyse jira DTT-115` | Fetch + deep requirements analysis: review the proposed solution, diff local repo against dev org, produce an implementation plan with impact assessment and test scenarios |
-> | `build jira DTT-115` | Implement the ticket: generate/modify metadata and code locally, build test classes, dry-deploy to dev org, produce the deployment manifest |
-> | `deploy jira DTT-115` | Show the deployment manifest, request verbal confirmation, then deploy to the default dev org |
-> | `test jira DTT-115` | Dry deploy with test runs only — does not persist any changes to the org |
-> | `comment jira DTT-115` | Generate a review comment summarising the implementation, testing, and manual setup steps — output to chat for manual copy-paste into Jira |
+> | Command | What it does | Handled by |
+> | --- | --- | --- |
+> | `fetch DTT-115` | Pull latest ticket details from Jira, create/update local ticket file | Jira skill → Project tracking |
+> | `analyse DTT-115` | Requirements analysis, org diff, implementation plan | Project tracking → [SPECIFICATION](../../project/SPECIFICATION.md), [IMPLEMENTATION_PLAN](IMPLEMENTATION_PLAN.md) |
+> | `build DTT-115` | Implement locally, build tests, dry deploy, produce manifest | Project tracking → [DEPLOYMENT](DEPLOYMENT.md), [TESTING](TESTING.md) |
+> | `deploy DTT-115` | Show manifest, confirm, deploy to dev org | Project tracking → [DEPLOYMENT](DEPLOYMENT.md) |
+> | `test DTT-115` | Dry deploy with test runs only | Project tracking → [DEPLOYMENT](DEPLOYMENT.md), [TESTING](TESTING.md) |
+> | `comment DTT-115` | Generate review comment for manual paste into Jira | Project tracking |
 >
 > All Jira access is read-only. Local file creation and Salesforce org deploys follow the framework's existing confirmation gates.
 
@@ -248,7 +242,7 @@ Jira stores custom fields as `customfield_NNNNN`. To find relevant fields:
 GET {base_url}/rest/api/3/field
 ```
 
-Search the response for fields whose `name` matches (case-insensitive):
+Search for fields whose `name` matches (case-insensitive):
 - Acceptance Criteria
 - Solution
 - Rules & Conditions / Rules and Conditions
@@ -306,93 +300,14 @@ function parseADF(node):
   default: recurse into node.content
 ```
 
-## Command Reference
+## Error Handling
 
-### `fetch jira {KEY}`
-
-Pull the latest ticket details from Jira. If a local ticket file already exists at `.agents/project/tickets/{KEY}.md`:
-
-1. Read the local file.
-2. Fetch the latest from Jira.
-3. Compare the latest comment and field values against the local copy.
-4. Summarise what changed since last sync in chat.
-5. If the user approves, update the local file with the new data.
-
-If no local file exists:
-
-1. Fetch the ticket from Jira.
-2. Present the ticket summary in chat.
-3. Create the local ticket file using the template from `PROJECT_TRACKING.MD`, populating all available sections: metadata, description, requirements, acceptance criteria, solution, dependencies, comments summary.
-
-Always update the agile board lane after creating/updating a ticket file.
-
-### `analyse jira {KEY}`
-
-Performs everything `fetch` does, then continues with deep analysis:
-
-1. If the local ticket is not up to date, sync it first.
-2. Parse and review the ticket requirements and specification.
-3. Review the proposed solution (from custom fields or description).
-4. Run a diff between the default dev org and the local repo to identify existing metadata relevant to the ticket scope.
-5. Based on the diff and requirements, produce:
-   - **Implementation plan** — ordered steps with file-level scope
-   - **Impact assessment** — which existing components are affected, potential overrides
-   - **Manual steps** — pre-deploy and post-deploy manual actions required
-   - **Test scenarios** — test cases derived from acceptance criteria and requirements
-6. Save everything to the local ticket file under the appropriate sections.
-7. Do not modify any source files — analysis only.
-
-### `build jira {KEY}`
-
-Implements the ticket locally:
-
-1. Ensure the ticket has been analysed (run `analyse` first if needed).
-2. Check for dependencies on other tickets — if blockers exist, warn the user.
-3. Generate or modify Salesforce metadata and Apex code locally according to the implementation plan.
-4. Build test classes to cover the new/modified code.
-5. Perform a dry deploy (`sf project deploy start --dry-run`) to the default dev org with test execution.
-6. If errors occur, make corrections and re-run until the dry deploy passes.
-7. When clean, build the deployment manifest (list of components, dependencies, pre/post steps).
-8. Save the deployment manifest to the ticket file.
-9. **Do not deploy** — stop here. If deployment conflicts are detected during the dry run, advise the user in chat.
-
-Source file generation and modification follow the framework's existing Salesforce standards, Apex standards, and lean code standards.
-
-### `deploy jira {KEY}`
-
-Deploys the built ticket to the default dev org:
-
-1. Read the deployment manifest from the local ticket file.
-2. Present the manifest in chat: components, dependencies, manual pre-deploy steps, manual post-deploy steps.
-3. **Request explicit verbal confirmation** from the user before proceeding.
-4. Once confirmed, run the Salesforce deploy via the framework's [Deployment workflow](../../workflows/DEPLOYMENT.md).
-5. Report deploy results — success or failure with details.
-6. Update the ticket file with deployment outcome.
-
-This command follows all existing framework deployment gates (org conflict check, coverage gate, manual confirmation).
-
-### `test jira {KEY}`
-
-Dry deploy with test execution only:
-
-1. Run `sf project deploy start --dry-run` with relevant test classes against the default dev org.
-2. Report test results — pass/fail, coverage percentage, any failures with details.
-3. **Do not persist any changes to the org.**
-4. Update the ticket file with test results under QA Notes.
-
-### `comment jira {KEY}`
-
-Generate a review comment for the user to manually copy-paste into Jira:
-
-1. Read the local ticket file.
-2. Compose a structured comment summarising:
-   - What was implemented (components, files changed)
-   - Test results and coverage
-   - Manual setup steps required (permission sets, custom settings, etc.)
-   - How to verify/test the implementation
-   - Any known limitations or follow-up items
-3. Output the comment in chat as a formatted text block the user can copy.
-4. **Do not post to Jira** — this skill is read-only on the Jira platform.
+- Auth failures: report HTTP status only, suggest re-checking credentials
+- 404 on ticket: report that the key was not found
+- Rate limiting (429): report and suggest waiting
+- Network errors: report the error type, not raw stack traces
+- **Never** include auth headers or tokens in error messages
+- **Never** retry with modified HTTP methods — all Jira calls are GET only
 
 ## Security Rules
 
