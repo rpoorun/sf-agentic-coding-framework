@@ -6,7 +6,7 @@ This file records all notable changes to `sf-agentic-coding-framework` in human-
 
 ---
 
-## [Unreleased]
+## [0.1.1] — 2026-07-07
 
 ### Added
 - **User-level framework architecture**: the entire framework (directives, standards, skills, workflows) now installs at `~/.agents/` (Unix) or `%USERPROFILE%\.agents\` (Windows) — shared across all repositories on the machine. Per-repo persistent state (credentials, tickets, board, temp data) lives at `~/.agents/{repo_name}/`, derived from the git folder name. This solves three problems: (1) credentials lost when switching repos, (2) ticket/board state tied to a single branch, (3) gitignore sprawl from framework files in every repo.

@@ -4,7 +4,7 @@ A drop-in set of AI-agent operating instructions for Salesforce projects. Clone 
 
 | Field | Value |
 | --- | --- |
-| Version | 0.0.9 |
+| Version | 0.1.1 |
 | Author | Rishikesh Poorun |
 | License | [Apache License 2.0](LICENSE) |
 | Master repository | https://github.com/rpoorun/sf-agentic-coding-framework |
