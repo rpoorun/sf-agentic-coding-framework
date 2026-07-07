@@ -138,7 +138,7 @@ Usually exclude:
 - local PMD reports
 - scratch scripts
 - generated package files not requested by the user
-- `{USER_AGENTS}/{repo_name}/.local-config.json` (per-repo credentials — never framework content; see `.agents/.local-config.template.json` for the tracked shape reference)
+- `{USER_AGENTS}/{repo_name}/.local-config.json` (per-repo credentials — never framework content; see `{USER_AGENTS}/common/templates/.local-config.template.json` for the shape reference)
 - `{USER_AGENTS}/identity.json` (author name/email — shared across repos, lives outside every repo)
 
 ## Temp Workspace

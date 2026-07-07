@@ -119,7 +119,7 @@ To register a new plugin in this manifest:
 1. Add a row to the Registered Plugins table above with the plugin's source URL, version, install command, and description.
 2. Create the plugin's skill folder under `{USER_AGENTS}/skills/{plugin-name}/SKILL.md` following the framework's standard skill format.
 3. If the plugin adds workflows, register them in the Workflow Reference Files table below.
-4. If the plugin needs local config, add a namespaced key to `.agents/.local-config.template.json` per the `_convention` block.
+4. If the plugin needs local config, add a namespaced key to `{USER_AGENTS}/common/templates/.local-config.template.json` per the `_convention` block.
 5. Commit the updated `AGENTS.md` so other users pulling this file get the plugin registration.
 
 ## Installation Manifest
@@ -134,7 +134,7 @@ This section is the portable installation record. Copy this `AGENTS.md` file int
 
 ### Registered Plugins
 
-Plugins extend the core framework with additional skills, integrations, or workflows. Each plugin is pulled from its source URL and installed under `.agents/skills/` or `.agents/workflows/` following the framework's naming conventions.
+Plugins extend the core framework with additional skills, integrations, or workflows. Each plugin is pulled from its source URL and installed under `{USER_AGENTS}/skills/` or `{USER_AGENTS}/workflows/`.
 
 | Plugin | Source | Version | Install command | Description |
 | --- | --- | --- | --- | --- |
@@ -145,19 +145,19 @@ Plugins extend the core framework with additional skills, integrations, or workf
 To install this framework into a new or existing Salesforce repository:
 
 1. **Copy this file** — place `AGENTS.md` at the repository root.
-2. **Pull the core framework** — clone or sparse-checkout the core framework repository's `.agents/` folder into the same root. Do not overwrite any existing `.agents/project/*` files if they contain project-specific data.
-3. **Run Project Bootstrap** — on first use, the agent reads `AGENTS.md`, detects that `.agents/project/*` is still boilerplate, and runs the [Project Bootstrap](.agents/workflows/PROJECT_BOOTSTRAP.md) interview to configure the project.
+2. **Run Project Bootstrap** — on first use, the agent reads `AGENTS.md`, detects that `{USER_AGENTS}/` does not exist, and runs [Step 0a of Project Bootstrap]({USER_AGENTS}/workflows/PROJECT_BOOTSTRAP.md#step-0a--initialise-user-level-framework-directory) to clone the core framework into the user-level directory and create the per-repo state directory.
+3. **Bootstrap interview** — if `.agents/project/*` is still boilerplate, the agent runs the [Project Bootstrap]({USER_AGENTS}/workflows/PROJECT_BOOTSTRAP.md) interview to configure the project.
 4. **Install plugins** — for each registered plugin, say its install command (e.g. `install Jira skills`). The agent follows the plugin's guided setup flow to configure credentials and local state.
-5. **Daily update check** — on each subsequent session, the agent runs the [Daily Update Check](.agents/directives/AGENTIC_FRAMEWORK.md#daily-update-check-automatic) to detect newer framework versions from the core repository.
+5. **Daily update check** — on each subsequent session, the agent runs the [Daily Update Check]({USER_AGENTS}/directives/AGENTIC_FRAMEWORK.md#daily-update-check-automatic) to detect newer framework versions from the core repository.
 
 ### Adding a New Plugin
 
 To register a new plugin in this manifest:
 
 1. Add a row to the Registered Plugins table above with the plugin's source URL, version, install command, and description.
-2. Create the plugin's skill folder under `.agents/skills/{plugin-name}/SKILL.md` following the framework's [standard skill format](.agents/skills/SALESFORCE_SKILLS.md#standard-skill-file-format).
+2. Create the plugin's skill folder under `{USER_AGENTS}/skills/{plugin-name}/SKILL.md` following the framework's [standard skill format]({USER_AGENTS}/skills/SALESFORCE_SKILLS.md#standard-skill-file-format).
 3. If the plugin adds workflows, register them in the Workflow Reference Files table below.
-4. If the plugin needs local config, add a namespaced key to `.agents/.local-config.template.json` per the `_convention` block.
+4. If the plugin needs local config, add a namespaced key to `{USER_AGENTS}/common/templates/.local-config.template.json` per the `_convention` block.
 5. Commit the updated `AGENTS.md` so other users pulling this file get the plugin registration.
 
 ## Master Framework Repository

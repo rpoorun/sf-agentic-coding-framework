@@ -154,7 +154,7 @@ If a board is found, display a summary. If not, skip silently.
 
 ## Credential Loading
 
-This skill stores credentials in the **user-level framework directory** so they persist across repositories, branches, and sessions. See `_convention.user_level_structure` in `.agents/.local-config.template.json`.
+This skill stores credentials in the **user-level framework directory** so they persist across repositories, branches, and sessions. See `_convention.user_level_structure` in `{USER_AGENTS}/common/templates/.local-config.template.json`.
 
 All per-repo config lives at:
 ```

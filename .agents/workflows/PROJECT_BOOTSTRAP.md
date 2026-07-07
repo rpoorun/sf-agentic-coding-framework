@@ -55,6 +55,7 @@ Detection: run this if `{USER_AGENTS}` does not exist on disk.
    - `{USER_AGENTS}/skills/` ← from `.agents/skills/`
    - `{USER_AGENTS}/workflows/` ← from `.agents/workflows/`
    - `{USER_AGENTS}/CHANGELOG.md` ← from `.agents/CHANGELOG.md`
+   - `{USER_AGENTS}/common/templates/.local-config.template.json` ← from `.agents/.local-config.template.json`
    These are the shared framework files — installed once, available to all repos.
 
 ### Step 0b — Initialise per-repo directory
@@ -65,7 +66,7 @@ Detection: run this if `{USER_AGENTS}/{repo_name}/` does not exist on disk.
 2. Create the per-repo directory structure:
    ```
    {USER_AGENTS}/{repo_name}/
-   ├── .local-config.json    (from .agents/.local-config.template.json, blank values)
+   ├── .local-config.json    (from {USER_AGENTS}/common/templates/.local-config.template.json, blank values)
    ├── project/
    │   ├── tickets/
    │   └── board/
@@ -77,7 +78,7 @@ Detection: run this if `{USER_AGENTS}/{repo_name}/` does not exist on disk.
    │       └── DONE.MD
    └── temp/
    ```
-3. Create `.local-config.json` from the tracked template `.agents/.local-config.template.json` with blank values. This file stores per-repo credentials (Jira, org aliases, etc.).
+3. Create `.local-config.json` from the user-level template `{USER_AGENTS}/common/templates/.local-config.template.json` with blank values. This file stores per-repo credentials (Jira, org aliases, etc.).
 4. Create board lane files with empty Markdown table headers.
 
 ### Step 0c — Project doc persistence (repo-level)
