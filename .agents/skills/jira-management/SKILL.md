@@ -44,7 +44,7 @@ This skill does **not** own:
 
 ## Ticket Key Recognition
 
-After the install flow discovers project prefixes and stores them in `.agents/.local-config.json` under `jira.project_prefixes`, the agent must treat any token matching `{PREFIX}-{number}` (case-insensitive) as a Jira ticket reference. The `jira` keyword is optional:
+After the install flow discovers project prefixes and stores them in `{USER_AGENTS}/{repo_name}/.local-config.json` under `jira.project_prefixes`, the agent must treat any token matching `{PREFIX}-{number}` (case-insensitive) as a Jira ticket reference. The `jira` keyword is optional:
 
 | User says | Interpreted as |
 | --- | --- |
@@ -63,12 +63,14 @@ When a user says **"install Jira skills"** or **"init Jira"**:
 
 ### Step 1 — Check Existing Config
 
-Read `.agents/.local-config.json` and inspect the `jira` block. Identify which fields are blank:
+Read `{USER_AGENTS}/{repo_name}/.local-config.json` and inspect the `jira` block. Identify which fields are blank:
 - `base_url`
 - `email`
 - `api_token`
 
-If all three are populated, skip to Step 3.
+Where `{USER_AGENTS}` is `~/.agents/` (Unix) or `%USERPROFILE%\.agents\` (Windows) and `{repo_name}` is the basename of `git rev-parse --show-toplevel`.
+
+If the config file does not exist, create it (and the parent directories) from the template. If all three fields are populated, skip to Step 3.
 
 ### Step 2 — Prompt for Missing Values
 
@@ -87,9 +89,9 @@ Ask the user **only** for the values that are blank:
 > Please provide your Jira API token.
 > Generate one at: https://id.atlassian.com/manage-profile/security/api-tokens
 > Click **Create API token**, give it a label (e.g. "Claude Code"), and copy the value.
-> The token is stored **only** in `.agents/.local-config.json` (gitignored, never committed) and will **never** be displayed in chat.
+> The token will be stored securely in your user-level config and will **never** be displayed in chat.
 
-Write each value into `.agents/.local-config.json`. **Never echo the API token.**
+Write the credentials to `{USER_AGENTS}/{repo_name}/.local-config.json`. If the directory does not exist, create it. **Never echo the API token.**
 
 ### Step 3 — Test Connection
 
@@ -119,7 +121,7 @@ Extract each project's `key` and `name`. Present them:
 >
 > Ticket references like `DTT-115` or `COP-42` will be recognised automatically.
 
-Store prefixes in `.agents/.local-config.json` under `jira.project_prefixes`.
+Store prefixes in `{USER_AGENTS}/{repo_name}/.local-config.json` under `jira.project_prefixes`.
 
 ### Step 5 — Read the Board
 
@@ -152,7 +154,20 @@ If a board is found, display a summary. If not, skip silently.
 
 ## Credential Loading
 
-This skill follows the **framework local config convention**: all user-specific values live under a namespaced key in `.agents/.local-config.json` (gitignored, never committed). See `_convention` in `.agents/.local-config.template.json`.
+This skill stores credentials in the **user-level framework directory** so they persist across repositories, branches, and sessions. See `_convention.user_level_structure` in `.agents/.local-config.template.json`.
+
+All per-repo config lives at:
+```
+{USER_AGENTS}/{repo_name}/.local-config.json
+```
+
+Where:
+- `{USER_AGENTS}` = `~/.agents/` (Unix) or `%USERPROFILE%\.agents\` (Windows)
+- `{repo_name}` = basename of `git rev-parse --show-toplevel`
+
+This means a developer working on `client-a-platform` and `client-b-crm` has separate credentials for each project, both persisting outside the repo.
+
+### Config Shape
 
 The Jira skill owns the `jira` key:
 
@@ -180,9 +195,13 @@ Jira Cloud uses HTTP Basic Auth with email + API token:
 Authorization: Basic <base64(email:api_token)>
 ```
 
+Load credentials from the user-level per-repo config.
+
 On Windows PowerShell:
 ```powershell
-$config = Get-Content ".agents/.local-config.json" | ConvertFrom-Json
+$repoName = Split-Path (git rev-parse --show-toplevel) -Leaf
+$configPath = Join-Path $env:USERPROFILE ".agents\$repoName\.local-config.json"
+$config = Get-Content $configPath | ConvertFrom-Json
 $pair = "$($config.jira.email):$($config.jira.api_token)"
 $bytes = [System.Text.Encoding]::UTF8.GetBytes($pair)
 $base64 = [System.Convert]::ToBase64String($bytes)
@@ -191,7 +210,8 @@ $headers = @{ "Authorization" = "Basic $base64"; "Accept" = "application/json" }
 
 On Bash:
 ```bash
-config=$(cat .agents/.local-config.json)
+repo_name=$(basename "$(git rev-parse --show-toplevel)")
+config=$(cat "$HOME/.agents/$repo_name/.local-config.json")
 base_url=$(echo "$config" | jq -r '.jira.base_url')
 email=$(echo "$config" | jq -r '.jira.email')
 token=$(echo "$config" | jq -r '.jira.api_token')
@@ -316,4 +336,4 @@ function parseADF(node):
 - **Never** make POST, PUT, PATCH, or DELETE requests to the Jira API
 - **Never** include raw sensitive payloads in local ticket files
 - Sanitize error responses before displaying (remove auth details)
-- The `.agents/.local-config.json` file must remain gitignored at all times
+- All credential files live under `{USER_AGENTS}/` (outside the repo) and are inherently untracked — never copy them into a repo or commit their contents

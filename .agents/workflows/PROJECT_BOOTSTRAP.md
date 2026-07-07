@@ -2,7 +2,15 @@
 
 ## Purpose And Use
 
-This file owns two first-time checks: (1) whether this framework itself should be committed to the repository's remote or kept local-only, and (2) the setup interview that runs when `.agents/project/*` is still empty boilerplate. Read it the first time `AGENTS.md` is read in a session, before any other implementation work, whenever either detection condition below is met. Put the bootstrap detection rules, the framework-persistence question, the required-tooling check, and the interview question set here; put the durable answers themselves in the relevant `.agents/project/*` file (or `.gitignore` for the persistence decision), never in this file.
+This file owns three first-time checks: (1) initialising the user-level framework directory (`{USER_AGENTS}`), (2) whether the project docs (`.agents/project/`) should be committed or kept local-only, and (3) the setup interview that runs when `.agents/project/*` is still empty boilerplate. Read it the first time `AGENTS.md` is read in a session, before any other implementation work, whenever any detection condition below is met.
+
+**Path convention used in this file:**
+- `{USER_AGENTS}` = `~/.agents/` (Unix/macOS) or `%USERPROFILE%\.agents\` (Windows)
+- `{repo_name}` = basename of `git rev-parse --show-toplevel`
+
+## Detection: Does This Repo Need Migration?
+
+If this repo has framework files at `{repo}/.agents/directives/`, `{repo}/.agents/standards/`, `{repo}/.agents/skills/`, or `{repo}/.agents/workflows/` — it is a pre-user-level install that needs migration. Run the [Migration procedure]({USER_AGENTS}/directives/AGENTIC_FRAMEWORK.md#migration--upgrading-from-repo-level-to-user-level-architecture) in `AGENTIC_FRAMEWORK.md` before proceeding with bootstrap. This moves framework files to `{USER_AGENTS}/`, per-repo state to `{USER_AGENTS}/{repo_name}/`, and cleans up the repo.
 
 ## Detection: Is This Project Still Unconfigured?
 
@@ -10,17 +18,78 @@ Treat the project as **not yet bootstrapped** if `.agents/project/ENVIRONMENT.md
 
 When the detection condition is met, run this workflow before starting the user's actual task, unless the user's request is itself trivial/read-only (e.g. "what does this repo do") — in that case answer the request first, then offer to run the bootstrap interview.
 
-## Step 0 — Framework Persistence (Runs Once, Independent Of The Detection Above)
+## Step 0 — User-Level Framework Initialisation (Runs Once Per Machine, Then Once Per Repo)
 
-This step has its own trigger, separate from the project-config detection above: run it the first time this framework is read in this repository's git context, regardless of whether `.agents/project/*` is already populated. Skip it if the decision has already been recorded (see below).
+This step has its own trigger, separate from the project-config detection above: run it the first time this framework is read in any repository's git context on this machine. Skip sub-steps that are already complete.
 
-Detection: run this check if `AGENTS.md` and `.agents/` are currently untracked by git (`git status --porcelain AGENTS.md .agents` shows them as `??`) **and** `.gitignore` does not yet contain a `# sf-agentic-coding-framework` marker line. If either `AGENTS.md`/`.agents/` are already tracked/committed, or the marker line already exists in `.gitignore`, the decision was already made — skip this step.
+### Step 0a — Initialise user-level framework directory
 
-1. Ask the user: "Should this AI-agent instruction framework (`AGENTS.md` and `.agents/`) be committed to this repository's remote and shared with the team, or kept local-only on this machine?"
-2. **If shared/remote**: take no special action — `AGENTS.md` and `.agents/` will be staged and committed normally as part of whatever the user later approves per [WORKFLOW.md](WORKFLOW.md) and [AGENT_GUARDRAILS.md](../directives/AGENT_GUARDRAILS.md). Record the decision by adding a `# sf-agentic-coding-framework: tracked in git (shared) — see PROJECT_BOOTSTRAP.md` comment line near the top of `.gitignore` (creating the file if it doesn't exist) so this question is not asked again.
-3. **If local-only**: add `AGENTS.md` and `.agents/` to `.gitignore` (with the same marker comment, e.g. `# sf-agentic-coding-framework: local-only, do not commit — see PROJECT_BOOTSTRAP.md`), then check whether they are already committed in this repo's history (`git log --oneline -- AGENTS.md .agents`). If they are, tell the user that `.gitignore` alone will not stop already-tracked files from being tracked, and ask whether to untrack them now via `git rm --cached -r AGENTS.md .agents` (leaves the files on disk, removes them from the index) — this is a Git write and requires explicit confirmation per [MANUAL_CONFIRMATION_GATES.md](../directives/MANUAL_CONFIRMATION_GATES.md) before running it.
-4. Either way, also add `.agents/.local-config.json` to `.gitignore` (regardless of the shared/local-only answer) — it stores personal identity and update-check operational state for the [Daily Update Check](../directives/AGENTIC_FRAMEWORK.md#daily-update-check-automatic), and must never be committed even when the rest of the framework is shared. Then create `.agents/.local-config.json` from the tracked template `.agents/.local-config.template.json` if it does not already exist on disk (the template is the committed shape reference; the live `.local-config.json` is the untracked local instance). At this point, ask the user for their author name and email (Question E from Step 2 may be asked here and skipped later) and pre-populate the `identity.author_name` and `identity.author_email` fields in `.local-config.json`; the `update_check` fields start blank and are populated by the first [Daily Update Check](../directives/AGENTIC_FRAMEWORK.md#daily-update-check-automatic).
-5. Proceed to Step 1 below in the same turn — this question does not block the rest of bootstrap.
+Detection: run this if `{USER_AGENTS}` does not exist on disk.
+
+1. Create the directory structure:
+   ```
+   {USER_AGENTS}/
+   ├── identity.json
+   ├── preferences.json
+   ├── common/
+   │   └── templates/
+   ```
+2. Ask the user for their **author name and email** (Question 5 from Step 2 may be asked here and skipped later). Write to `{USER_AGENTS}/identity.json`:
+   ```json
+   {
+     "author_name": "Jane Doe",
+     "author_email": "jane.doe@company.com"
+   }
+   ```
+3. Create `{USER_AGENTS}/preferences.json` with blank update-check fields:
+   ```json
+   {
+     "framework_version": "",
+     "last_checked_utc": "",
+     "last_known_version": ""
+   }
+   ```
+4. Copy the framework's directives, standards, skills, and workflows into `{USER_AGENTS}/`:
+   - `{USER_AGENTS}/directives/` ← from `.agents/directives/`
+   - `{USER_AGENTS}/standards/` ← from `.agents/standards/`
+   - `{USER_AGENTS}/skills/` ← from `.agents/skills/`
+   - `{USER_AGENTS}/workflows/` ← from `.agents/workflows/`
+   - `{USER_AGENTS}/CHANGELOG.md` ← from `.agents/CHANGELOG.md`
+   These are the shared framework files — installed once, available to all repos.
+
+### Step 0b — Initialise per-repo directory
+
+Detection: run this if `{USER_AGENTS}/{repo_name}/` does not exist on disk.
+
+1. Derive `{repo_name}` from `basename "$(git rev-parse --show-toplevel)"`.
+2. Create the per-repo directory structure:
+   ```
+   {USER_AGENTS}/{repo_name}/
+   ├── .local-config.json    (from .agents/.local-config.template.json, blank values)
+   ├── project/
+   │   ├── tickets/
+   │   └── board/
+   │       ├── INDEX.MD
+   │       ├── BACKLOG.MD
+   │       ├── IN-PROGRESS.MD
+   │       ├── BLOCKED.MD
+   │       ├── CODE-REVIEW.MD
+   │       └── DONE.MD
+   └── temp/
+   ```
+3. Create `.local-config.json` from the tracked template `.agents/.local-config.template.json` with blank values. This file stores per-repo credentials (Jira, org aliases, etc.).
+4. Create board lane files with empty Markdown table headers.
+
+### Step 0c — Project doc persistence (repo-level)
+
+Detection: run this if `AGENTS.md` is currently untracked by git (`git status --porcelain AGENTS.md` shows `??`) **and** `.gitignore` does not yet contain a `# sf-agentic-coding-framework` marker line.
+
+The framework's shared files (directives, standards, skills, workflows) now live at `{USER_AGENTS}/` — they are never committed to individual repos. The question here only applies to `AGENTS.md` (the routing file) and `.agents/project/` (team-shared project docs):
+
+1. Ask the user: "Should the project documentation (`AGENTS.md` and `.agents/project/`) be committed to this repository's remote and shared with the team, or kept local-only?"
+2. **If shared/remote**: record the decision by adding a `# sf-agentic-coding-framework: tracked in git (shared) — see PROJECT_BOOTSTRAP.md` comment line near the top of `.gitignore`.
+3. **If local-only**: add `AGENTS.md` and `.agents/` to `.gitignore` with the marker comment. If already committed, offer `git rm --cached` (requires confirmation per [MANUAL_CONFIRMATION_GATES.md](../directives/MANUAL_CONFIRMATION_GATES.md)).
+4. Proceed to Step 1 below in the same turn — this question does not block the rest of bootstrap.
 
 ## Step 1 — Required Tooling Check
 
@@ -126,7 +195,7 @@ Ask the five questions below **one at a time**, waiting for each answer before a
 
 4. **Team and release process** — "How many developers are actively working in this org or repo, and how do you deploy to higher environments — GitHub Actions, Copado, Gearset, manual `sf project deploy start`, or something else?"
 
-5. **Author identity** — "What name and email address should appear in the `@author` field of every generated Apex class and method header?" Store the answer in `.agents/.local-config.json` (gitignored, personal). This question is also asked just-in-time the first time a class/method comment is generated and no author is recorded — see [Author Identity (Required)](../standards/SALESFORCE_APEX_STANDARDS.md#author-identity-required).
+5. **Author identity** — "What name and email address should appear in the `@author` field of every generated Apex class and method header?" Store the answer in `{USER_AGENTS}/identity.json` (shared across all repos). Skip this question if identity was already captured in Step 0a. This question is also asked just-in-time the first time a class/method comment is generated and no author is recorded — see [Author Identity (Required)](../standards/SALESFORCE_APEX_STANDARDS.md#author-identity-required).
 
 ## Step 3 — Persist The Answers
 
@@ -137,7 +206,7 @@ After the interview, propose where each answer will be written (per the existing
 | Org aliases, pipeline environments, auth status | [ENVIRONMENT.md](../project/ENVIRONMENT.md) — replace the placeholder table with real aliases following the `{client name}-{project name}-{env}` convention. Use the client and project identifiers the user gave in question 4 or infer from the remote URL. |
 | Git remote URL, default branch | [PROJECT_STRUCTURE.md](../project/PROJECT_STRUCTURE.md) and/or [WORKFLOW.md](WORKFLOW.md). |
 | Team size, release tooling | [WORKFLOW.md](WORKFLOW.md) — add a "Project Process" section documenting the team's actual release process (this supersedes generic guidance, it does not duplicate it). |
-| Author name/email | `.agents/.local-config.json` (`identity.author_name`, `identity.author_email`) — gitignored, local-only. Only write to [ENVIRONMENT.md](../project/ENVIRONMENT.md#author-identity) if the user explicitly wants a team-shared author identity committed to the repo. |
+| Author name/email | `{USER_AGENTS}/identity.json` (`author_name`, `author_email`) — user-level, shared across all repos. Only write to [ENVIRONMENT.md](../project/ENVIRONMENT.md#author-identity) if the user explicitly wants a team-shared author identity committed to the repo. |
 
 Never write personal credentials, tokens, or session details discovered during this interview into any tracked file — see [TRUST_DATA_SECURITY.md](../directives/TRUST_DATA_SECURITY.md).
 

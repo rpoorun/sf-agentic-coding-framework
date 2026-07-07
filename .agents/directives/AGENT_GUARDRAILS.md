@@ -133,52 +133,54 @@ Usually exclude:
 - `.sf`
 - `.sfdx`
 - debug logs
-- `.agents/temp/` (see Temp Workspace below)
+- `{USER_AGENTS}/{repo_name}/temp/` (see Temp Workspace below)
 - coverage output
 - local PMD reports
 - scratch scripts
 - generated package files not requested by the user
-- `.agents/.local-config.json` (local-only identity, credentials, and update-check operational state — never framework content; see `.agents/.local-config.template.json` for the tracked shape reference)
+- `{USER_AGENTS}/{repo_name}/.local-config.json` (per-repo credentials — never framework content; see `.agents/.local-config.template.json` for the tracked shape reference)
+- `{USER_AGENTS}/identity.json` (author name/email — shared across repos, lives outside every repo)
 
 ## Temp Workspace
 
-All transient, intermediate, and retrieved data that should never be committed must go into `.agents/temp/`. This folder is gitignored and exists solely as a local scratch area for agent operations.
+All transient, intermediate, and retrieved data that should never be committed must go into the per-repo temp workspace at `{USER_AGENTS}/{repo_name}/temp/`. This directory lives outside the repo (under the user-level framework directory) and exists solely as a local scratch area for agent operations.
 
-### What belongs in `.agents/temp/`
+`{USER_AGENTS}` is `~/.agents/` (Unix) or `%USERPROFILE%\.agents\` (Windows). `{repo_name}` is the basename of `git rev-parse --show-toplevel`.
 
-- Retrieved org metadata for diff/analysis (e.g. `sf project retrieve start --output-dir .agents/temp/retrieve-{KEY}`)
+### What belongs in `{USER_AGENTS}/{repo_name}/temp/`
+
+- Retrieved org metadata for diff/analysis (e.g. `sf project retrieve start --output-dir {USER_AGENTS}/{repo_name}/temp/retrieve-{KEY}`)
 - Dry-deploy output and validation results
 - Coverage reports and PMD scan output
-- Master framework clone during update checks
+- Master framework clone during update checks (at `{USER_AGENTS}/temp/framework-update/` — shared, not per-repo)
 - Any intermediate files generated during `analyse`, `build`, or `test` workflows
 - API response caches (field metadata, project lists)
 
-### What does NOT belong in `.agents/temp/`
+### What does NOT belong in temp
 
-- Credentials, tokens, or secrets (those go in `.agents/.local-config.json`)
-- Ticket files or board state (those go in `.agents/project/`)
+- Credentials, tokens, or secrets (those go in `{USER_AGENTS}/{repo_name}/.local-config.json`)
+- Ticket files or board state (those go in `{USER_AGENTS}/{repo_name}/project/`)
 - Anything the user expects to persist across sessions
 
 ### Cleanup rules
 
-The agent must clean up `.agents/temp/` in the following situations:
+The agent must clean up `{USER_AGENTS}/{repo_name}/temp/` in the following situations:
 
-1. **Before branch checkout** — delete the contents of `.agents/temp/` before switching branches to prevent cross-branch contamination.
-2. **Before merge** — delete the contents of `.agents/temp/` before merging to ensure no transient data leaks into the merge commit.
-3. **After workflow completion** — when a `build`, `deploy`, or `test` workflow completes successfully, remove the workflow-specific temp subfolder (e.g. `.agents/temp/retrieve-DTT-115/`).
-4. **On session start** — if `.agents/temp/` contains stale data from a previous session, warn the user and offer to clean it up.
+1. **Before branch checkout** — delete the contents of the temp directory before switching branches to prevent cross-branch contamination.
+2. **Before merge** — delete the contents of the temp directory before merging to ensure no transient data leaks into the merge commit.
+3. **After workflow completion** — when a `build`, `deploy`, or `test` workflow completes successfully, remove the workflow-specific temp subfolder (e.g. `retrieve-DTT-115/`).
+4. **On session start** — if the temp directory contains stale data from a previous session, warn the user and offer to clean it up.
 
 ### Folder structure convention
 
-Use descriptive subfolders within `.agents/temp/` to keep operations isolated:
+Use descriptive subfolders within `{USER_AGENTS}/{repo_name}/temp/` to keep operations isolated:
 
 ```
-.agents/temp/
+{USER_AGENTS}/{repo_name}/temp/
 ├── retrieve-{KEY}/        # Retrieved org metadata for a specific ticket
 ├── deploy-{KEY}/          # Dry-deploy output for a specific ticket
 ├── coverage/              # Test coverage reports
-├── pmd/                   # PMD scan results
-└── framework-update/      # Master framework clone during update check
+└── pmd/                   # PMD scan results
 ```
 
 ## Communication Standard

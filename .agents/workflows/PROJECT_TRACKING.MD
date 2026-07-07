@@ -15,7 +15,7 @@ This workflow does **not** own:
 
 **One ticket = one file = one source of truth.**
 
-Every ticket is represented by exactly one Markdown file at `.agents/project/tickets/{KEY}.md`. This file is the central record for the ticket across the entire lifecycle. Every operation — regardless of which skill, workflow, or framework layer performs it — reads from and writes back to this same file:
+Every ticket is represented by exactly one Markdown file at `{USER_AGENTS}/{repo_name}/project/tickets/{KEY}.md` (where `{USER_AGENTS}` is `~/.agents/` on Unix or `%USERPROFILE%\.agents\` on Windows, and `{repo_name}` is the basename of `git rev-parse --show-toplevel`). This file lives **outside the repo** so it persists across branches, sessions, and sandboxes. Every operation — regardless of which skill, workflow, or framework layer performs it — reads from and writes back to this same file:
 
 - The **Jira skill** initialises the file with ticket metadata, description, acceptance criteria, solution, dependencies, and comments.
 - The **`analyse` command** writes the implementation plan, impact assessment, file scope, and test scenarios into the same file.
@@ -47,7 +47,7 @@ When the user says a command followed by a ticket key (e.g. `analyse DTT-115`), 
 
 When ticket data arrives (from the Jira fetch workflow or any other source):
 
-### If a local ticket file exists at `.agents/project/tickets/{KEY}.md`:
+### If a local ticket file exists at `{USER_AGENTS}/{repo_name}/project/tickets/{KEY}.md`:
 1. Read the local file
 2. Compare the incoming `updated` timestamp against the local `Last Synced`
 3. Identify changes: field updates, new comments, status changes
@@ -72,7 +72,7 @@ Update the agile board lane to match the ticket's current status.
 
 One self-contained Markdown file per ticket:
 ```
-.agents/project/tickets/{KEY}.md
+{USER_AGENTS}/{repo_name}/project/tickets/{KEY}.md
 ```
 
 ### Ticket File Template
@@ -181,7 +181,7 @@ One self-contained Markdown file per ticket:
    - Manual steps — pre-deploy and post-deploy actions
    - Test scenarios — derived from acceptance criteria
    - Risk assessment — deployment conflicts, data migration, permission changes
-4. **Diff local repo against dev org** — retrieve relevant metadata into `.agents/temp/retrieve-{KEY}/` (see [Temp Workspace](../directives/AGENT_GUARDRAILS.md#temp-workspace)), diff against local source, document affected metadata.
+4. **Diff local repo against dev org** — retrieve relevant metadata into `{USER_AGENTS}/{repo_name}/temp/retrieve-{KEY}/` (see [Temp Workspace](../directives/AGENT_GUARDRAILS.md#temp-workspace)), diff against local source, document affected metadata.
 5. **Save to ticket file** — write the implementation plan, file scope, and impact assessment into the local ticket file.
 6. **Report in chat** — summarise the analysis and flag blockers or questions.
 7. **Do not modify any source files** — analysis only.
@@ -257,7 +257,7 @@ This command is self-contained — it does not delegate to another workflow.
 
 ### Board Structure
 
-The board lives under `.agents/project/board/` with these lane files:
+The board lives under `{USER_AGENTS}/{repo_name}/project/board/` with these lane files (created during project bootstrap if they don't exist):
 
 | File | Purpose |
 | --- | --- |

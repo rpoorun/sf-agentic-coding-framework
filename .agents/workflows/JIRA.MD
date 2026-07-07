@@ -32,7 +32,7 @@ Commands other than `fetch` (`analyse`, `build`, `deploy`, `test`, `comment`) ar
    Check if the branch name contains the ticket key.
 
 2. **Load Jira config**
-   Read `.agents/.local-config.json` → `jira` block. If any credential is blank, run the install flow (see [SKILL.md Install / Setup Flow](../skills/jira-management/SKILL.md#install--setup-flow)).
+   Read `{USER_AGENTS}/{repo_name}/.local-config.json` → `jira` block, where `{USER_AGENTS}` is `~/.agents/` (Unix) or `%USERPROFILE%\.agents\` (Windows) and `{repo_name}` is the basename of `git rev-parse --show-toplevel`. See [SKILL.md Credential Loading](../skills/jira-management/SKILL.md#credential-loading). If the config file does not exist or any credential is blank, run the install flow (see [SKILL.md Install / Setup Flow](../skills/jira-management/SKILL.md#install--setup-flow)).
 
 3. **Test auth** (first call in session or after a failure)
    ```

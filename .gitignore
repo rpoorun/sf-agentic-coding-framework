@@ -1,14 +1,11 @@
 # sf-agentic-coding-framework: framework persistence decision recorded here — see PROJECT_BOOTSTRAP.md
+# Framework files (directives, standards, skills, workflows) are installed at the user level
+# (~/.agents/ or %USERPROFILE%\.agents\) and are NOT stored in this repo. Only AGENTS.md (router)
+# and .agents/project/ (team-shared docs) live in the repo.
 
-# Local-only agent config: personal identity, credentials, and update-check state — never commit
+# Local config template is tracked; actual config lives at ~/.agents/{repo_name}/.local-config.json
+# (outside the repo). This entry is kept for safety in case any tool creates one locally.
 .agents/.local-config.json
-
-# Agent temp workspace: retrieved metadata, dry-deploy output, coverage reports, framework update
-# scratch, and any other transient data. Must be cleaned before branch checkout or merge.
-.agents/temp/
-
-# Legacy single-line update-check marker (superseded by .local-config.json in v0.0.8)
-.agents/.update-check
 
 # Salesforce DX scratch directories
 .sfdx/

@@ -51,10 +51,10 @@ Once this framework is cloned or installed into a client/project repository (a "
 
 In a local install (this check does not apply when working directly in the master repository itself — compare the local install's `AGENTS.md` "Master repository" field against the repo currently being worked in; skip if they match), check once per calendar day whether the master framework has a newer version than what's installed locally:
 
-1. Track the last check in a local-only configuration file, `.agents/.local-config.json`. Read the `update_check.last_checked_utc` field (ISO 8601 UTC datetime, e.g. `"2026-07-01T08:00:00Z"`). If the file does not yet exist, create it from `.agents/.local-config.template.json` (tracked template in the same folder) before proceeding. This file is operational state, not framework content — it must never be proposed for contribution back to the master repo, and must be listed in `.gitignore` regardless of the framework-persistence decision (see [PROJECT_BOOTSTRAP.md](../workflows/PROJECT_BOOTSTRAP.md#step-0--framework-persistence-runs-once-independent-of-the-detection-above)).
+1. Track the last check in the user-level preferences file, `{USER_AGENTS}/preferences.json` (where `{USER_AGENTS}` is `~/.agents/` on Unix or `%USERPROFILE%\.agents\` on Windows). Read the `last_checked_utc` field (ISO 8601 UTC datetime, e.g. `"2026-07-01T08:00:00Z"`). If the file does not yet exist, run [Step 0a of PROJECT_BOOTSTRAP.md](../workflows/PROJECT_BOOTSTRAP.md#step-0a--initialise-user-level-framework-directory) to create the user-level framework directory. This file lives outside any repo and is never committed.
 2. At the start of the first turn in a session, extract the calendar date from `last_checked_utc` and compare to today's local date. If the recorded date is already today, skip the rest of this check for the remainder of the session.
 3. Otherwise, read the master repository's current version with a lightweight, read-only fetch — no full clone needed. For example: `gh api repos/rpoorun/sf-agentic-coding-framework/contents/AGENTS.md --jq '.content' | base64 -d | grep -m1 '| Version |'` (or `curl` against the raw file URL). This is a read-only network call and does not require confirmation under [MANUAL_CONFIRMATION_GATES.md](MANUAL_CONFIRMATION_GATES.md).
-4. Compare the master's version to the local install's `AGENTS.md` "Version" field. Update `.agents/.local-config.json` — set `update_check.last_checked_utc` to the current UTC datetime and `update_check.last_known_version` to the master version just read — regardless of the outcome, so the check does not repeat later the same day.
+4. Compare the master's version to the local install's `AGENTS.md` "Version" field. Update `{USER_AGENTS}/preferences.json` — set `last_checked_utc` to the current UTC datetime and `last_known_version` to the master version just read — regardless of the outcome, so the check does not repeat later the same day.
 5. If the master version is newer, **do not silently apply it**: tell the user a newer framework version is available (state both version numbers), relay the relevant [CHANGELOG.md](../CHANGELOG.md) entries so the user understands what changed, and run [Scenario 1](#scenario-1--pulling-framework-updates-into-a-local-install-update--upgrade) below to fetch, diff, and classify the changes. After the merge is approved and applied, re-run [Step 1 — Required Tooling Check](../workflows/PROJECT_BOOTSTRAP.md#step-1--required-tooling-check) to catch any new tool dependencies introduced by the updated framework version. The minor/major classification and approval gates in Scenario 1 still apply in full — the only thing this daily check automates is *noticing* the update exists; it never skips the approval step for major changes or conflicts.
 6. If the user is mid-task when the check fires, mention the available update briefly (one phrase, per [Chat Brevity While Working](AGENT_GUARDRAILS.md#chat-brevity-while-working)) and offer to run the update now or after the current task — do not interrupt unrelated work to force the update through immediately.
 7. If the read-only version check itself fails (no network, repo unreachable, rate-limited), do not block or retry-loop; note it once and continue normally. Do not update the marker file on a failed check, so it retries on the next turn instead of waiting a full day.
@@ -65,13 +65,70 @@ Trigger: the user of a local install wants the latest directives, standards, ski
 
 Procedure:
 
-1. Fetch the master framework into the standard temp workspace — clone `https://github.com/rpoorun/sf-agentic-coding-framework` (or the requested tag/release) into `.agents/temp/framework-update/`. This folder is gitignored and cleaned up after the merge completes (see [Temp Workspace](AGENT_GUARDRAILS.md#temp-workspace)). Never fetch directly on top of the local install's working tree.
-2. Diff the temp copy against the local install's `AGENTS.md` and `.agents/` file-by-file. Classify each difference as: new file (master added something local doesn't have), changed file (both sides touched it), or local-only file (project facts, client overrides — master has no equivalent).
+1. Fetch the master framework into a temp workspace — clone `https://github.com/rpoorun/sf-agentic-coding-framework` (or the requested tag/release) into `{USER_AGENTS}/temp/framework-update/`. This directory is cleaned up after the merge completes (see [Temp Workspace](AGENT_GUARDRAILS.md#temp-workspace)). Never fetch directly on top of the installed framework files.
+2. Diff the temp copy against the installed framework at `{USER_AGENTS}/` (directives, standards, skills, workflows) file-by-file. Classify each difference as: new file (master added something local doesn't have), changed file (both sides touched it), or local-only file (project facts, client overrides — master has no equivalent).
 3. Merge with **local instructions taking precedence**: the existing local install's content supersedes the incoming update wherever they conflict. The update is additive/advisory, not authoritative, over local tailoring. New files with no local equivalent (new skills, new directive sections) can be added directly. Changed shared files (e.g. a directive or standard both sides edited) require a reconciled merge, not a blind overwrite.
 4. Detect impact level before applying anything: classify each incoming change as **minor** (wording, additive guidance, new optional skill) or **major** (changed confirmation gates, changed mandatory workflow steps, renamed/restructured folders, removed skills the project depends on, conflicting coding standards).
 5. **Stop and seek explicit user approval before merging** when the change is major, or when any conflict exists between local and incoming content. Present the user with: which files are affected, a summary of what changed, why it's classified minor/major, and the specific consequence of accepting vs. rejecting each conflicting change. Do not silently resolve conflicts in favor of either side.
 6. Once approved, apply the merge, re-run the synthesis procedure above for any newly pulled skills, and report exactly what was merged, what was rejected/kept-local, and what still needs a follow-up decision.
-7. Never overwrite `.agents/project/*` (project-specific facts) from the master framework — those files have no upstream equivalent and are always local-only.
+7. Never overwrite per-repo state (`{USER_AGENTS}/{repo_name}/`) or repo-level project docs (`.agents/project/*`) from the master framework — those are always local-only. The update applies only to the shared framework files at `{USER_AGENTS}/directives/`, `{USER_AGENTS}/standards/`, `{USER_AGENTS}/skills/`, `{USER_AGENTS}/workflows/`, and `{USER_AGENTS}/CHANGELOG.md`.
+
+### Migration — Upgrading From Repo-Level To User-Level Architecture
+
+Trigger: a local install still has framework files (directives, standards, skills, workflows) inside the repository's `.agents/` folder instead of at `{USER_AGENTS}/`. This applies to any install from framework version ≤ 0.0.9 upgrading to the user-level architecture introduced in the next release.
+
+Detection: run this check at the start of Scenario 1 (after fetching the master framework into temp) if the incoming version introduces the user-level architecture. Detect by checking whether `{repo}/.agents/directives/` exists **and** `{USER_AGENTS}/directives/` does not — if both conditions are true, a migration is needed.
+
+**Migration procedure** (requires explicit user confirmation before each destructive step):
+
+1. **Inform the user**: "This update introduces a user-level framework architecture. Framework files (directives, standards, skills, workflows) will be moved from this repo to `{USER_AGENTS}/`, and per-repo state (credentials, tickets, board) will be moved to `{USER_AGENTS}/{repo_name}/`. This is a one-time migration."
+
+2. **Initialise the user-level directory** — run [Step 0a of PROJECT_BOOTSTRAP.md](../workflows/PROJECT_BOOTSTRAP.md#step-0a--initialise-user-level-framework-directory) if `{USER_AGENTS}/` does not exist.
+
+3. **Copy framework files from repo to user-level**:
+   - `{repo}/.agents/directives/` → `{USER_AGENTS}/directives/`
+   - `{repo}/.agents/standards/` → `{USER_AGENTS}/standards/`
+   - `{repo}/.agents/skills/` → `{USER_AGENTS}/skills/`
+   - `{repo}/.agents/workflows/` → `{USER_AGENTS}/workflows/`
+   - `{repo}/.agents/CHANGELOG.md` → `{USER_AGENTS}/CHANGELOG.md`
+   - `{repo}/.agents/.local-config.template.json` → `{USER_AGENTS}/common/templates/.local-config.template.json` (reference copy)
+   Do not overwrite if `{USER_AGENTS}/` already has files from a prior migration of another repo.
+
+4. **Migrate per-repo state** — create `{USER_AGENTS}/{repo_name}/` and move:
+   - `{repo}/.agents/.local-config.json` → `{USER_AGENTS}/{repo_name}/.local-config.json` (credentials)
+   - `{repo}/.agents/project/tickets/` → `{USER_AGENTS}/{repo_name}/project/tickets/` (ticket files)
+   - `{repo}/.agents/project/board/` → `{USER_AGENTS}/{repo_name}/project/board/` (board lanes)
+   - `{repo}/.agents/temp/` → `{USER_AGENTS}/{repo_name}/temp/` (or simply delete — temp data is transient)
+
+5. **Migrate identity** — if `{repo}/.agents/.local-config.json` contains `identity.author_name` and `identity.author_email`, extract them into `{USER_AGENTS}/identity.json`. If `{USER_AGENTS}/identity.json` already exists with values, skip (do not overwrite).
+
+6. **Migrate update check state** — if `{repo}/.agents/.local-config.json` contains `update_check.*` fields, extract them into `{USER_AGENTS}/preferences.json`.
+
+7. **Ask user to confirm deletion** — present the list of repo-level files that will be removed:
+   - `{repo}/.agents/directives/` (entire directory)
+   - `{repo}/.agents/standards/` (entire directory)
+   - `{repo}/.agents/skills/` (entire directory)
+   - `{repo}/.agents/workflows/` (entire directory)
+   - `{repo}/.agents/CHANGELOG.md`
+   - `{repo}/.agents/.local-config.json`
+   - `{repo}/.agents/.local-config.template.json`
+   - `{repo}/.agents/project/board/` (moved to user-level)
+   - `{repo}/.agents/project/tickets/` (moved to user-level)
+   - `{repo}/.agents/temp/` (transient data)
+
+   **Keep in the repo** (do not delete):
+   - `{repo}/AGENTS.md` (routing document — will be updated with new paths)
+   - `{repo}/.agents/project/*.md` (team-shared project docs: ENVIRONMENT.md, ARCHITECTURE.md, etc.)
+
+8. **Delete after confirmation** — remove the files listed above. If any are tracked by git, use `git rm -r` (requires git write confirmation per [MANUAL_CONFIRMATION_GATES.md](MANUAL_CONFIRMATION_GATES.md)). If untracked, delete from disk.
+
+9. **Update `.gitignore`** — remove entries for `.agents/.local-config.json`, `.agents/temp/`, and `.agents/.update-check` (these no longer exist in the repo). Keep or add a comment explaining the user-level architecture.
+
+10. **Update `AGENTS.md`** — replace the repo's `AGENTS.md` with the version from the incoming update, which already has `{USER_AGENTS}/` paths. Preserve any project-specific customisations the user may have added.
+
+11. **Report** — summarise what was migrated, what was deleted, and confirm the user-level directory is ready. Suggest the user run `install Jira skills` (or any other plugin) to verify credentials are accessible from the new location.
+
+After the migration completes, proceed with the normal Scenario 1 merge for any remaining framework changes.
 
 ### Scenario 2 — Forking Learned Improvements Back To The Master Framework (Contribute Back)
 
@@ -160,12 +217,24 @@ This framework is not only for reorganizing another repository. It also governs 
 
 Target folder architecture and labels:
 
-.agents/
-  directives/    # Mandatory rules: what the agent must obey.
-  standards/     # Quality rules: what good work must look like.
-  skills/        # Capability routing: which skill/tool/capability applies.
-  workflows/     # Repeatable processes: which steps the agent follows.
-  project/       # Repository facts: what is true about this project.
+The framework uses a split architecture:
+
+{USER_AGENTS}/                # User-level (shared across all repos)
+  directives/                 # Mandatory rules: what the agent must obey.
+  standards/                  # Quality rules: what good work must look like.
+  skills/                     # Capability routing: which skill/tool/capability applies.
+  workflows/                  # Repeatable processes: which steps the agent follows.
+  identity.json               # Author name and email.
+  preferences.json            # Framework version, update check state.
+  {repo_name}/                # Per-repo persistent state.
+    .local-config.json        # Project credentials.
+    project/tickets/          # Local ticket files.
+    project/board/            # Agile board lanes.
+    temp/                     # Transient data.
+
+{repo}/                       # In each project repo
+  AGENTS.md                   # Router — points to {USER_AGENTS}/ paths.
+  .agents/project/            # Repository facts: what is true about this project.
 
 Folder scope and function:
 

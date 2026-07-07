@@ -8,6 +8,24 @@ This file records all notable changes to `sf-agentic-coding-framework` in human-
 
 ## [Unreleased]
 
+### Added
+- **User-level framework architecture**: the entire framework (directives, standards, skills, workflows) now installs at `~/.agents/` (Unix) or `%USERPROFILE%\.agents\` (Windows) — shared across all repositories on the machine. Per-repo persistent state (credentials, tickets, board, temp data) lives at `~/.agents/{repo_name}/`, derived from the git folder name. This solves three problems: (1) credentials lost when switching repos, (2) ticket/board state tied to a single branch, (3) gitignore sprawl from framework files in every repo.
+- **`identity.json` and `preferences.json`** at user-level root: author name/email shared across all repos; framework version and update-check state in one place.
+- **Per-repo credential isolation**: developers working on multiple clients (e.g. `client-a-platform`, `client-b-crm`) get separate `.local-config.json` files per project, each with its own Jira credentials and org aliases.
+- **Simplified repo footprint**: project repos now contain only `AGENTS.md` (routing document) and `.agents/project/` (team-shared docs like ENVIRONMENT.md, ARCHITECTURE.md). All framework files, tickets, board state, and credentials live outside the repo.
+- **Automatic migration from repo-level installs**: existing installs (v0.0.9 and earlier) are detected on first session and migrated automatically — framework files are copied to `{USER_AGENTS}/`, per-repo state (credentials, tickets, board) is moved to `{USER_AGENTS}/{repo_name}/`, and old repo-level files are deleted after user confirmation. See the Migration section in `AGENTIC_FRAMEWORK.md`.
+
+### Changed
+- `AGENTS.md` — all path references updated from `.agents/` to `{USER_AGENTS}/` notation; Installation Manifest now installs to user-level directory; reference tables use user-level paths; project docs remain at `.agents/project/` in-repo.
+- `PROJECT_BOOTSTRAP.md` — Step 0 rewritten as three sub-steps: (0a) initialise user-level framework directory and identity, (0b) initialise per-repo state directory, (0c) project doc persistence decision (simplified — only applies to `AGENTS.md` and `.agents/project/`, not the full framework).
+- `AGENTIC_FRAMEWORK.md` — Daily Update Check reads `{USER_AGENTS}/preferences.json` instead of `.agents/.local-config.json`; Scenario 1 (pull updates) targets `{USER_AGENTS}/` instead of `{repo}/.agents/`; Copy-Paste Prompt updated with split architecture.
+- `AGENT_GUARDRAILS.md` — Generated Files and Temp Workspace sections updated to `{USER_AGENTS}/{repo_name}/temp/` paths.
+- `jira-management/SKILL.md` — credential loading simplified to single location at `{USER_AGENTS}/{repo_name}/.local-config.json`; auth code examples rewritten for user-level paths; install flow updated.
+- `JIRA.MD` — config loading updated to user-level per-repo path.
+- `PROJECT_TRACKING.MD` — ticket file path updated to `{USER_AGENTS}/{repo_name}/project/tickets/{KEY}.md`; board path updated to `{USER_AGENTS}/{repo_name}/project/board/`; explicitly notes that files persist across branches and sessions.
+- `.local-config.template.json` — convention block rewritten with `user_level_structure` documenting the full `{USER_AGENTS}/` directory tree; `identity` and `update_check` keys removed (moved to separate user-level files).
+- `.gitignore` — simplified; removed `.agents/temp/` and `.agents/.update-check` entries (these no longer exist in repo).
+
 ---
 
 ## [0.0.9] — 2026-07-06
