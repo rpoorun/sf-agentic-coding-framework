@@ -8,9 +8,20 @@ This file owns three first-time checks: (1) initialising the user-level framewor
 - `{USER_AGENTS}` = `~/.agents/` (Unix/macOS) or `%USERPROFILE%\.agents\` (Windows)
 - `{repo_name}` = basename of `git rev-parse --show-toplevel`
 
+## Master Repository Guard
+
+Before running any migration, bootstrap, or cleanup logic, check whether the current repo **is** the master framework repository. If it is, skip all migration and deletion steps — the master repo is the canonical source and must keep its full `.agents/` tree.
+
+Detection (conservative — all three checks must pass to identify as master):
+1. `AGENTS.md` contains a "Master repository" field whose URL matches the current repo's `git remote get-url origin` (compare hostname and path, ignore `.git` suffix and protocol).
+2. The repo name (basename of `git rev-parse --show-toplevel`) is `sf-agentic-coding-framework`.
+3. `.agents/directives/`, `.agents/standards/`, `.agents/skills/`, and `.agents/workflows/` all exist and are tracked by git.
+
+If all three match, this is the master repo. Do not run migration. Do not delete `.agents/` subdirectories. Do not run Step 0a/0b (framework files are read directly from `.agents/`). The bootstrap interview (Steps 1–3) may still run if `.agents/project/*` is boilerplate, but framework source folders must remain untouched.
+
 ## Detection: Does This Repo Need Migration?
 
-If this repo has framework files at `{repo}/.agents/directives/`, `{repo}/.agents/standards/`, `{repo}/.agents/skills/`, or `{repo}/.agents/workflows/` — it is a pre-user-level install that needs migration. Run the [Migration procedure]({USER_AGENTS}/directives/AGENTIC_FRAMEWORK.md#migration--upgrading-from-repo-level-to-user-level-architecture) in `AGENTIC_FRAMEWORK.md` before proceeding with bootstrap. This moves framework files to `{USER_AGENTS}/`, per-repo state to `{USER_AGENTS}/{repo_name}/`, and cleans up the repo.
+If this repo has framework files at `{repo}/.agents/directives/`, `{repo}/.agents/standards/`, `{repo}/.agents/skills/`, or `{repo}/.agents/workflows/` — **and** the repo is not the master framework repository (see guard above) — it is a pre-user-level install that needs migration. Run the [Migration procedure]({USER_AGENTS}/directives/AGENTIC_FRAMEWORK.md#migration--upgrading-from-repo-level-to-user-level-architecture) in `AGENTIC_FRAMEWORK.md` before proceeding with bootstrap. This moves framework files to `{USER_AGENTS}/`, per-repo state to `{USER_AGENTS}/{repo_name}/`, and cleans up the repo.
 
 ## Detection: Is This Project Still Unconfigured?
 

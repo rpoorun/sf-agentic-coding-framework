@@ -144,10 +144,10 @@ If a board is found, display a summary. If not, skip silently.
 > | Command | What it does | Handled by |
 > | --- | --- | --- |
 > | `fetch DTT-115` | Pull latest ticket details from Jira, create/update local ticket file | Jira skill → Project tracking |
-> | `analyse DTT-115` | Requirements analysis, org diff, implementation plan | Project tracking → [SPECIFICATION](../../project/SPECIFICATION.md), [IMPLEMENTATION_PLAN](IMPLEMENTATION_PLAN.md) |
-> | `build DTT-115` | Implement locally, build tests, dry deploy, produce manifest | Project tracking → [DEPLOYMENT](DEPLOYMENT.md), [TESTING](TESTING.md) |
-> | `deploy DTT-115` | Show manifest, confirm, deploy to dev org | Project tracking → [DEPLOYMENT](DEPLOYMENT.md) |
-> | `test DTT-115` | Dry deploy with test runs only | Project tracking → [DEPLOYMENT](DEPLOYMENT.md), [TESTING](TESTING.md) |
+> | `analyse DTT-115` | Requirements analysis, org diff, implementation plan | Project tracking → [SPECIFICATION](../../project/SPECIFICATION.md), [IMPLEMENTATION_PLAN](../../workflows/IMPLEMENTATION_PLAN.md) |
+> | `build DTT-115` | Implement locally, build tests, dry deploy, produce manifest | Project tracking → [DEPLOYMENT](../../workflows/DEPLOYMENT.md), [TESTING](../../workflows/TESTING.md) |
+> | `deploy DTT-115` | Show manifest, confirm, deploy to dev org | Project tracking → [DEPLOYMENT](../../workflows/DEPLOYMENT.md) |
+> | `test DTT-115` | Dry deploy with test runs only | Project tracking → [DEPLOYMENT](../../workflows/DEPLOYMENT.md), [TESTING](../../workflows/TESTING.md) |
 > | `comment DTT-115` | Generate review comment for manual paste into Jira | Project tracking |
 >
 > All Jira access is read-only. Local file creation and Salesforce org deploys follow the framework's existing confirmation gates.

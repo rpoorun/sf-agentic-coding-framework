@@ -11,7 +11,11 @@
 
 ## Framework Location
 
-This framework uses a **user-level architecture**. Shared framework files (directives, standards, skills, workflows) are installed once at the user level and shared across all repositories on this machine. Per-repo state (credentials, tickets, board, temp data) is stored in a repo-named subdirectory at the user level, persisting across branches and sessions.
+This framework uses a **user-level architecture**. There are three contexts:
+
+1. **Master framework repository** (this repo, `sf-agentic-coding-framework`): contains the full `.agents/` source tree — directives, standards, skills, workflows, and CHANGELOG. This is the canonical source from which installs are cloned. Do not run migration, do not delete `.agents/` folders, do not treat this repo as a local install.
+2. **Installed project repository** (a Salesforce project using this framework): contains only `AGENTS.md` (routing document) and `.agents/project/` (team-shared docs). All framework files are installed at the user level.
+3. **User-level runtime install** (`{USER_AGENTS}/`): shared framework files (directives, standards, skills, workflows) installed once per machine. Per-repo state (credentials, tickets, board, temp data) is stored in a repo-named subdirectory, persisting across branches and sessions.
 
 | Shorthand | Unix/macOS | Windows | Purpose |
 | --- | --- | --- | --- |
@@ -22,11 +26,11 @@ This framework uses a **user-level architecture**. Shared framework files (direc
 
 ## Purpose And Use
 
-`AGENTS.md` is the first file AI-assisted coding agents must read in this repository. It is the **router** that points to framework files at `{USER_AGENTS}/` and project-specific docs at `.agents/project/`. Use it before changing source, metadata, documentation, org state, or Git state.
+`AGENTS.md` is the first file AI-assisted coding agents must read in this repository. It is the **router** that points to framework files — either at `{USER_AGENTS}/` (in an installed project) or at `.agents/` (in the master framework repository itself). Use it before changing source, metadata, documentation, org state, or Git state.
 
-If `{USER_AGENTS}/` does not exist on this machine, or `{USER_AGENTS}/{repo_name}/` does not exist for this repo, or `.agents/project/*` is still empty/boilerplate, run [Project Bootstrap]({USER_AGENTS}/workflows/PROJECT_BOOTSTRAP.md) before other work — it initialises the user-level directory, creates the per-repo state, and interviews the user to populate org, VCS, team, and process facts.
+**In the master framework repository** (`sf-agentic-coding-framework`): framework files are read directly from `.agents/` — the same paths that `{USER_AGENTS}/` would resolve to in a local install. Do not run migration, bootstrap, or delete framework source folders.
 
-In a local install, also run the [Daily Update Check]({USER_AGENTS}/directives/AGENTIC_FRAMEWORK.md#daily-update-check-automatic) once per calendar day to see whether the master repository has a newer framework version.
+**In an installed project repository**: if `{USER_AGENTS}/` does not exist on this machine, or `{USER_AGENTS}/{repo_name}/` does not exist for this repo, or `.agents/project/*` is still empty/boilerplate, run [Project Bootstrap]({USER_AGENTS}/workflows/PROJECT_BOOTSTRAP.md) before other work — it initialises the user-level directory, creates the per-repo state, and interviews the user to populate org, VCS, team, and process facts. Also run the [Daily Update Check]({USER_AGENTS}/directives/AGENTIC_FRAMEWORK.md#daily-update-check-automatic) once per calendar day to see whether the master repository has a newer framework version.
 
 ## Project Guidance
 
@@ -63,7 +67,7 @@ All framework files below are at `{USER_AGENTS}/` unless prefixed with `.agents/
 
 ## Documentation Layout
 
-The framework is split between the user-level directory and the repo:
+In the master framework repository, the full `.agents/` tree is tracked as the canonical source. In installed project repositories, the framework is split between the user-level directory and the repo:
 
 **User-level (`{USER_AGENTS}/`)** — shared across all repos on this machine:
 - `directives/` — mandatory rules agents must obey: safety, trust, confirmation, and framework governance.
@@ -75,9 +79,9 @@ The framework is split between the user-level directory and the repo:
 - `CHANGELOG.md` — per-version history of framework changes.
 - `{repo_name}/` — per-repo persistent state: credentials, tickets, board, temp data.
 
-**Repo-level (`.agents/project/`)** — team-shared project facts for this repository:
+**Repo-level (`.agents/project/`)** — project facts for this repository:
 - Contains durable project facts: structure, environment, requirements, schema, integrations, glossary, and UX context.
-- These files can be committed and shared with the team.
+- In an installed project repo, these files may be committed and shared with the team when the team chooses. They must never be contributed back to the master framework repository — only sanitized generic lessons extracted into directives/standards/skills/workflows may be upstreamed (see [Scenario 2](directives/AGENTIC_FRAMEWORK.md#scenario-2--forking-learned-improvements-back-to-the-master-framework-contribute-back) in AGENTIC_FRAMEWORK.md).
 
 ## Agent Framework
 
@@ -85,13 +89,13 @@ The governing framework for this repository's instruction files is `{USER_AGENTS
 
 ## Installation Manifest
 
-This section is the portable installation record. Copy this `AGENTS.md` file into any Salesforce repository and an AI agent can install the entire framework at the user level and register all plugins.
+This section is the portable installation record. Copy this `AGENTS.md` file into any Salesforce project repository and an AI agent can bootstrap the framework into `{USER_AGENTS}/` and register all plugins. This section is not relevant when working directly in the master framework repository.
 
 ### Framework Source
 
-| Component | Repository | Branch | Install target |
-| --- | --- | --- | --- |
-| Core framework | https://github.com/rpoorun/sf-agentic-coding-framework | `main` | `{USER_AGENTS}/` — directives, standards, workflows, skills, and CHANGELOG |
+| Component | Repository | Branch | Master source | Install target |
+| --- | --- | --- | --- | --- |
+| Core framework | https://github.com/rpoorun/sf-agentic-coding-framework | `main` | `.agents/` (directives, standards, skills, workflows, CHANGELOG) | `{USER_AGENTS}/` |
 
 ### Registered Plugins
 
@@ -103,14 +107,13 @@ Plugins extend the core framework with additional skills, integrations, or workf
 
 ### Installation Procedure
 
-To install this framework into a new or existing Salesforce repository:
+To install this framework into a new or existing Salesforce project repository:
 
-1. **Copy this file** — place `AGENTS.md` at the repository root.
-2. **Install the core framework** — clone the core framework repository and copy its `.agents/directives/`, `.agents/standards/`, `.agents/skills/`, `.agents/workflows/`, and `.agents/CHANGELOG.md` into `{USER_AGENTS}/`. This is a one-time operation per machine — once installed, all repos share the same framework files.
-3. **Initialise per-repo state** — create `{USER_AGENTS}/{repo_name}/` with the per-repo directory structure (credentials, tickets, board, temp). See [Step 0b of PROJECT_BOOTSTRAP.md]({USER_AGENTS}/workflows/PROJECT_BOOTSTRAP.md#step-0b--initialise-per-repo-directory).
-4. **Run Project Bootstrap** — on first use, the agent reads `AGENTS.md`, detects that `.agents/project/*` is still boilerplate, and runs the Project Bootstrap interview to configure the project.
-5. **Install plugins** — for each registered plugin, say its install command (e.g. `install Jira skills`). The agent follows the plugin's guided setup flow to configure credentials in `{USER_AGENTS}/{repo_name}/.local-config.json`.
-6. **Daily update check** — on each subsequent session, the agent runs the Daily Update Check to detect newer framework versions from the core repository and update `{USER_AGENTS}/`.
+1. **Copy this file** — place `AGENTS.md` at the project repository root. Optionally create `.agents/project/` with boilerplate project doc files.
+2. **Run Project Bootstrap** — on first use, the agent reads `AGENTS.md`, detects that `{USER_AGENTS}/` does not exist, and runs [Step 0a of Project Bootstrap]({USER_AGENTS}/workflows/PROJECT_BOOTSTRAP.md#step-0a--initialise-user-level-framework-directory) to clone the core framework's `.agents/` tree into `{USER_AGENTS}/` (one-time per machine) and [Step 0b]({USER_AGENTS}/workflows/PROJECT_BOOTSTRAP.md#step-0b--initialise-per-repo-directory) to create `{USER_AGENTS}/{repo_name}/` (one-time per repo).
+3. **Bootstrap interview** — if `.agents/project/*` is still boilerplate, the agent runs the [Project Bootstrap]({USER_AGENTS}/workflows/PROJECT_BOOTSTRAP.md) interview to configure the project.
+4. **Install plugins** — for each registered plugin, say its install command (e.g. `install Jira skills`). The agent follows the plugin's guided setup flow to configure credentials in `{USER_AGENTS}/{repo_name}/.local-config.json`.
+5. **Daily update check** — on each subsequent session, the agent runs the [Daily Update Check]({USER_AGENTS}/directives/AGENTIC_FRAMEWORK.md#daily-update-check-automatic) to detect newer framework versions from the core repository and update `{USER_AGENTS}/`.
 
 ### Adding a New Plugin
 
@@ -118,44 +121,6 @@ To register a new plugin in this manifest:
 
 1. Add a row to the Registered Plugins table above with the plugin's source URL, version, install command, and description.
 2. Create the plugin's skill folder under `{USER_AGENTS}/skills/{plugin-name}/SKILL.md` following the framework's standard skill format.
-3. If the plugin adds workflows, register them in the Workflow Reference Files table below.
-4. If the plugin needs local config, add a namespaced key to `{USER_AGENTS}/common/templates/.local-config.template.json` per the `_convention` block.
-5. Commit the updated `AGENTS.md` so other users pulling this file get the plugin registration.
-
-## Installation Manifest
-
-This section is the portable installation record. Copy this `AGENTS.md` file into any Salesforce repository and an AI agent can pull the entire framework and all registered plugins from their source URLs.
-
-### Framework Source
-
-| Component | Repository | Branch | Description |
-| --- | --- | --- | --- |
-| Core framework | https://github.com/rpoorun/sf-agentic-coding-framework | `main` | `AGENTS.md` + `.agents/` — directives, standards, workflows, project templates, and Salesforce skills |
-
-### Registered Plugins
-
-Plugins extend the core framework with additional skills, integrations, or workflows. Each plugin is pulled from its source URL and installed under `{USER_AGENTS}/skills/` or `{USER_AGENTS}/workflows/`.
-
-| Plugin | Source | Version | Install command | Description |
-| --- | --- | --- | --- | --- |
-| jira-management | https://github.com/rpoorun/sf-agentic-coding-framework | `main` | `install Jira skills` | Read-only Jira Cloud integration: ticket retrieval, ADF parsing, project prefix discovery. Delivers ticket data to the project tracking workflow. |
-
-### Installation Procedure
-
-To install this framework into a new or existing Salesforce repository:
-
-1. **Copy this file** — place `AGENTS.md` at the repository root.
-2. **Run Project Bootstrap** — on first use, the agent reads `AGENTS.md`, detects that `{USER_AGENTS}/` does not exist, and runs [Step 0a of Project Bootstrap]({USER_AGENTS}/workflows/PROJECT_BOOTSTRAP.md#step-0a--initialise-user-level-framework-directory) to clone the core framework into the user-level directory and create the per-repo state directory.
-3. **Bootstrap interview** — if `.agents/project/*` is still boilerplate, the agent runs the [Project Bootstrap]({USER_AGENTS}/workflows/PROJECT_BOOTSTRAP.md) interview to configure the project.
-4. **Install plugins** — for each registered plugin, say its install command (e.g. `install Jira skills`). The agent follows the plugin's guided setup flow to configure credentials and local state.
-5. **Daily update check** — on each subsequent session, the agent runs the [Daily Update Check]({USER_AGENTS}/directives/AGENTIC_FRAMEWORK.md#daily-update-check-automatic) to detect newer framework versions from the core repository.
-
-### Adding a New Plugin
-
-To register a new plugin in this manifest:
-
-1. Add a row to the Registered Plugins table above with the plugin's source URL, version, install command, and description.
-2. Create the plugin's skill folder under `{USER_AGENTS}/skills/{plugin-name}/SKILL.md` following the framework's [standard skill format]({USER_AGENTS}/skills/SALESFORCE_SKILLS.md#standard-skill-file-format).
 3. If the plugin adds workflows, register them in the Workflow Reference Files table below.
 4. If the plugin needs local config, add a namespaced key to `{USER_AGENTS}/common/templates/.local-config.template.json` per the `_convention` block.
 5. Commit the updated `AGENTS.md` so other users pulling this file get the plugin registration.

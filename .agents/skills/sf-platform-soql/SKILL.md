@@ -1,6 +1,6 @@
 ---
 name: sf-platform-soql
-description: "SOQL query generation, optimization, and analysis with 100-point scoring. Use this skill when the user needs SOQL/SOSL authoring or optimization: natural-language-to-query generation, relationship queries, aggregates, query-plan analysis, and performance or safety improvements for Salesforce queries. TRIGGER when: user writes, optimizes, or debugs SOQL/SOSL queries, touches .soql files, or asks about relationship queries, aggregates, or query performance. DO NOT TRIGGER when: bulk data operations (use platform-data-manage), Apex DML logic (use platform-apex-generate), or report/dashboard queries."
+description: "SOQL query generation, optimization, and analysis with 100-point scoring. Use this skill when the user needs SOQL/SOSL authoring or optimization: natural-language-to-query generation, relationship queries, aggregates, query-plan analysis, and performance or safety improvements for Salesforce queries. TRIGGER when: user writes, optimizes, or debugs SOQL/SOSL queries, touches .soql files, or asks about relationship queries, aggregates, or query performance. DO NOT TRIGGER when: bulk data operations (use sf-platform-data), Apex DML logic (use sf-platform-apex), or report/dashboard queries."
 metadata:
   version: "1.0"
   cloud: "Platform"
@@ -24,7 +24,7 @@ Use this skill when the user needs **SOQL/SOSL authoring or optimization**: natu
 
 ## When This Skill Owns the Task
 
-Use `platform-soql-query` when the work involves:
+Use `sf-platform-soql` when the work involves:
 - `.soql` files
 - query generation from natural language
 - relationship queries and aggregate queries
@@ -32,8 +32,8 @@ Use `platform-soql-query` when the work involves:
 - SOQL/SOSL syntax and governor-aware design
 
 Delegate elsewhere when the user is:
-- performing bulk data operations → [platform-data-manage](../platform-data-manage/SKILL.md)
-- embedding query logic inside broader Apex implementation → [platform-apex-generate](../platform-apex-generate/SKILL.md)
+- performing bulk data operations → [sf-platform-data](../sf-platform-data/SKILL.md)
+- embedding query logic inside broader Apex implementation → [sf-platform-apex](../sf-platform-apex/SKILL.md)
 - debugging via logs rather than query shape → [platform-apex-logs-debug](../platform-apex-logs-debug/SKILL.md)
 
 ---
@@ -77,7 +77,7 @@ Check:
 
 ### 4. Validate execution path if needed
 If the user wants runtime verification, hand off execution to:
-- [platform-data-manage](../platform-data-manage/SKILL.md)
+- [sf-platform-data](../sf-platform-data/SKILL.md)
 
 ---
 
@@ -108,7 +108,7 @@ Query goal: <summary>
 Query: <soql or sosl>
 Design: <relationship / aggregate / filter choices>
 Notes: <selectivity, limits, security, governor awareness>
-Next step: <run in platform-data-manage or embed in Apex>
+Next step: <run in sf-platform-data or embed in Apex>
 ```
 
 ---
@@ -117,10 +117,10 @@ Next step: <run in platform-data-manage or embed in Apex>
 
 | Need | Delegate to | Reason |
 |---|---|---|
-| run the query against an org | [platform-data-manage](../platform-data-manage/SKILL.md) | execution and export |
-| embed the query in services/selectors | [platform-apex-generate](../platform-apex-generate/SKILL.md) | implementation context |
+| run the query against an org | [sf-platform-data](../sf-platform-data/SKILL.md) | execution and export |
+| embed the query in services/selectors | [sf-platform-apex](../sf-platform-apex/SKILL.md) | implementation context |
 | analyze slow-query symptoms from logs | [platform-apex-logs-debug](../platform-apex-logs-debug/SKILL.md) | runtime evidence |
-| wire query-backed UI | [experience-lwc-generate](../experience-lwc-generate/SKILL.md) | frontend integration |
+| wire query-backed UI | [sf-platform-lwc](../sf-platform-lwc/SKILL.md) | frontend integration |
 
 ---
 

@@ -66,13 +66,13 @@ All steps are sequential. Do not skip, merge, or reorder. If blocked, stop and a
 3. **Review templates and assets**
    - Read the matching template from `assets/` before authoring (see Type-Specific Guidance for the file mapping)
    - When a `references/` example exists for the type, read it as a concrete style guide
-   - For any test class work, always read and use `platform-apex-test-generate` skill
+   - For any test class work, always read and use `sf-platform-test` skill
 
 4. **Author with guardrails** -- apply every rule in the Rules section below
    - Generate `{ClassName}.cls` with ApexDoc
    - Generate `{ClassName}.cls-meta.xml`   
 
-5. **Generate test classes** -- Load the skill `platform-apex-test-generate` to create `{ClassName}Test.cls` and `{ClassName}Test.cls-meta.xml`.  Apex tests are always required to be generated to deploy. No test file creation or edits can occur without loading the  `platform-apex-test-generate` skill to generate tests.
+5. **Generate test classes** -- Load the skill `sf-platform-test` to create `{ClassName}Test.cls` and `{ClassName}Test.cls-meta.xml`.  Apex tests are always required to be generated to deploy. No test file creation or edits can occur without loading the  `sf-platform-test` skill to generate tests.
 
 ### Phase 2 — Validate (required before reporting)
 
@@ -86,7 +86,7 @@ Writing files is the midpoint, not the finish line. Steps 6 and 7 each require a
 
 7. **Execute Apex tests**
    - Run org tests including `{ClassName}Test` via `sf apex run test` or MCP.
-   - Delegate all test generation/fixes/coverage work to `platform-apex-test-generate`; iterate until the tests pass.
+   - Delegate all test generation/fixes/coverage work to `sf-platform-test`; iterate until the tests pass.
    - Capture pass/fail counts and coverage percentage for the report.
    - If unavailable, record `test_execution=unavailable: <error>` in the report.
 
@@ -384,8 +384,8 @@ Method-level format:
 Deliverables per class:
 - `{ClassName}.cls`
 - `{ClassName}.cls-meta.xml` (default API version `66.0` or higher unless specified)
-- `{ClassName}Test.cls` (generated via `platform-apex-test-generate` skill)
-- `{ClassName}Test.cls-meta.xml` (generated via `platform-apex-test-generate` skill)
+- `{ClassName}Test.cls` (generated via `sf-platform-test` skill)
+- `{ClassName}Test.cls-meta.xml` (generated via `sf-platform-test` skill)
 - For new top-level classes: the Permission Set(s) (or, if the user chose the less-recommended fallback, Profile) granted Apex Class Access, per the answer gathered in Required Inputs — generated/updated via `sf-platform-permissions`
 
 Deliverables per trigger:
@@ -422,7 +422,7 @@ Deploy: <dry-run or next step>
 
 | Need | Delegate to |
 |---|---|
-| Apex tests / fix failures | `platform-apex-test-generate` skill |
+| Apex tests / fix failures | `sf-platform-test` skill |
 | Describe objects/fields | metadata skill (if available) |
 | Deploy to org | deploy skill (if available) |
 | Flow calling Apex | Flow skill (if available) |
@@ -432,7 +432,7 @@ Deploy: <dry-run or next step>
 
 ## Troubleshooting Boundary
 
-This skill handles production `.cls`/`.trigger`/`.apex` issues only: compile/parse failures, deployment dependency errors, runtime governor-limit failures. For test execution, assertions, coverage, or `sf apex run test` failures, delegate to `platform-apex-test-generate`.
+This skill handles production `.cls`/`.trigger`/`.apex` issues only: compile/parse failures, deployment dependency errors, runtime governor-limit failures. For test execution, assertions, coverage, or `sf apex run test` failures, delegate to `sf-platform-test`.
 
 ---
 

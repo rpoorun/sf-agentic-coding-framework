@@ -1,6 +1,6 @@
 ---
 name: sf-platform-data
-description: "Salesforce data operations with 130-point scoring. Use this skill to create, update, delete, bulk import/export, generate test data, and clean up org records using sf CLI and anonymous Apex. TRIGGER when: user creates test data, performs bulk import/export, uses sf data CLI commands, needs data factory patterns for Apex tests, or needs to seed/clean records in a Salesforce org. DO NOT TRIGGER when: SOQL query writing only (use platform-soql-query), Apex test execution (use platform-apex-test-run), or metadata deployment (use platform-metadata-deploy)."
+description: "Salesforce data operations with 130-point scoring. Use this skill to create, update, delete, bulk import/export, generate test data, and clean up org records using sf CLI and anonymous Apex. TRIGGER when: user creates test data, performs bulk import/export, uses sf data CLI commands, needs data factory patterns for Apex tests, or needs to seed/clean records in a Salesforce org. DO NOT TRIGGER when: SOQL query writing only (use sf-platform-soql), Apex test execution (use sf-platform-test), or metadata deployment (use sf-platform-deploy)."
 metadata:
   version: "1.0"
   cloud: "Platform"
@@ -24,7 +24,7 @@ Use this skill when the user needs **Salesforce data work**: record CRUD, bulk i
 
 ## When This Skill Owns the Task
 
-Use `platform-data-manage` when the work involves:
+Use `sf-platform-data` when the work involves:
 - `sf data` CLI commands
 - record creation, update, delete, upsert, export, or tree import/export
 - realistic test data generation
@@ -32,10 +32,10 @@ Use `platform-data-manage` when the work involves:
 - Apex anonymous scripts for data seeding / rollback
 
 Delegate elsewhere when the user is:
-- writing SOQL only → [platform-soql-query](../platform-soql-query/SKILL.md)
-- running or repairing Apex tests → [platform-apex-test-run](../platform-apex-test-run/SKILL.md)
-- deploying metadata first → [platform-metadata-deploy](../platform-metadata-deploy/SKILL.md)
-- creating or modifying custom objects / fields → [platform-custom-object-generate](../platform-custom-object-generate/SKILL.md) or [platform-custom-field-generate](../platform-custom-field-generate/SKILL.md)
+- writing SOQL only → [sf-platform-soql](../sf-platform-soql/SKILL.md)
+- running or repairing Apex tests → [sf-platform-test](../sf-platform-test/SKILL.md)
+- deploying metadata first → [sf-platform-deploy](../sf-platform-deploy/SKILL.md)
+- creating or modifying custom objects / fields → [sf-platform-schema](../sf-platform-schema/SKILL.md)
 
 ---
 
@@ -66,7 +66,7 @@ Ask for or infer:
 
 ## Core Operating Rules
 
-- `platform-data-manage` acts on **remote org data** unless the user explicitly wants local script generation.
+- `sf-platform-data` acts on **remote org data** unless the user explicitly wants local script generation.
 - Objects and fields must already exist before data creation.
 - For automation testing, prefer **251+ records** when bulk behavior matters.
 - Plan cleanup before creating large or noisy datasets — untracked records accumulate across runs and pollute org state.
@@ -74,7 +74,7 @@ Ask for or infer:
 - Prefer **CLI-first** for straightforward CRUD; use anonymous Apex when the operation truly needs server-side orchestration.
 
 If metadata is missing, stop and hand off to:
-- [platform-custom-object-generate](../platform-custom-object-generate/SKILL.md) or [platform-custom-field-generate](../platform-custom-field-generate/SKILL.md) to create the missing schema, then [platform-metadata-deploy](../platform-metadata-deploy/SKILL.md) to deploy it before retrying the data operation
+- [sf-platform-schema](../sf-platform-schema/SKILL.md) to create the missing schema, then [sf-platform-deploy](../sf-platform-deploy/SKILL.md) to deploy it before retrying the data operation
 
 ---
 
@@ -191,12 +191,11 @@ Cleanup: <exact delete or rollback guidance>
 
 | Need | Delegate to | Reason |
 |---|---|---|
-| create missing custom objects | [platform-custom-object-generate](../platform-custom-object-generate/SKILL.md) | schema must exist before data operations |
-| create missing custom fields | [platform-custom-field-generate](../platform-custom-field-generate/SKILL.md) | field-level schema must exist before data creation |
-| run bulk-sensitive Apex validation | [platform-apex-test-run](../platform-apex-test-run/SKILL.md) | test execution and coverage |
-| deploy missing schema first | [platform-metadata-deploy](../platform-metadata-deploy/SKILL.md) | metadata readiness |
-| implement production Apex logic consuming the data | [platform-apex-generate](../platform-apex-generate/SKILL.md) | Apex class / trigger authoring |
-| implement Flow logic consuming the data | [automation-flow-generate](../automation-flow-generate/SKILL.md) | Flow authoring and automation |
+| create missing custom objects/fields | [sf-platform-schema](../sf-platform-schema/SKILL.md) | schema must exist before data operations |
+| run bulk-sensitive Apex validation | [sf-platform-test](../sf-platform-test/SKILL.md) | test execution and coverage |
+| deploy missing schema first | [sf-platform-deploy](../sf-platform-deploy/SKILL.md) | metadata readiness |
+| implement production Apex logic consuming the data | [sf-platform-apex](../sf-platform-apex/SKILL.md) | Apex class / trigger authoring |
+| implement Flow logic consuming the data | [sf-platform-flow](../sf-platform-flow/SKILL.md) | Flow authoring and automation |
 
 ---
 
