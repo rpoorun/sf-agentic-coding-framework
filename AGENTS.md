@@ -122,6 +122,44 @@ To register a new plugin in this manifest:
 4. If the plugin needs local config, add a namespaced key to `.agents/.local-config.template.json` per the `_convention` block.
 5. Commit the updated `AGENTS.md` so other users pulling this file get the plugin registration.
 
+## Installation Manifest
+
+This section is the portable installation record. Copy this `AGENTS.md` file into any Salesforce repository and an AI agent can pull the entire framework and all registered plugins from their source URLs.
+
+### Framework Source
+
+| Component | Repository | Branch | Description |
+| --- | --- | --- | --- |
+| Core framework | https://github.com/rpoorun/sf-agentic-coding-framework | `main` | `AGENTS.md` + `.agents/` — directives, standards, workflows, project templates, and Salesforce skills |
+
+### Registered Plugins
+
+Plugins extend the core framework with additional skills, integrations, or workflows. Each plugin is pulled from its source URL and installed under `.agents/skills/` or `.agents/workflows/` following the framework's naming conventions.
+
+| Plugin | Source | Version | Install command | Description |
+| --- | --- | --- | --- | --- |
+| jira-management | https://github.com/rpoorun/sf-agentic-coding-framework | `main` | `install Jira skills` | Read-only Jira Cloud integration: ticket retrieval, ADF parsing, project prefix discovery. Delivers ticket data to the project tracking workflow. |
+
+### Installation Procedure
+
+To install this framework into a new or existing Salesforce repository:
+
+1. **Copy this file** — place `AGENTS.md` at the repository root.
+2. **Pull the core framework** — clone or sparse-checkout the core framework repository's `.agents/` folder into the same root. Do not overwrite any existing `.agents/project/*` files if they contain project-specific data.
+3. **Run Project Bootstrap** — on first use, the agent reads `AGENTS.md`, detects that `.agents/project/*` is still boilerplate, and runs the [Project Bootstrap](.agents/workflows/PROJECT_BOOTSTRAP.md) interview to configure the project.
+4. **Install plugins** — for each registered plugin, say its install command (e.g. `install Jira skills`). The agent follows the plugin's guided setup flow to configure credentials and local state.
+5. **Daily update check** — on each subsequent session, the agent runs the [Daily Update Check](.agents/directives/AGENTIC_FRAMEWORK.md#daily-update-check-automatic) to detect newer framework versions from the core repository.
+
+### Adding a New Plugin
+
+To register a new plugin in this manifest:
+
+1. Add a row to the Registered Plugins table above with the plugin's source URL, version, install command, and description.
+2. Create the plugin's skill folder under `.agents/skills/{plugin-name}/SKILL.md` following the framework's [standard skill format](.agents/skills/SALESFORCE_SKILLS.md#standard-skill-file-format).
+3. If the plugin adds workflows, register them in the Workflow Reference Files table below.
+4. If the plugin needs local config, add a namespaced key to `.agents/.local-config.template.json` per the `_convention` block.
+5. Commit the updated `AGENTS.md` so other users pulling this file get the plugin registration.
+
 ## Master Framework Repository
 
 This framework is mirrored from a master repository: **https://github.com/rpoorun/sf-agentic-coding-framework**. The installed copy lives at `{USER_AGENTS}/`. If this install needs the latest framework updates, or has learned a generally-applicable improvement worth contributing back upstream, follow the Master Framework Repository And Sync Workflow in `{USER_AGENTS}/directives/AGENTIC_FRAMEWORK.md` — it defines the pull/merge-with-approval procedure for updates and the isolate-and-fork procedure for contributing learned skills/instructions back, both of which require explicit user confirmation before any Git action.
