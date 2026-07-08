@@ -7,8 +7,9 @@
 # (outside the repo). This entry is kept for safety in case any tool creates one locally.
 .agents/.local-config.json
 
-# Repo-local temp fallback (used by sandboxed/remote agents that cannot write to ~/.agents/)
+# Repo-local fallbacks (used by sandboxed/remote agents that cannot write to ~/.agents/)
 .agents/temp/
+.agents/state/
 
 # Salesforce DX scratch directories
 .sfdx/

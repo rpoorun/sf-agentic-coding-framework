@@ -15,7 +15,7 @@ This workflow does **not** own:
 
 **One ticket = one file = one source of truth.**
 
-Every ticket is represented by exactly one Markdown file at `{USER_AGENTS}/{repo_name}/project/tickets/{KEY}.md` (where `{USER_AGENTS}` is `~/.agents/` on Unix or `%USERPROFILE%\.agents\` on Windows, and `{repo_name}` is the basename of `git rev-parse --show-toplevel`). This file lives **outside the repo** so it persists across branches, sessions, and sandboxes. Every operation — regardless of which skill, workflow, or framework layer performs it — reads from and writes back to this same file:
+Every ticket is represented by exactly one Markdown file at `{REPO_STATE}/project/tickets/{KEY}.md`, where `{REPO_STATE}` is the per-repo project state location resolved via the [layered resolution chain](../../AGENTS.md#layered-resolution) (on local developer machines this is `{USER_AGENTS}/{repo_name}/` — `~/.agents/{repo_name}/` on Unix or `%USERPROFILE%\.agents\{repo_name}\` on Windows; `{repo_name}` is the basename of `git rev-parse --show-toplevel`). On local machines this file lives **outside the repo** so it persists across branches and sessions. In sandboxed/remote environments, persistence is limited to what the resolved state location provides — do not assume state survives between sandbox sessions. Every operation — regardless of which skill, workflow, or framework layer performs it — reads from and writes back to this same file:
 
 - The **Jira skill** initialises the file with ticket metadata, description, acceptance criteria, solution, dependencies, and comments.
 - The **`analyse` command** writes the implementation plan, impact assessment, file scope, and test scenarios into the same file.
@@ -47,7 +47,7 @@ When the user says a command followed by a ticket key (e.g. `analyse DTT-115`), 
 
 When ticket data arrives (from the Jira fetch workflow or any other source):
 
-### If a local ticket file exists at `{USER_AGENTS}/{repo_name}/project/tickets/{KEY}.md`:
+### If a local ticket file exists at `{REPO_STATE}/project/tickets/{KEY}.md`:
 1. Read the local file
 2. Compare the incoming `updated` timestamp against the local `Last Synced`
 3. Identify changes: field updates, new comments, status changes
@@ -72,8 +72,9 @@ Update the agile board lane to match the ticket's current status.
 
 One self-contained Markdown file per ticket:
 ```
-{USER_AGENTS}/{repo_name}/project/tickets/{KEY}.md
+{REPO_STATE}/project/tickets/{KEY}.md
 ```
+`{REPO_STATE}` is resolved via the [per-repo project state chain](../../AGENTS.md#layered-resolution).
 
 ### Ticket File Template
 
@@ -257,7 +258,7 @@ This command is self-contained — it does not delegate to another workflow.
 
 ### Board Structure
 
-The board lives under `{USER_AGENTS}/{repo_name}/project/board/` with these lane files (created during project bootstrap if they don't exist):
+The board lives under `{REPO_STATE}/project/board/` (resolved via the [per-repo project state chain](../../AGENTS.md#layered-resolution)) with these lane files (created during project bootstrap if they don't exist):
 
 | File | Purpose |
 | --- | --- |

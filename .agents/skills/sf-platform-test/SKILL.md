@@ -342,7 +342,7 @@ Next step: <fix class, add test, rerun scope, or widen regression>
 | Fix production code or author test classes | `sf-platform-apex` skill | Code generation and repair |
 | Create bulk / edge-case test data | [sf-platform-data](../sf-platform-data/SKILL.md) | Realistic test datasets |
 | Deploy updated tests to org | [sf-platform-deploy](../sf-platform-deploy/SKILL.md) | Deployment workflows |
-| Inspect detailed runtime logs | [platform-apex-logs-debug](../platform-apex-logs-debug/SKILL.md) | Deeper failure analysis |
+| Inspect detailed runtime logs | [sf-platform-debug](../sf-platform-debug/SKILL.md) | Deeper failure analysis |
 
 ---
 

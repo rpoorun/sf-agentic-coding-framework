@@ -44,7 +44,7 @@ Before creating user-level directories, determine which runtime environment the 
    - Use the agent-provided writable temp/workspace path for temp output.
    - Use environment variables or platform-provided secrets for credentials (see [Credential lookup order](../../AGENTS.md#layered-resolution)).
    - Log a note that user-level installation was skipped due to environment constraints.
-   - Skip Step 0a entirely; proceed to Step 0b only if a writable per-repo state directory can be created (at `{USER_AGENTS}/{repo_name}/` or an alternative writable location).
+   - Skip Step 0a entirely; proceed to Step 0b using the per-repo project state chain (`{REPO_STATE}` in [AGENTS.md — Layered Resolution](../../AGENTS.md#layered-resolution)): `SF_AGENTIC_FRAMEWORK_HOME/{repo_name}/` → `{USER_AGENTS}/{repo_name}/` → agent-provided persistent workspace → repo-local `.agents/state/` (gitignored). Create the per-repo directories at the first writable tier and tell the user which tier was used and what persistence it actually provides.
 
 ### Step 0a — Initialise user-level framework directory
 
@@ -84,13 +84,13 @@ Detection: run this if `{USER_AGENTS}` does not exist on disk and the environmen
 
 ### Step 0b — Initialise per-repo directory
 
-Detection: run this if `{USER_AGENTS}/{repo_name}/` does not exist on disk.
+Detection: run this if the per-repo state directory (`{REPO_STATE}` — see the [per-repo project state chain](../../AGENTS.md#layered-resolution)) does not exist. On local machines `{REPO_STATE}` is `{USER_AGENTS}/{repo_name}/`; in constrained environments it resolves to the first writable tier (env-var override → user-level → agent-provided workspace → repo-local `.agents/state/`, gitignored).
 
 1. Derive `{repo_name}` from `basename "$(git rev-parse --show-toplevel)"`.
-2. Create the per-repo directory structure:
+2. Create the per-repo directory structure at `{REPO_STATE}`:
    ```
-   {USER_AGENTS}/{repo_name}/
-   ├── .local-config.json    (from {USER_AGENTS}/common/templates/.local-config.template.json, blank values)
+   {REPO_STATE}/
+   ├── .local-config.json    (local machines only — from {USER_AGENTS}/common/templates/.local-config.template.json, blank values)
    ├── project/
    │   ├── tickets/
    │   └── board/
@@ -102,7 +102,7 @@ Detection: run this if `{USER_AGENTS}/{repo_name}/` does not exist on disk.
    │       └── DONE.MD
    └── temp/
    ```
-3. Create `.local-config.json` from the user-level template `{USER_AGENTS}/common/templates/.local-config.template.json` with blank values. This file stores per-repo credentials (Jira, org aliases, etc.).
+3. On local developer machines only: create `.local-config.json` from the user-level template `{USER_AGENTS}/common/templates/.local-config.template.json` with blank values. This file stores per-repo credentials (Jira, org aliases, etc.). Do **not** create a plaintext credential file when `{REPO_STATE}` resolved to a hosted-agent workspace or the repo-local fallback — hosted/sandboxed agents take credentials from the [credential lookup chain](../../AGENTS.md#layered-resolution) (secret manager, env vars) instead.
 4. Create board lane files with empty Markdown table headers.
 
 ### Step 0c — Project doc persistence (repo-level)

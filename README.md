@@ -1,6 +1,6 @@
 # sf-agentic-coding-framework
 
-A drop-in set of AI-agent operating instructions for Salesforce projects. Clone or copy this repo's `AGENTS.md` and `.agents/` folder into a Salesforce project, and any AI coding agent (Claude Code, Cursor, Codex, etc.) that reads `AGENTS.md` will follow a consistent set of guardrails, coding standards, and Salesforce-specific workflows when it touches Apex, LWC, Flow, metadata, or org state.
+A drop-in set of AI-agent operating instructions for Salesforce projects. Copy this repo's `AGENTS.md` (and optionally the `.agents/project/` boilerplate) into a Salesforce project; the shared framework files (directives, standards, skills, workflows) install once at the user level (`~/.agents/`) — or at a fallback location for sandboxed/remote agents — via layered resolution. Any AI coding agent (Claude Code, Cursor, Codex, etc.) that reads `AGENTS.md` will follow a consistent set of guardrails, coding standards, and Salesforce-specific workflows when it touches Apex, LWC, Flow, metadata, or org state. This master repository keeps the full `.agents/` source tree as the canonical source.
 
 | Field | Value |
 | --- | --- |

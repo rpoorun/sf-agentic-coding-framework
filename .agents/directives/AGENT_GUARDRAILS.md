@@ -198,7 +198,7 @@ When proposing or completing work, be exact:
 
 ## Code Comment Authorship
 
-Generated Apex and LWC comment headers (`@author`/`@last modified by`) must use the project's configured human author identity from [ENVIRONMENT.md](../project/ENVIRONMENT.md#author-identity) — see [SALESFORCE_APEX_STANDARDS.md](../standards/SALESFORCE_APEX_STANDARDS.md#author-identity-required) for the full rule and the just-in-time question to ask when it is missing. Never attribute generated code comments to an AI model, assistant, or tool (e.g. `OpenAI`, `Anthropic`, `Claude`, `ChatGPT`, `GPT`, `Copilot`, `Gemini`, `AI Assistant`) under any circumstance.
+Generated Apex and LWC comment headers (`@author`/`@last modified by`) must use the configured human author identity, resolved in this order: primary — `{USER_AGENTS}/identity.json` (user-level, shared across repos); secondary — [ENVIRONMENT.md](../project/ENVIRONMENT.md#author-identity), only when a team-shared identity is explicitly configured there. If neither has a value, ask the user just-in-time — see [SALESFORCE_APEX_STANDARDS.md](../standards/SALESFORCE_APEX_STANDARDS.md#author-identity-required) for the full rule. Never attribute generated code comments to an AI model, assistant, or tool (e.g. `OpenAI`, `Anthropic`, `Claude`, `ChatGPT`, `GPT`, `Copilot`, `Gemini`, `AI Assistant`) under any circumstance.
 
 ## Chat Brevity While Working
 

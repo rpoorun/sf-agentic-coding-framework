@@ -21,6 +21,7 @@ This framework uses a **local-first, user-level architecture** with fallbacks fo
 | --- | --- | --- | --- |
 | `{USER_AGENTS}` | `~/.agents/` | `%USERPROFILE%\.agents\` | User-level framework root |
 | `{USER_AGENTS}/{repo_name}/` | `~/.agents/{repo_name}/` | `%USERPROFILE%\.agents\{repo_name}\` | Per-repo persistent state |
+| `{REPO_STATE}` | resolved via chain (see below) | resolved via chain (see below) | Per-repo project state (tickets, board, config) — first writable tier of the state chain |
 
 `{repo_name}` is derived from `basename "$(git rev-parse --show-toplevel)"`.
 
@@ -57,6 +58,17 @@ Never assume plaintext JSON credentials are available. If the agent is running i
 | 1 | `{USER_AGENTS}/{repo_name}/temp/` | Local developer machines |
 | 2 | Agent-provided writable workspace or platform temp path | Sandboxed/remote agents |
 | 3 | Repo-local `.agents/temp/` (gitignored) | Fallback when neither of the above is writable |
+
+**Per-repo project state location** (`{REPO_STATE}` — ticket files, board lanes, per-repo config):
+
+| Priority | Location | When to use |
+| --- | --- | --- |
+| 1 | `SF_AGENTIC_FRAMEWORK_HOME/{repo_name}/` | When the env var override is set |
+| 2 | `{USER_AGENTS}/{repo_name}/` | Local developer machines (default) |
+| 3 | Agent-provided persistent workspace/state path | Hosted agents that expose a durable state directory |
+| 4 | Repo-local `.agents/state/` (gitignored) | Last resort when no external writable state location exists |
+
+Write `{REPO_STATE}` in workflow instructions to mean "the first writable location in this chain". State stored in tiers 3–4 persists only as long as the hosting environment persists it — do not promise cross-session or cross-sandbox persistence unless tier 1 or 2 resolved.
 
 Never assume `{USER_AGENTS}` is writable — probe before writing and fall back gracefully.
 

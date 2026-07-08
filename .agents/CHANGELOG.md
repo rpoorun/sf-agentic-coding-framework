@@ -15,12 +15,17 @@ This file records all notable changes to `sf-agentic-coding-framework` in human-
 - **Environment detection in bootstrap**: Step 0 now probes `{USER_AGENTS}` writability before attempting user-level installation; sandboxed agents gracefully fall back to repo-local framework files.
 
 ### Changed
-- `AGENTS.md` — Framework Location section reframed as "local-first, user-level architecture with fallbacks"; added Layered Resolution subsection with lookup-order tables for framework files, credentials, and temp.
-- `PROJECT_BOOTSTRAP.md` — added environment detection step before Step 0a; Step 0a detection now requires confirmed writability.
-- `AGENTIC_FRAMEWORK.md` — Daily Update Check step 1 handles non-writable `{USER_AGENTS}`; Scenario 1 temp clone uses layered temp resolution.
-- `AGENT_GUARDRAILS.md` — Temp Workspace section lists 3-tier temp location resolution; credential reference in "What does NOT belong in temp" updated to reference lookup chain.
-- `jira-management/SKILL.md` — Credential Loading rewritten as 5-tier lookup; auth header section references the lookup chain.
-- `.gitignore` — added `.agents/temp/` entry for repo-local temp fallback.
+- `AGENTS.md` — Framework Location section reframed as "local-first, user-level architecture with fallbacks"; added Layered Resolution subsection with lookup-order tables for framework files, credentials, temp, and per-repo project state (`{REPO_STATE}` shorthand: env-var override → user-level → agent-provided workspace → repo-local `.agents/state/`).
+- `PROJECT_BOOTSTRAP.md` — added environment detection step before Step 0a; Step 0a detection now requires confirmed writability; Step 0b creates per-repo state at the first writable `{REPO_STATE}` tier and only creates plaintext `.local-config.json` on local machines.
+- `PROJECT_TRACKING.MD` — ticket file and board paths now use `{REPO_STATE}`; persistence claims scoped to what the resolved tier actually provides (no cross-sandbox persistence promise).
+- `AGENTIC_FRAMEWORK.md` — Daily Update Check uses `preferences.json` only when writable, otherwise an in-session marker (never attempts the write, never fails the check); Scenario 1 temp clone uses layered temp resolution.
+- `AGENT_GUARDRAILS.md` — Temp Workspace section lists 3-tier temp location resolution; Code Comment Authorship now resolves identity from `{USER_AGENTS}/identity.json` first, `ENVIRONMENT.md` second.
+- `jira-management/SKILL.md` — Credential Loading rewritten as 5-tier lookup; install flow Step 1 resolves via secret manager → env vars → keychain → local JSON, never creates plaintext config in hosted/sandboxed environments; project prefixes stored only when a writable approved state location exists.
+- `JIRA.MD` — fetch step 2 resolves credentials via the layered lookup instead of reading the local JSON first.
+- `README.md` — installation wording matches v0.1.2: copy `AGENTS.md` (+ optional `.agents/project/` boilerplate); framework files install at user level or fallback via layered resolution.
+- `sf-platform-apex/SKILL.md` — ApexDoc author identity resolution aligned (identity.json primary, ENVIRONMENT.md fallback).
+- `sf-platform-test/SKILL.md`, `sf-platform-soql/SKILL.md`, `sf-platform-debug/SKILL.md` — stale `platform-apex-logs-debug` routing links/labels replaced with `sf-platform-debug` (source attribution preserved).
+- `.gitignore` — added `.agents/temp/` and `.agents/state/` entries for repo-local fallbacks.
 
 ---
 

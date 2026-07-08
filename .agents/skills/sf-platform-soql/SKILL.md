@@ -34,7 +34,7 @@ Use `sf-platform-soql` when the work involves:
 Delegate elsewhere when the user is:
 - performing bulk data operations → [sf-platform-data](../sf-platform-data/SKILL.md)
 - embedding query logic inside broader Apex implementation → [sf-platform-apex](../sf-platform-apex/SKILL.md)
-- debugging via logs rather than query shape → [platform-apex-logs-debug](../platform-apex-logs-debug/SKILL.md)
+- debugging via logs rather than query shape → [sf-platform-debug](../sf-platform-debug/SKILL.md)
 
 ---
 
@@ -119,7 +119,7 @@ Next step: <run in sf-platform-data or embed in Apex>
 |---|---|---|
 | run the query against an org | [sf-platform-data](../sf-platform-data/SKILL.md) | execution and export |
 | embed the query in services/selectors | [sf-platform-apex](../sf-platform-apex/SKILL.md) | implementation context |
-| analyze slow-query symptoms from logs | [platform-apex-logs-debug](../platform-apex-logs-debug/SKILL.md) | runtime evidence |
+| analyze slow-query symptoms from logs | [sf-platform-debug](../sf-platform-debug/SKILL.md) | runtime evidence |
 | wire query-backed UI | [sf-platform-lwc](../sf-platform-lwc/SKILL.md) | frontend integration |
 
 ---

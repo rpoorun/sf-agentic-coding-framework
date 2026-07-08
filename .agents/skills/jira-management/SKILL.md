@@ -61,20 +61,20 @@ Commands that are **not** Jira API operations (`analyse`, `build`, `deploy`, `te
 
 When a user says **"install Jira skills"** or **"init Jira"**:
 
-### Step 1 — Check Existing Config
+### Step 1 — Check Existing Credentials (Layered Lookup)
 
-Read `{USER_AGENTS}/{repo_name}/.local-config.json` and inspect the `jira` block. Identify which fields are blank:
-- `base_url`
-- `email`
-- `api_token`
+Resolve each of the three required values (`base_url`, `email`, `api_token`) through the [layered credential lookup](#credential-loading), in order:
 
-Where `{USER_AGENTS}` is `~/.agents/` (Unix) or `%USERPROFILE%\.agents\` (Windows) and `{repo_name}` is the basename of `git rev-parse --show-toplevel`.
+1. **Secret manager / platform-provided credentials** — if the hosting platform supplies Jira credentials (CI secrets, connector credentials), use them and skip to Step 3. Do not copy them anywhere.
+2. **Environment variables** — check `JIRA_BASE_URL`, `JIRA_EMAIL`, `JIRA_API_TOKEN` (and `JIRA_PROJECT_PREFIXES`). If all three are set, skip to Step 3.
+3. **OS keychain / platform secret store** — if integrated and populated, use it and skip to Step 3.
+4. **Local config file** (local developer machines only) — read `{USER_AGENTS}/{repo_name}/.local-config.json` and inspect the `jira` block, where `{USER_AGENTS}` is `~/.agents/` (Unix) or `%USERPROFILE%\.agents\` (Windows) and `{repo_name}` is the basename of `git rev-parse --show-toplevel`. If the file does not exist **and** `{USER_AGENTS}` is writable (i.e. this is a local developer machine), create it (and the parent directories) from the template. If all three fields are populated, skip to Step 3.
 
-If the config file does not exist, create it (and the parent directories) from the template. If all three fields are populated, skip to Step 3.
+In a hosted/sandboxed environment where none of sources 1–3 provide credentials and `{USER_AGENTS}` is not writable, do **not** create a plaintext config file — proceed to Step 2 for in-session values and recommend the user configure env vars or platform secrets for future sessions.
 
 ### Step 2 — Prompt for Missing Values
 
-Ask the user **only** for the values that are blank:
+Ask the user **only** for the values that are still unresolved:
 
 **Jira Base URL** (if blank):
 > What is your Jira Cloud base URL?
@@ -89,9 +89,9 @@ Ask the user **only** for the values that are blank:
 > Please provide your Jira API token.
 > Generate one at: https://id.atlassian.com/manage-profile/security/api-tokens
 > Click **Create API token**, give it a label (e.g. "Claude Code"), and copy the value.
-> The token will be stored securely in your user-level config and will **never** be displayed in chat.
+> The token will **never** be displayed in chat.
 
-Write the credentials to `{USER_AGENTS}/{repo_name}/.local-config.json`. If the directory does not exist, create it. **Never echo the API token.**
+**On local developer machines** (where `{USER_AGENTS}` is writable): write the credentials to `{USER_AGENTS}/{repo_name}/.local-config.json`, creating the directory if needed. **In hosted/sandboxed environments**: keep the values in-session only and recommend the user configure them as env vars (`JIRA_BASE_URL`, `JIRA_EMAIL`, `JIRA_API_TOKEN`) or platform secrets — never write plaintext credentials to an ephemeral or shared filesystem. **Never echo the API token.**
 
 ### Step 3 — Test Connection
 
@@ -121,7 +121,7 @@ Extract each project's `key` and `name`. Present them:
 >
 > Ticket references like `DTT-115` or `COP-42` will be recognised automatically.
 
-Store prefixes in `{USER_AGENTS}/{repo_name}/.local-config.json` under `jira.project_prefixes`.
+Store prefixes (non-secret metadata) under `jira.project_prefixes` in `{USER_AGENTS}/{repo_name}/.local-config.json` if that file is in use and writable. If credentials came from env vars or a secret manager and no writable state location exists, keep the prefixes in-session (or suggest setting `JIRA_PROJECT_PREFIXES`).
 
 ### Step 5 — Read the Board
 

@@ -24,7 +24,7 @@ Use this skill when the user needs **root-cause analysis from debug logs**: gove
 
 ## When This Skill Owns the Task
 
-Use `platform-apex-logs-debug` when the work involves:
+Use `sf-platform-debug` when the work involves:
 - `.log` files from Salesforce
 - stack traces and exception analysis
 - governor limits
