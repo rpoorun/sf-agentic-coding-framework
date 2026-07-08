@@ -1,4 +1,4 @@
-<!-- Parent: platform-apex-logs-debug/SKILL.md -->
+<!-- Parent: sf-platform-debug/SKILL.md -->
 # Log Analysis Tools
 
 This guide covers tools for analyzing Salesforce debug logs, with a focus on performance profiling and bottleneck identification.

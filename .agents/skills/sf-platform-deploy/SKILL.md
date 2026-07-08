@@ -1,6 +1,6 @@
 ---
 name: sf-platform-deploy
-description: "Salesforce DevOps automation using sf CLI v2. TRIGGER when: user deploys metadata, creates/manages scratch orgs or sandboxes, sets up CI/CD pipelines, or troubleshoots deployment errors with sf project deploy. DO NOT TRIGGER when: writing Apex code (use platform-apex-generate), building LWC components (use experience-lwc-generate), creating metadata definitions (use platform-custom-object-generate or platform-custom-field-generate), or querying org data (use platform-data-manage)."
+description: "Salesforce DevOps automation using sf CLI v2. TRIGGER when: user deploys metadata, creates/manages scratch orgs or sandboxes, sets up CI/CD pipelines, or troubleshoots deployment errors with sf project deploy. DO NOT TRIGGER when: writing Apex code (use sf-platform-apex), building LWC components (use sf-platform-lwc), creating metadata definitions (use sf-platform-schema), or querying org data (use sf-platform-data)."
 metadata:
   version: "1.0"
   cloud: "Platform"
@@ -28,19 +28,19 @@ Before any dry-run, validate-only, or real deploy to a sandbox/org, follow [DEPL
 
 ## When This Skill Owns the Task
 
-Use `platform-metadata-deploy` when the work involves:
+Use `sf-platform-deploy` when the work involves:
 - `sf project deploy start`, `quick`, `report`, or retrieval workflows
 - release sequencing across objects, permission sets, Apex, and Flows
 - CI/CD gates, test-level selection, or deployment reports
 - troubleshooting deployment failures and dependency ordering
 
 Delegate elsewhere when the user is:
-- authoring Apex code → [platform-apex-generate](../platform-apex-generate/SKILL.md)
-- authoring LWC components → [experience-lwc-generate](../experience-lwc-generate/SKILL.md)
-- creating custom objects or fields → [platform-custom-object-generate](../platform-custom-object-generate/SKILL.md), [platform-custom-field-generate](../platform-custom-field-generate/SKILL.md)
-- building Flows → [automation-flow-generate](../automation-flow-generate/SKILL.md)
-- doing org data operations → [platform-data-manage](../platform-data-manage/SKILL.md)
-- authoring or testing Agentforce agents → [agentforce-generate](../agentforce-generate/SKILL.md)
+- authoring Apex code → [sf-platform-apex](../sf-platform-apex/SKILL.md)
+- authoring LWC components → [sf-platform-lwc](../sf-platform-lwc/SKILL.md)
+- creating custom objects or fields → [sf-platform-schema](../sf-platform-schema/SKILL.md)
+- building Flows → [sf-platform-flow](../sf-platform-flow/SKILL.md)
+- doing org data operations → [sf-platform-data](../sf-platform-data/SKILL.md)
+- authoring or testing Agentforce agents → [sf-agentforce-build](../sf-agentforce-build/SKILL.md)
 
 ---
 
@@ -50,7 +50,7 @@ Delegate elsewhere when the user is:
 - On non-source-tracking orgs, deploy/retrieve commands require an explicit scope such as `--source-dir`, `--metadata`, or `--manifest`.
 - Prefer **`--dry-run` first** before real deploys.
 - For Flows, deploy safely and activate only after validation.
-- Keep test-data creation guidance delegated to **`platform-data-manage`** after metadata is validated or deployed.
+- Keep test-data creation guidance delegated to **`sf-platform-data`** after metadata is validated or deployed.
 
 ### Default deployment order
 | Phase | Metadata |
@@ -99,7 +99,7 @@ Use manifest- or metadata-scoped validation when the change set is targeted.
 After a successful validation, guide the user to the correct next action:
 1. deploy now
 2. assign permission sets
-3. create test data via [platform-data-manage](../platform-data-manage/SKILL.md)
+3. create test data via [sf-platform-data](../sf-platform-data/SKILL.md)
 4. run tests / smoke checks
 5. orchestrate multiple post-deploy steps in order
 
@@ -158,7 +158,7 @@ Default pipeline shape:
 7. verify + notify
 
 - When org policy and release risk allow it, consider `--test-level RunRelevantTests` for Apex-heavy deployments.
-- Pair this with modern Apex test annotations such as `@IsTest(testFor=...)` and `@IsTest(isCritical=true)` — see [platform-apex-generate](../platform-apex-generate/SKILL.md) for authoring guidance.
+- Pair this with modern Apex test annotations such as `@IsTest(testFor=...)` and `@IsTest(isCritical=true)` — see [sf-platform-apex](../sf-platform-apex/SKILL.md) for authoring guidance.
 
 Static analysis now uses **Code Analyzer v5** (`sf code-analyzer`), not retired `sf scanner`.
 
@@ -169,7 +169,7 @@ Deep reference: [references/deployment-workflows.md](references/deployment-workf
 ## Agentforce Deployment Note
 
 Use this skill to orchestrate **deployment/publish sequencing** around agents, but use the agent-specific skill for authoring decisions:
-- [agentforce-generate](../agentforce-generate/SKILL.md) for `.agent` authoring, Agent Builder, Prompt Builder, and metadata config
+- [sf-agentforce-build](../sf-agentforce-build/SKILL.md) for `.agent` authoring, Agent Builder, Prompt Builder, and metadata config
 
 For full agent DevOps details, including `Agent:` pseudo metadata, publish/activate, and sync-between-orgs, see:
 - [references/agent-deployment-guide.md](references/agent-deployment-guide.md)
@@ -182,10 +182,10 @@ For full agent DevOps details, including `Agent:` pseudo metadata, publish/activ
 |---|---|---|
 | custom object creation | [platform-custom-object-generate](../platform-custom-object-generate/SKILL.md) | define objects before deploy |
 | custom field creation | [platform-custom-field-generate](../platform-custom-field-generate/SKILL.md) | define fields before deploy |
-| Apex authoring / fixes | [platform-apex-generate](../platform-apex-generate/SKILL.md) | code authoring and repair |
-| Flow creation / repair | [automation-flow-generate](../automation-flow-generate/SKILL.md) | Flow authoring and activation guidance |
-| test data or seed records | [platform-data-manage](../platform-data-manage/SKILL.md) | describe-first data setup and cleanup |
-| Agent authoring and publish readiness | [agentforce-generate](../agentforce-generate/SKILL.md) | agent-specific correctness |
+| Apex authoring / fixes | [sf-platform-apex](../sf-platform-apex/SKILL.md) | code authoring and repair |
+| Flow creation / repair | [sf-platform-flow](../sf-platform-flow/SKILL.md) | Flow authoring and activation guidance |
+| test data or seed records | [sf-platform-data](../sf-platform-data/SKILL.md) | describe-first data setup and cleanup |
+| Agent authoring and publish readiness | [sf-agentforce-build](../sf-agentforce-build/SKILL.md) | agent-specific correctness |
 
 ---
 
@@ -252,7 +252,7 @@ Retrieves metadata from a Salesforce org to your local project using `sf project
 ## Scope
 
 - **In scope**: Retrieving metadata via `sf project retrieve start` in all supported modes (all changes, source-dir, metadata type, manifest, package name), source and metadata format output
-- **Out of scope**: Deploying metadata (use `platform-metadata-deploy`), listing metadata types, generating package.xml files, source tracking commands (`sf project retrieve preview`)
+- **Out of scope**: Deploying metadata (use `sf-platform-deploy`), listing metadata types, generating package.xml files, source tracking commands (`sf project retrieve preview`)
 
 ---
 
@@ -336,7 +336,7 @@ See `examples/success_output.json` and `examples/error_output.json` for response
 
 | Need | Delegate to |
 |------|-------------|
-| Deploy metadata to org | `platform-metadata-deploy` skill |
+| Deploy metadata to org | `sf-platform-deploy` skill |
 | Preview retrieve without executing | Execute `sf project retrieve preview --target-org <alias> --json` |
 | List available metadata types | Execute `sf org list metadata-types --target-org <alias> --json` |
 
@@ -947,7 +947,7 @@ sf scanner run --target force-app/ --category "Security,Best Practices"
 |-------|-------|-----|
 | `Entity not found: CustomObject__c` | Missing dependency | Deploy custom object first |
 | `Dependent class is invalid` | Compile error in dependency | Fix dependent class first |
-| `Code coverage is below 75%` | Insufficient tests | Run `sf-test` skill to generate tests |
+| `Code coverage is below 75%` | Insufficient tests — note: Salesforce platform minimum is 75%, but this framework's deploy gate is **95%** per [DEPLOYMENT.md](../../workflows/DEPLOYMENT.md#apex-test-coverage-gate-mandatory) | Run `sf-platform-test` skill to generate tests |
 | `Component not found: c:myComponent` | Missing LWC dependency | Deploy LWC before FlexiPage |
 | `Test failure: System.AssertException` | Test expecting wrong data | Fix test assertions |
 | `FIELD_CUSTOM_VALIDATION_EXCEPTION` | Validation rule blocking test data | Update test data to pass validation |

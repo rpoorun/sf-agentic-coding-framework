@@ -1,6 +1,6 @@
 ---
 name: sf-platform-test
-description: "Generate and validate Apex test classes with TestDataFactory patterns, bulk testing (251+ records), mocking strategies, assertion best practices, and disciplined test-fix loops. Use this skill when creating new Apex test classes, improving test coverage, debugging and fixing failing Apex tests, running test execution and coverage analysis, or implementing testing patterns for triggers, services, controllers, batch jobs, queueables, and integrations. Triggers on *Test.cls, *_Test.cls files, sf apex run test workflows, coverage reports, test-fix loops. Do NOT trigger for production Apex code (use platform-apex-generate) or Jest/LWC tests."
+description: "Generate and validate Apex test classes with TestDataFactory patterns, bulk testing (251+ records), mocking strategies, assertion best practices, and disciplined test-fix loops. Use this skill when creating new Apex test classes, improving test coverage, debugging and fixing failing Apex tests, running test execution and coverage analysis, or implementing testing patterns for triggers, services, controllers, batch jobs, queueables, and integrations. Triggers on *Test.cls, *_Test.cls files, sf apex run test workflows, coverage reports, test-fix loops. Do NOT trigger for production Apex code (use sf-platform-apex) or Jest/LWC tests."
 metadata:
   version: "1.0"
   cloud: "Platform"
@@ -63,7 +63,7 @@ Before generating or fixing tests, identify:
 - the target production class(es) under test
 - existing test classes, test data factories, and setup helpers
 - desired test scope (single class, specific methods, suite, or local tests)
-- coverage threshold (75% minimum for deploy, 90%+ recommended)
+- coverage threshold (Salesforce platform minimum is 75%; this framework's deploy gate is **95%** — see [DEPLOYMENT.md](../../workflows/DEPLOYMENT.md#apex-test-coverage-gate-mandatory))
 - org alias when running tests against an org
 
 ### Step 2 — Generate the Test Class
@@ -171,7 +171,7 @@ When tests fail, run a disciplined fix loop (max 3 iterations — stop and surfa
 
 1. Read the failing test class and the class under test
 2. Identify root cause from error messages and stack traces
-3. Apply fix — adjust test data or assertions for test-side issues; delegate production code issues to the `platform-apex-generate` skill
+3. Apply fix — adjust test data or assertions for test-side issues; delegate production code issues to the `sf-platform-apex` skill
 4. Rerun the focused test before broader regression
 5. Repeat until all tests pass, iteration limit reached, or root cause requires design change
 
@@ -179,8 +179,8 @@ When tests fail, run a disciplined fix loop (max 3 iterations — stop and surfa
 
 | Level | Coverage | Purpose |
 |-------|----------|---------|
-| Production deploy | 75% minimum | Required by Salesforce |
-| Recommended | 90%+ | Best practice target |
+| Salesforce platform minimum | 75% | Required by Salesforce for production deploy |
+| **This framework's deploy gate** | **95%** | Enforced for every deploy including dry-runs — see [DEPLOYMENT.md](../../workflows/DEPLOYMENT.md#apex-test-coverage-gate-mandatory) |
 | Critical paths | 100% | Business-critical code |
 
 Cover all paths: positive, negative/exception, bulk (251+ records), callout/async.
@@ -230,7 +230,7 @@ Use this skill when the user needs **Apex test execution and failure analysis**:
 
 ## When This Skill Owns the Task
 
-Use `platform-apex-test-run` when the work involves:
+Use `sf-platform-test` when the work involves:
 - `sf apex run test` workflows
 - Apex unit-test failures
 - code coverage analysis
@@ -238,9 +238,9 @@ Use `platform-apex-test-run` when the work involves:
 - structured test-fix loops for Apex code
 
 Delegate elsewhere when the user is:
-- writing or refactoring production Apex → `platform-apex-generate` skill
+- writing or refactoring production Apex → `sf-platform-apex` skill
 - testing Agentforce agents → `agentforce-test` skill
-- testing LWC with Jest → [experience-lwc-generate](../experience-lwc-generate/SKILL.md)
+- testing LWC with Jest → [sf-platform-lwc](../sf-platform-lwc/SKILL.md)
 
 ---
 
@@ -275,7 +275,7 @@ Focus on:
 
 ### 4. Run a disciplined fix loop
 When the issue is code or test quality:
-- delegate code fixes to `platform-apex-generate` skill when needed
+- delegate code fixes to `sf-platform-apex` skill when needed
 - add or improve tests
 - rerun focused tests before broader regression
 
@@ -339,10 +339,10 @@ Next step: <fix class, add test, rerun scope, or widen regression>
 
 | Need | Delegate to | Reason |
 |------|-------------|--------|
-| Fix production code or author test classes | `platform-apex-generate` skill | Code generation and repair |
-| Create bulk / edge-case test data | [platform-data-manage](../platform-data-manage/SKILL.md) | Realistic test datasets |
-| Deploy updated tests to org | [platform-metadata-deploy](../platform-metadata-deploy/SKILL.md) | Deployment workflows |
-| Inspect detailed runtime logs | [platform-apex-logs-debug](../platform-apex-logs-debug/SKILL.md) | Deeper failure analysis |
+| Fix production code or author test classes | `sf-platform-apex` skill | Code generation and repair |
+| Create bulk / edge-case test data | [sf-platform-data](../sf-platform-data/SKILL.md) | Realistic test datasets |
+| Deploy updated tests to org | [sf-platform-deploy](../sf-platform-deploy/SKILL.md) | Deployment workflows |
+| Inspect detailed runtime logs | [sf-platform-debug](../sf-platform-debug/SKILL.md) | Deeper failure analysis |
 
 ---
 

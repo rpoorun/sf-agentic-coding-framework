@@ -1,4 +1,4 @@
-<!-- Parent: platform-apex-logs-debug/SKILL.md -->
+<!-- Parent: sf-platform-debug/SKILL.md -->
 # Salesforce Debug Log Reference
 
 ## Log Structure

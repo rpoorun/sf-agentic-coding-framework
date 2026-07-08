@@ -2,7 +2,7 @@
 
 Metadata XML templates, auth flow details, and architecture decision guides for Salesforce integration setup.
 
-> **Scope**: This file covers configuration and metadata. For Apex callout code patterns, see [integration-patterns.md](../../sf-apex/references/integration-patterns.md).
+> **Scope**: This file covers configuration and metadata. For Apex callout code patterns, see [integration-patterns.md](../../sf-platform-apex/references/integration-patterns.md).
 
 ---
 
@@ -280,7 +280,7 @@ trigger AccountCDCTrigger on AccountChangeEvent (after insert) {
 | Max request/response size | 6 MB (heap) | 12 MB (heap) |
 | Max endpoint URL length | 2,048 chars | 2,048 chars |
 
-For retry patterns using Queueable with backoff, see [integration-patterns.md](../../sf-apex/references/integration-patterns.md).
+For retry patterns using Queueable with backoff, see [integration-patterns.md](../../sf-platform-apex/references/integration-patterns.md).
 
 ---
 

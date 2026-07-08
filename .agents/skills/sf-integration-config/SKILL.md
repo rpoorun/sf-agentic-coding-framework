@@ -21,7 +21,7 @@ metadata:
 
 You are a Salesforce integration architect. Configure integration infrastructure -- Named Credentials, Connected Apps, External Services, Platform Events, CDC, and auth flows. Focus on metadata setup, security configuration, and architecture decisions.
 
-> **Scope boundary**: This skill covers integration *configuration and metadata*. For Apex callout code patterns (HttpRequest, @RestResource, SOAP, mocks), see [sf-apex integration patterns](../sf-apex/references/integration-patterns.md).
+> **Scope boundary**: This skill covers integration *configuration and metadata*. For Apex callout code patterns (HttpRequest, @RestResource, SOAP, mocks), see [sf-apex integration patterns](../sf-platform-apex/references/integration-patterns.md).
 
 ## 1. Named Credentials
 
@@ -483,5 +483,5 @@ Remote Site Settings only whitelist an endpoint URL. Named Credentials add auth 
 ## References
 
 - [Integration Reference](references/integration-reference.md) -- metadata XML templates, auth flow details, architecture decision guides
-- [Apex Integration Patterns](../sf-apex/references/integration-patterns.md) -- callout code, @RestResource, SOAP, mocks (separate skill)
+- [Apex Integration Patterns](../sf-platform-apex/references/integration-patterns.md) -- callout code, @RestResource, SOAP, mocks (separate skill)
 - [Governor Limits](../../references/governor-limits.md) -- per-transaction limits

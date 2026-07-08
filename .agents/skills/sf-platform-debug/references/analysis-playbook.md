@@ -1,6 +1,6 @@
 # Debug Analysis Playbook
 
-Use this playbook when `platform-apex-logs-debug` is active and you need the expanded workflow.
+Use this playbook when `sf-platform-debug` is active and you need the expanded workflow.
 
 ## 1. Gather context
 

@@ -1,6 +1,6 @@
 ---
 name: sf-platform-lwc
-description: "Lightning Web Components with PICKLES methodology and 165-point scoring. Use this skill when the user creates or edits LWC components, builds wire service patterns, or writes Jest tests for LWC. TRIGGER when: user creates/edits LWC components, touches lwc/**/*.js, .html, .css, .js-meta.xml files, or asks about wire service, SLDS, or Jest LWC tests. DO NOT TRIGGER when: Apex classes (use platform-apex-generate), Aura components, or Visualforce."
+description: "Lightning Web Components with PICKLES methodology and 165-point scoring. Use this skill when the user creates or edits LWC components, builds wire service patterns, or writes Jest tests for LWC. TRIGGER when: user creates/edits LWC components, touches lwc/**/*.js, .html, .css, .js-meta.xml files, or asks about wire service, SLDS, or Jest LWC tests. DO NOT TRIGGER when: Apex classes (use sf-platform-apex), Aura components, or Visualforce."
 metadata:
   version: "1.0"
   cloud: "Platform"
@@ -30,7 +30,7 @@ Use this skill when the user needs **Lightning Web Components**: LWC bundles, wi
 
 ## When This Skill Owns the Task
 
-Use `experience-lwc-generate` when the work involves:
+Use `sf-platform-lwc` when the work involves:
 - `lwc/**/*.js`, `.html`, `.css`, `.js-meta.xml`
 - component scaffolding and bundle design
 - wire service, Apex integration, GraphQL integration
@@ -38,9 +38,9 @@ Use `experience-lwc-generate` when the work involves:
 - Jest unit tests for LWC
 
 Delegate elsewhere when the user is:
-- writing Apex controllers or business logic first → [platform-apex-generate](../platform-apex-generate/SKILL.md)
-- building Flow XML rather than an LWC screen component → [automation-flow-generate](../automation-flow-generate/SKILL.md)
-- deploying metadata → [platform-metadata-deploy](../platform-metadata-deploy/SKILL.md)
+- writing Apex controllers or business logic first → [sf-platform-apex](../sf-platform-apex/SKILL.md)
+- building Flow XML rather than an LWC screen component → [sf-platform-flow](../sf-platform-flow/SKILL.md)
+- deploying metadata → [sf-platform-deploy](../sf-platform-deploy/SKILL.md)
 
 ---
 
@@ -97,9 +97,9 @@ Check:
 
 ### 5. Hand off supporting backend or deploy work
 Use:
-- [platform-apex-generate](../platform-apex-generate/SKILL.md) for controllers / services
-- [platform-metadata-deploy](../platform-metadata-deploy/SKILL.md) for deployment
-- [platform-apex-test-run](../platform-apex-test-run/SKILL.md) only for Apex-side test loops, not Jest
+- [sf-platform-apex](../sf-platform-apex/SKILL.md) for controllers / services
+- [sf-platform-deploy](../sf-platform-deploy/SKILL.md) for deployment
+- [sf-platform-test](../sf-platform-test/SKILL.md) only for Apex-side test loops, not Jest
 
 ---
 
@@ -171,10 +171,10 @@ Local Dev commands install just-in-time on first run. They are long-running proc
 
 | Need | Delegate to | Reason |
 |---|---|---|
-| Apex controller or service | [platform-apex-generate](../platform-apex-generate/SKILL.md) | backend logic |
-| embed in Flow screens | [automation-flow-generate](../automation-flow-generate/SKILL.md) | declarative orchestration |
-| deploy component bundle | [platform-metadata-deploy](../platform-metadata-deploy/SKILL.md) | org rollout |
-| create supporting metadata (message channels, objects) | [platform-metadata-deploy](../platform-metadata-deploy/SKILL.md) | metadata deployment |
+| Apex controller or service | [sf-platform-apex](../sf-platform-apex/SKILL.md) | backend logic |
+| embed in Flow screens | [sf-platform-flow](../sf-platform-flow/SKILL.md) | declarative orchestration |
+| deploy component bundle | [sf-platform-deploy](../sf-platform-deploy/SKILL.md) | org rollout |
+| create supporting metadata (message channels, objects) | [sf-platform-deploy](../sf-platform-deploy/SKILL.md) | metadata deployment |
 
 ---
 
