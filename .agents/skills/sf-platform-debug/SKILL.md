@@ -1,6 +1,6 @@
 ---
 name: sf-platform-debug
-description: "Salesforce debug log analysis and troubleshooting with 100-point scoring. TRIGGER when: user analyzes debug logs, hits governor limits, reads stack traces, or touches .log files from Salesforce orgs. DO NOT TRIGGER when: running Apex tests (use sf-platform-test), generating or fixing Apex code (use sf-platform-apex), or Agentforce session tracing (use agentforce-observe)."
+description: "Salesforce debug log analysis and troubleshooting with 100-point scoring. TRIGGER when: user analyzes debug logs, hits governor limits, reads stack traces, or touches .log files from Salesforce orgs. DO NOT TRIGGER when: running Apex tests (use sf-platform-test), generating or fixing Apex code (use sf-platform-apex), or Agentforce session tracing (use sf-agentforce-build)."
 metadata:
   version: "1.0"
   cloud: "Platform"
@@ -34,7 +34,7 @@ Use `sf-platform-debug` when the work involves:
 Delegate elsewhere when the user is:
 - running or repairing Apex tests → [sf-platform-test](../sf-platform-test/SKILL.md)
 - generating or implementing the code fix → [sf-platform-apex](../sf-platform-apex/SKILL.md)
-- debugging Agentforce session traces / parquet telemetry → [agentforce-observe](../agentforce-observe/SKILL.md)
+- debugging Agentforce session traces / parquet telemetry → [sf-agentforce-build](../sf-agentforce-build/SKILL.md) (nearest installed skill — no dedicated observability skill is installed; if Agentforce session tracing becomes a recurring need, synthesize one from upstream `agentforce-observe` per the [synthesis procedure](../../directives/AGENTIC_FRAMEWORK.md#mandatory-synthesis-procedure-do-not-copy-upstream-skills-verbatim))
 
 ---
 

@@ -182,7 +182,7 @@ One self-contained Markdown file per ticket:
    - Manual steps — pre-deploy and post-deploy actions
    - Test scenarios — derived from acceptance criteria
    - Risk assessment — deployment conflicts, data migration, permission changes
-4. **Diff local repo against dev org** — retrieve relevant metadata into `{USER_AGENTS}/{repo_name}/temp/retrieve-{KEY}/` (see [Temp Workspace](../directives/AGENT_GUARDRAILS.md#temp-workspace)), diff against local source, document affected metadata.
+4. **Diff local repo against dev org** — retrieve relevant metadata into `{REPO_TEMP}/retrieve-{KEY}/` (the resolved temp workspace — see [Temp Workspace](../directives/AGENT_GUARDRAILS.md#temp-workspace)), diff against local source, document affected metadata.
 5. **Save to ticket file** — write the implementation plan, file scope, and impact assessment into the local ticket file.
 6. **Report in chat** — summarise the analysis and flag blockers or questions.
 7. **Do not modify any source files** — analysis only.

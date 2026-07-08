@@ -133,7 +133,7 @@ Usually exclude:
 - `.sf`
 - `.sfdx`
 - debug logs
-- `{USER_AGENTS}/{repo_name}/temp/` (see Temp Workspace below)
+- `{REPO_TEMP}` — the resolved temp workspace (see Temp Workspace below)
 - coverage output
 - local PMD reports
 - scratch scripts
@@ -143,32 +143,32 @@ Usually exclude:
 
 ## Temp Workspace
 
-All transient, intermediate, and retrieved data that should never be committed must go into a writable temp workspace. The location is resolved using the framework's [layered temp resolution](../../AGENTS.md#layered-resolution):
+All transient, intermediate, and retrieved data that should never be committed must go into a writable temp workspace, written as `{REPO_TEMP}` below. The location is resolved using the framework's [layered temp resolution](../../AGENTS.md#layered-resolution):
 
 1. `{USER_AGENTS}/{repo_name}/temp/` — preferred on local developer machines.
 2. Agent-provided writable workspace or platform temp path — for sandboxed/remote agents that cannot write to `{USER_AGENTS}`.
 3. Repo-local `.agents/temp/` (gitignored) — fallback when neither of the above is writable.
 
-`{USER_AGENTS}` is `~/.agents/` (Unix) or `%USERPROFILE%\.agents\` (Windows). `{repo_name}` is the basename of `git rev-parse --show-toplevel`. Never assume `{USER_AGENTS}` is writable — probe before writing and fall back gracefully.
+`{REPO_TEMP}` means "the first writable location in this chain". `{USER_AGENTS}` is `~/.agents/` (Unix) or `%USERPROFILE%\.agents\` (Windows). `{repo_name}` is the basename of `git rev-parse --show-toplevel`. Never assume `{USER_AGENTS}` is writable — probe before writing and fall back gracefully.
 
-### What belongs in `{USER_AGENTS}/{repo_name}/temp/`
+### What belongs in `{REPO_TEMP}`
 
-- Retrieved org metadata for diff/analysis (e.g. `sf project retrieve start --output-dir {USER_AGENTS}/{repo_name}/temp/retrieve-{KEY}`)
+- Retrieved org metadata for diff/analysis (e.g. `sf project retrieve start --output-dir {REPO_TEMP}/retrieve-{KEY}`)
 - Dry-deploy output and validation results
 - Coverage reports and PMD scan output
-- Master framework clone during update checks (at `{USER_AGENTS}/temp/framework-update/` — shared, not per-repo)
+- Master framework clone during update checks (at `{USER_AGENTS}/temp/framework-update/` on local machines — shared, not per-repo; sandboxed agents use their resolved temp workspace)
 - Any intermediate files generated during `analyse`, `build`, or `test` workflows
 - API response caches (field metadata, project lists)
 
 ### What does NOT belong in temp
 
 - Credentials, tokens, or secrets (those come from the [credential lookup chain](../../AGENTS.md#layered-resolution); on local machines the default store is `{USER_AGENTS}/{repo_name}/.local-config.json`)
-- Ticket files or board state (those go in `{USER_AGENTS}/{repo_name}/project/`)
+- Ticket files or board state (those go in `{REPO_STATE}/project/` — see the [per-repo project state chain](../../AGENTS.md#layered-resolution))
 - Anything the user expects to persist across sessions
 
 ### Cleanup rules
 
-The agent must clean up `{USER_AGENTS}/{repo_name}/temp/` in the following situations:
+The agent must clean up `{REPO_TEMP}` in the following situations:
 
 1. **Before branch checkout** — delete the contents of the temp directory before switching branches to prevent cross-branch contamination.
 2. **Before merge** — delete the contents of the temp directory before merging to ensure no transient data leaks into the merge commit.
@@ -177,10 +177,10 @@ The agent must clean up `{USER_AGENTS}/{repo_name}/temp/` in the following situa
 
 ### Folder structure convention
 
-Use descriptive subfolders within `{USER_AGENTS}/{repo_name}/temp/` to keep operations isolated:
+Use descriptive subfolders within `{REPO_TEMP}` to keep operations isolated:
 
 ```
-{USER_AGENTS}/{repo_name}/temp/
+{REPO_TEMP}/
 ├── retrieve-{KEY}/        # Retrieved org metadata for a specific ticket
 ├── deploy-{KEY}/          # Dry-deploy output for a specific ticket
 ├── coverage/              # Test coverage reports

@@ -1,7 +1,7 @@
 {
   "_info": "This template documents the shape of per-repo config files stored at {USER_AGENTS}/{repo_name}/.local-config.json. It is tracked in git so new installs know the expected structure. The live config files are NEVER in the repo — they live under the user-level framework directory.",
   "_convention": {
-    "rule": "All local-only configuration lives under the user-level framework directory (~/.agents/ on Unix, %USERPROFILE%\\.agents\\ on Windows). Global identity and preferences are root-level files. Per-repo credentials and state live at {USER_AGENTS}/{repo_name}/.local-config.json.",
+    "rule": "On local developer machines, all local-only configuration lives under the user-level framework directory (~/.agents/ on Unix, %USERPROFILE%\\.agents\\ on Windows). Global identity and preferences are root-level files. Per-repo credentials and state live at {USER_AGENTS}/{repo_name}/.local-config.json. This file is the local-machine default only — sandboxed/hosted agents resolve credentials and state via the layered resolution chains in AGENTS.md (secret manager / env vars for credentials; {REPO_STATE} tiers for state) and never create this file on ephemeral or shared filesystems.",
     "user_level_structure": {
       "root": "~/.agents/ (Unix) or %USERPROFILE%\\.agents\\ (Windows) — referred to as {USER_AGENTS}",
       "identity": "{USER_AGENTS}/identity.json — author name and email, shared across all repos",
@@ -9,8 +9,8 @@
       "framework_files": "{USER_AGENTS}/directives/, standards/, skills/, workflows/ — installed from master repo, shared across all repos",
       "common_templates": "{USER_AGENTS}/common/templates/ — ticket template, board template, reusable scaffolding",
       "per_repo_config": "{USER_AGENTS}/{repo_name}/.local-config.json — project-specific credentials (Jira, org aliases, etc.)",
-      "per_repo_tickets": "{USER_AGENTS}/{repo_name}/project/tickets/ — local ticket files, persist across branches and sessions",
-      "per_repo_board": "{USER_AGENTS}/{repo_name}/project/board/ — agile board lanes",
+      "per_repo_tickets": "{USER_AGENTS}/{repo_name}/project/tickets/ — local ticket files; on local machines they persist across branches and sessions (in constrained environments, persistence is limited to what the resolved {REPO_STATE} tier provides)",
+      "per_repo_board": "{USER_AGENTS}/{repo_name}/project/board/ — agile board lanes (same persistence scope as tickets)",
       "per_repo_temp": "{USER_AGENTS}/{repo_name}/temp/ — transient data, cleaned after workflows complete"
     },
     "repo_name_derivation": "The {repo_name} is the basename of `git rev-parse --show-toplevel` — e.g. if the repo is at C:\\repo\\ClientA\\salesforce-project, then repo_name is 'salesforce-project'.",

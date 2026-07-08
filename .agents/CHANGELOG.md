@@ -24,7 +24,14 @@ This file records all notable changes to `sf-agentic-coding-framework` in human-
 - `JIRA.MD` — fetch step 2 resolves credentials via the layered lookup instead of reading the local JSON first.
 - `README.md` — installation wording matches v0.1.2: copy `AGENTS.md` (+ optional `.agents/project/` boilerplate); framework files install at user level or fallback via layered resolution.
 - `sf-platform-apex/SKILL.md` — ApexDoc author identity resolution aligned (identity.json primary, ENVIRONMENT.md fallback).
-- `sf-platform-test/SKILL.md`, `sf-platform-soql/SKILL.md`, `sf-platform-debug/SKILL.md` — stale `platform-apex-logs-debug` routing links/labels replaced with `sf-platform-debug` (source attribution preserved).
+- `sf-platform-test/SKILL.md`, `sf-platform-soql/SKILL.md`, `sf-platform-debug/SKILL.md` — stale `platform-apex-logs-debug` routing links/labels replaced with `sf-platform-debug` (frontmatter source attribution preserved); debug skill's Agentforce observability route fixed from non-existent `agentforce-observe` to `sf-agentforce-build`; debug README and reference headers renamed to the installed skill name.
+- `AGENTS.md` — added `{REPO_TEMP}` shorthand; Purpose/Installation Procedure and workflow reference table now use `{REPO_STATE}`/`{REPO_TEMP}` and the layered credential lookup instead of unconditional `{USER_AGENTS}/{repo_name}` paths; fixed Scenario 2 link to `.agents/directives/AGENTIC_FRAMEWORK.md`.
+- `AGENT_GUARDRAILS.md` — Temp Workspace headings, examples, cleanup rules, and folder convention now use `{REPO_TEMP}` (resolved temp workspace) rather than hard-coded `{USER_AGENTS}` paths.
+- `jira-management/SKILL.md` — fixed root `AGENTS.md` link depth (`../../../AGENTS.md`).
+- `README.md` — "How it works" and "Installing" now mention the sandboxed/hosted fallback path with a pointer to Layered Resolution (previously described only the local happy path).
+- `.local-config.template.json` — convention block scoped to local developer machines; persistence claims for tickets/board limited to what the resolved `{REPO_STATE}` tier provides; hosted agents directed to the layered chains.
+- `AGENTS.md` — installed-repo footprint description acknowledges gitignored `.agents/temp/`/`.agents/state/` fallback directories; `{REPO_STATE}` chain documents fall-through when `SF_AGENTIC_FRAMEWORK_HOME` is a read-only mount.
+- `sf-platform-debug/SKILL.md` — Agentforce route annotated as a capability gap (nearest installed skill) with a pointer to the synthesis procedure for a dedicated observability skill.
 - `.gitignore` — added `.agents/temp/` and `.agents/state/` entries for repo-local fallbacks.
 
 ---

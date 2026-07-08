@@ -154,7 +154,7 @@ If a board is found, display a summary. If not, skip silently.
 
 ## Credential Loading
 
-Credentials are resolved using the framework's [layered credential lookup](../../AGENTS.md#layered-resolution), in this order:
+Credentials are resolved using the framework's [layered credential lookup](../../../AGENTS.md#layered-resolution), in this order:
 
 1. **Hosted/CI secret manager** — platform-provided credentials (e.g. GitHub Actions secrets, Codex connector credentials). Preferred for remote and sandboxed agents.
 2. **Environment variables** — `JIRA_BASE_URL`, `JIRA_EMAIL`, `JIRA_API_TOKEN`, and optionally `JIRA_PROJECT_PREFIXES` (comma-separated). Preferred for containers, CI pipelines, and automation scripts.

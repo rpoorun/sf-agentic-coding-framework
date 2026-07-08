@@ -14,7 +14,7 @@
 This framework uses a **local-first, user-level architecture** with fallbacks for sandboxed and remote-hosted agents. There are three contexts:
 
 1. **Master framework repository** (this repo, `sf-agentic-coding-framework`): contains the full `.agents/` source tree — directives, standards, skills, workflows, and CHANGELOG. This is the canonical source from which installs are cloned. Do not run migration, do not delete `.agents/` folders, do not treat this repo as a local install.
-2. **Installed project repository** (a Salesforce project using this framework): contains only `AGENTS.md` (routing document) and `.agents/project/` (team-shared docs). All framework files are installed at the user level.
+2. **Installed project repository** (a Salesforce project using this framework): contains only `AGENTS.md` (routing document) and `.agents/project/` (team-shared docs) as committed content. All framework files are installed at the user level. In constrained environments, gitignored `.agents/temp/` and `.agents/state/` fallback directories may additionally exist locally — they are never committed.
 3. **User-level runtime install** (`{USER_AGENTS}/`): shared framework files (directives, standards, skills, workflows) installed once per machine. Per-repo state (credentials, tickets, board, temp data) is stored in a repo-named subdirectory, persisting across branches and sessions.
 
 | Shorthand | Unix/macOS | Windows | Purpose |
@@ -51,7 +51,7 @@ Use the first readable location. If none is available, the agent should inform t
 
 Never assume plaintext JSON credentials are available. If the agent is running in a hosted or sandboxed environment, prefer higher-priority sources.
 
-**Temp/output location:**
+**Temp/output location** (`{REPO_TEMP}` — the first writable tier):
 
 | Priority | Location | When to use |
 | --- | --- | --- |
@@ -68,7 +68,7 @@ Never assume plaintext JSON credentials are available. If the agent is running i
 | 3 | Agent-provided persistent workspace/state path | Hosted agents that expose a durable state directory |
 | 4 | Repo-local `.agents/state/` (gitignored) | Last resort when no external writable state location exists |
 
-Write `{REPO_STATE}` in workflow instructions to mean "the first writable location in this chain". State stored in tiers 3–4 persists only as long as the hosting environment persists it — do not promise cross-session or cross-sandbox persistence unless tier 1 or 2 resolved.
+Write `{REPO_STATE}` in workflow instructions to mean "the first writable location in this chain". State stored in tiers 3–4 persists only as long as the hosting environment persists it — do not promise cross-session or cross-sandbox persistence unless tier 1 or 2 resolved. Note that `SF_AGENTIC_FRAMEWORK_HOME` may point to a read-only mount (e.g. in CI) — that satisfies the framework-files chain but not this one; when tier 1 is not writable, fall through to the next writable tier rather than failing.
 
 Never assume `{USER_AGENTS}` is writable — probe before writing and fall back gracefully.
 
@@ -78,7 +78,7 @@ Never assume `{USER_AGENTS}` is writable — probe before writing and fall back 
 
 **In the master framework repository** (`sf-agentic-coding-framework`): framework files are read directly from `.agents/` — the same paths that `{USER_AGENTS}/` would resolve to in a local install. Do not run migration, bootstrap, or delete framework source folders.
 
-**In an installed project repository**: if the framework is not resolvable via the [Layered Resolution](#layered-resolution) chain, or `{USER_AGENTS}/{repo_name}/` does not exist for this repo, or `.agents/project/*` is still empty/boilerplate, run [Project Bootstrap]({USER_AGENTS}/workflows/PROJECT_BOOTSTRAP.md) before other work — it initialises the user-level directory (or configures the appropriate fallback), creates the per-repo state, and interviews the user to populate org, VCS, team, and process facts. Also run the [Daily Update Check]({USER_AGENTS}/directives/AGENTIC_FRAMEWORK.md#daily-update-check-automatic) once per calendar day to see whether the master repository has a newer framework version.
+**In an installed project repository**: if the framework is not resolvable via the [Layered Resolution](#layered-resolution) chain, or `{REPO_STATE}` does not exist for this repo, or `.agents/project/*` is still empty/boilerplate, run [Project Bootstrap]({USER_AGENTS}/workflows/PROJECT_BOOTSTRAP.md) before other work — it initialises the framework location (user-level or the appropriate fallback), creates the per-repo state at the first writable `{REPO_STATE}` tier, and interviews the user to populate org, VCS, team, and process facts. Also run the [Daily Update Check]({USER_AGENTS}/directives/AGENTIC_FRAMEWORK.md#daily-update-check-automatic) once per calendar day to see whether the master repository has a newer framework version.
 
 ## Project Guidance
 
@@ -129,7 +129,7 @@ In the master framework repository, the full `.agents/` tree is tracked as the c
 
 **Repo-level (`.agents/project/`)** — project facts for this repository:
 - Contains durable project facts: structure, environment, requirements, schema, integrations, glossary, and UX context.
-- In an installed project repo, these files may be committed and shared with the team when the team chooses. They must never be contributed back to the master framework repository — only sanitized generic lessons extracted into directives/standards/skills/workflows may be upstreamed (see [Scenario 2](directives/AGENTIC_FRAMEWORK.md#scenario-2--forking-learned-improvements-back-to-the-master-framework-contribute-back) in AGENTIC_FRAMEWORK.md).
+- In an installed project repo, these files may be committed and shared with the team when the team chooses. They must never be contributed back to the master framework repository — only sanitized generic lessons extracted into directives/standards/skills/workflows may be upstreamed (see [Scenario 2](.agents/directives/AGENTIC_FRAMEWORK.md#scenario-2--forking-learned-improvements-back-to-the-master-framework-contribute-back) in AGENTIC_FRAMEWORK.md).
 
 ## Agent Framework
 
@@ -158,9 +158,9 @@ Plugins extend the core framework with additional skills, integrations, or workf
 To install this framework into a new or existing Salesforce project repository:
 
 1. **Copy this file** — place `AGENTS.md` at the project repository root. Optionally create `.agents/project/` with boilerplate project doc files.
-2. **Run Project Bootstrap** — on first use, the agent reads `AGENTS.md`, detects that `{USER_AGENTS}/` does not exist, and runs [Step 0a of Project Bootstrap]({USER_AGENTS}/workflows/PROJECT_BOOTSTRAP.md#step-0a--initialise-user-level-framework-directory) to clone the core framework's `.agents/` tree into `{USER_AGENTS}/` (one-time per machine) and [Step 0b]({USER_AGENTS}/workflows/PROJECT_BOOTSTRAP.md#step-0b--initialise-per-repo-directory) to create `{USER_AGENTS}/{repo_name}/` (one-time per repo).
+2. **Run Project Bootstrap** — on first use, the agent reads `AGENTS.md`, runs the environment detection in [Project Bootstrap]({USER_AGENTS}/workflows/PROJECT_BOOTSTRAP.md#environment-detection-before-step-0a), then [Step 0a]({USER_AGENTS}/workflows/PROJECT_BOOTSTRAP.md#step-0a--initialise-user-level-framework-directory) to clone the core framework's `.agents/` tree into `{USER_AGENTS}/` (one-time per machine, when writable — sandboxed agents use the framework-files fallback chain instead) and [Step 0b]({USER_AGENTS}/workflows/PROJECT_BOOTSTRAP.md#step-0b--initialise-per-repo-directory) to create the per-repo state at the first writable `{REPO_STATE}` tier (one-time per repo).
 3. **Bootstrap interview** — if `.agents/project/*` is still boilerplate, the agent runs the [Project Bootstrap]({USER_AGENTS}/workflows/PROJECT_BOOTSTRAP.md) interview to configure the project.
-4. **Install plugins** — for each registered plugin, say its install command (e.g. `install Jira skills`). The agent follows the plugin's guided setup flow to configure credentials in `{USER_AGENTS}/{repo_name}/.local-config.json`.
+4. **Install plugins** — for each registered plugin, say its install command (e.g. `install Jira skills`). The agent follows the plugin's guided setup flow, resolving credentials via the [layered credential lookup](#layered-resolution) (on local developer machines the default store is `{USER_AGENTS}/{repo_name}/.local-config.json`; hosted/sandboxed agents use secrets or env vars).
 5. **Daily update check** — on each subsequent session, the agent runs the [Daily Update Check]({USER_AGENTS}/directives/AGENTIC_FRAMEWORK.md#daily-update-check-automatic) to detect newer framework versions from the core repository and update `{USER_AGENTS}/`.
 
 ### Adding a New Plugin
@@ -225,7 +225,7 @@ All files in this table are at `{USER_AGENTS}/workflows/`.
 | `TESTING.md` | Verification protocols, test commands, mocking strategies, coverage expectations, and acceptance checks. |
 | `IMPLEMENTATION_PLAN.md` | Delivery sequencing, dependency ordering, implementation planning, rollout steps, and open task tracking. |
 | `JIRA.MD` | Jira fetch workflow: the single Jira-facing operation that retrieves a ticket and delivers parsed data to project tracking. |
-| `PROJECT_TRACKING.MD` | Local ticket management: ticket files at `{USER_AGENTS}/{repo_name}/project/tickets/`, agile board, and ticket-scoped command routing (`analyse`, `build`, `deploy`, `test`, `comment`) that delegates to the framework's existing workflows. |
+| `PROJECT_TRACKING.MD` | Local ticket management: ticket files at `{REPO_STATE}/project/tickets/`, agile board, and ticket-scoped command routing (`analyse`, `build`, `deploy`, `test`, `comment`) that delegates to the framework's existing workflows. |
 
 ## Project-Specific Reference Files
 

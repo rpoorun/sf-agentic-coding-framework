@@ -1,4 +1,4 @@
-<!-- Parent: platform-apex-logs-debug/SKILL.md -->
+<!-- Parent: sf-platform-debug/SKILL.md -->
 # Salesforce CLI Debug Commands Reference
 
 ## Quick Reference
@@ -237,7 +237,7 @@ sf apex tail log --target-org $ORG_ALIAS --color 2>&1 | \
     if echo "$line" | rg -q "EXCEPTION|FATAL_ERROR|LimitException"; then
       echo "🔴 ERROR DETECTED: $line"
       # Optional: Send alert
-      # osascript -e 'display notification "Error in Salesforce" with title "platform-apex-logs-debug"'
+      # osascript -e 'display notification "Error in Salesforce" with title "sf-platform-debug"'
     fi
   done
 ```
@@ -321,9 +321,9 @@ sf apex get log --log-id 07Lxx0000000000 --target-org my-org > ./saved-log.txt
 
 ---
 
-## Integration with platform-apex-logs-debug Skill
+## Integration with sf-platform-debug Skill
 
-The platform-apex-logs-debug skill automatically:
+The sf-platform-debug skill automatically:
 
 1. **Fetches logs** when you run `sf apex get log` or `sf apex tail log`
 2. **Parses content** for SOQL in loops, DML in loops, exceptions
@@ -335,7 +335,7 @@ Example workflow:
 # Run a test that generates a log
 sf apex run test --class-names MyTestClass --target-org my-org
 
-# Get the log (platform-apex-logs-debug hook auto-analyzes)
+# Get the log (sf-platform-debug hook auto-analyzes)
 sf apex list log --target-org my-org --json | \
   jq -r '.result[0].Id' | \
   xargs -I {} sf apex get log --log-id {} --target-org my-org
