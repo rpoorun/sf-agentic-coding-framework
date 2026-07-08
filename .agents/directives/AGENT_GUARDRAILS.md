@@ -143,9 +143,13 @@ Usually exclude:
 
 ## Temp Workspace
 
-All transient, intermediate, and retrieved data that should never be committed must go into the per-repo temp workspace at `{USER_AGENTS}/{repo_name}/temp/`. This directory lives outside the repo (under the user-level framework directory) and exists solely as a local scratch area for agent operations.
+All transient, intermediate, and retrieved data that should never be committed must go into a writable temp workspace. The location is resolved using the framework's [layered temp resolution](../../AGENTS.md#layered-resolution):
 
-`{USER_AGENTS}` is `~/.agents/` (Unix) or `%USERPROFILE%\.agents\` (Windows). `{repo_name}` is the basename of `git rev-parse --show-toplevel`.
+1. `{USER_AGENTS}/{repo_name}/temp/` — preferred on local developer machines.
+2. Agent-provided writable workspace or platform temp path — for sandboxed/remote agents that cannot write to `{USER_AGENTS}`.
+3. Repo-local `.agents/temp/` (gitignored) — fallback when neither of the above is writable.
+
+`{USER_AGENTS}` is `~/.agents/` (Unix) or `%USERPROFILE%\.agents\` (Windows). `{repo_name}` is the basename of `git rev-parse --show-toplevel`. Never assume `{USER_AGENTS}` is writable — probe before writing and fall back gracefully.
 
 ### What belongs in `{USER_AGENTS}/{repo_name}/temp/`
 
@@ -158,7 +162,7 @@ All transient, intermediate, and retrieved data that should never be committed m
 
 ### What does NOT belong in temp
 
-- Credentials, tokens, or secrets (those go in `{USER_AGENTS}/{repo_name}/.local-config.json`)
+- Credentials, tokens, or secrets (those come from the [credential lookup chain](../../AGENTS.md#layered-resolution); on local machines the default store is `{USER_AGENTS}/{repo_name}/.local-config.json`)
 - Ticket files or board state (those go in `{USER_AGENTS}/{repo_name}/project/`)
 - Anything the user expects to persist across sessions
 

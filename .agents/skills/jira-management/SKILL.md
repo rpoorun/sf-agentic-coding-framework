@@ -154,18 +154,19 @@ If a board is found, display a summary. If not, skip silently.
 
 ## Credential Loading
 
-This skill stores credentials in the **user-level framework directory** so they persist across repositories, branches, and sessions. See `_convention.user_level_structure` in `{USER_AGENTS}/common/templates/.local-config.template.json`.
+Credentials are resolved using the framework's [layered credential lookup](../../AGENTS.md#layered-resolution), in this order:
 
-All per-repo config lives at:
-```
-{USER_AGENTS}/{repo_name}/.local-config.json
-```
+1. **Hosted/CI secret manager** — platform-provided credentials (e.g. GitHub Actions secrets, Codex connector credentials). Preferred for remote and sandboxed agents.
+2. **Environment variables** — `JIRA_BASE_URL`, `JIRA_EMAIL`, `JIRA_API_TOKEN`, and optionally `JIRA_PROJECT_PREFIXES` (comma-separated). Preferred for containers, CI pipelines, and automation scripts.
+3. **OS keychain / platform secret store** — when available and integrated.
+4. **User-level per-repo config file** — `{USER_AGENTS}/{repo_name}/.local-config.json`. This is the local developer default and stores plaintext credentials for convenience. Acceptable only on local developer machines; hosted agents should use sources 1–3.
+5. **Interactive prompt** — last resort when no credentials are pre-configured.
 
 Where:
 - `{USER_AGENTS}` = `~/.agents/` (Unix) or `%USERPROFILE%\.agents\` (Windows)
 - `{repo_name}` = basename of `git rev-parse --show-toplevel`
 
-This means a developer working on `client-a-platform` and `client-b-crm` has separate credentials for each project, both persisting outside the repo.
+On local machines, a developer working on `client-a-platform` and `client-b-crm` has separate credentials for each project, both persisting outside the repo. See `_convention.user_level_structure` in `{USER_AGENTS}/common/templates/.local-config.template.json`.
 
 ### Config Shape
 
@@ -195,7 +196,7 @@ Jira Cloud uses HTTP Basic Auth with email + API token:
 Authorization: Basic <base64(email:api_token)>
 ```
 
-Load credentials from the user-level per-repo config.
+Load credentials using the [layered credential lookup](#credential-loading) — check env vars and secret managers before falling back to the per-repo config file.
 
 On Windows PowerShell:
 ```powershell

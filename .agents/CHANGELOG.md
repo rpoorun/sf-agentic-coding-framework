@@ -6,6 +6,24 @@ This file records all notable changes to `sf-agentic-coding-framework` in human-
 
 ---
 
+## [0.1.2] — 2026-07-08
+
+### Added
+- **Layered resolution model**: framework files, credentials, and temp locations are now resolved via a priority chain rather than assuming `{USER_AGENTS}` is unconditionally available. Supports `SF_AGENTIC_FRAMEWORK_HOME` env var override, user-level paths (local default), and repo-local `.agents/` fallback for sandboxed/remote agents.
+- **Credential lookup chain**: 5-tier resolution (secret manager → env vars → OS keychain → local JSON → interactive prompt). Plaintext `.local-config.json` is now explicitly documented as local-developer-only convenience, not a universal credential store.
+- **Temp fallback**: repo-local `.agents/temp/` (gitignored) added as a fallback for agents that cannot write to `{USER_AGENTS}/{repo_name}/temp/`.
+- **Environment detection in bootstrap**: Step 0 now probes `{USER_AGENTS}` writability before attempting user-level installation; sandboxed agents gracefully fall back to repo-local framework files.
+
+### Changed
+- `AGENTS.md` — Framework Location section reframed as "local-first, user-level architecture with fallbacks"; added Layered Resolution subsection with lookup-order tables for framework files, credentials, and temp.
+- `PROJECT_BOOTSTRAP.md` — added environment detection step before Step 0a; Step 0a detection now requires confirmed writability.
+- `AGENTIC_FRAMEWORK.md` — Daily Update Check step 1 handles non-writable `{USER_AGENTS}`; Scenario 1 temp clone uses layered temp resolution.
+- `AGENT_GUARDRAILS.md` — Temp Workspace section lists 3-tier temp location resolution; credential reference in "What does NOT belong in temp" updated to reference lookup chain.
+- `jira-management/SKILL.md` — Credential Loading rewritten as 5-tier lookup; auth header section references the lookup chain.
+- `.gitignore` — added `.agents/temp/` entry for repo-local temp fallback.
+
+---
+
 ## [0.1.1] — 2026-07-07
 
 ### Added

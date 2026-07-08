@@ -33,9 +33,22 @@ When the detection condition is met, run this workflow before starting the user'
 
 This step has its own trigger, separate from the project-config detection above: run it the first time this framework is read in any repository's git context on this machine. Skip sub-steps that are already complete.
 
+### Environment detection (before Step 0a)
+
+Before creating user-level directories, determine which runtime environment the agent is in:
+
+1. If `SF_AGENTIC_FRAMEWORK_HOME` is set, use that path as the framework root instead of `{USER_AGENTS}`. Skip Step 0a (framework files are already provided at that location). Proceed to Step 0b using `SF_AGENTIC_FRAMEWORK_HOME` in place of `{USER_AGENTS}`.
+2. If `{USER_AGENTS}` (`~/.agents/` or `%USERPROFILE%\.agents\`) is writable, proceed with Step 0a as normal.
+3. If `{USER_AGENTS}` is **not writable** (sandboxed agent, ephemeral container, restricted workspace), fall back:
+   - Use the repo-local `.agents/` tree as a read-only framework source (do not copy files).
+   - Use the agent-provided writable temp/workspace path for temp output.
+   - Use environment variables or platform-provided secrets for credentials (see [Credential lookup order](../../AGENTS.md#layered-resolution)).
+   - Log a note that user-level installation was skipped due to environment constraints.
+   - Skip Step 0a entirely; proceed to Step 0b only if a writable per-repo state directory can be created (at `{USER_AGENTS}/{repo_name}/` or an alternative writable location).
+
 ### Step 0a — Initialise user-level framework directory
 
-Detection: run this if `{USER_AGENTS}` does not exist on disk.
+Detection: run this if `{USER_AGENTS}` does not exist on disk and the environment detection above confirmed it is writable.
 
 1. Create the directory structure:
    ```

@@ -3,15 +3,15 @@
 | Field | Value |
 | --- | --- |
 | Framework | sf-agentic-coding-framework |
-| Version | 0.1.1 |
+| Version | 0.1.2 |
 | Author | Rishikesh Poorun |
 | Master repository | https://github.com/rpoorun/sf-agentic-coding-framework |
-| Last updated | 2026-07-07 |
+| Last updated | 2026-07-08 |
 | License | Apache License 2.0 |
 
 ## Framework Location
 
-This framework uses a **user-level architecture**. There are three contexts:
+This framework uses a **local-first, user-level architecture** with fallbacks for sandboxed and remote-hosted agents. There are three contexts:
 
 1. **Master framework repository** (this repo, `sf-agentic-coding-framework`): contains the full `.agents/` source tree — directives, standards, skills, workflows, and CHANGELOG. This is the canonical source from which installs are cloned. Do not run migration, do not delete `.agents/` folders, do not treat this repo as a local install.
 2. **Installed project repository** (a Salesforce project using this framework): contains only `AGENTS.md` (routing document) and `.agents/project/` (team-shared docs). All framework files are installed at the user level.
@@ -24,13 +24,49 @@ This framework uses a **user-level architecture**. There are three contexts:
 
 `{repo_name}` is derived from `basename "$(git rev-parse --show-toplevel)"`.
 
+### Layered Resolution
+
+The user-level path is the **preferred** location for local developer agents but must not be assumed unconditionally. Sandboxed agents (e.g. Codex, cloud-hosted CI agents) may not have write access to `{USER_AGENTS}` or may run in ephemeral containers. The framework resolves locations using the following fallback chains.
+
+**Framework files lookup order:**
+
+| Priority | Location | When to use |
+| --- | --- | --- |
+| 1 | `SF_AGENTIC_FRAMEWORK_HOME` env var | Explicit override — set by CI, containers, or custom tooling |
+| 2 | `{USER_AGENTS}/` (`~/.agents/` or `%USERPROFILE%\.agents\`) | Local developer machines (default) |
+| 3 | Repo-local `.agents/` | Master framework repository, or sandboxed agents that cannot write to user-level paths |
+
+Use the first readable location. If none is available, the agent should inform the user and offer to run bootstrap.
+
+**Credential lookup order:**
+
+| Priority | Source | When to use |
+| --- | --- | --- |
+| 1 | Hosted/CI secret manager or platform-provided credentials | Remote agents, CI pipelines, managed platforms |
+| 2 | Environment variables (`JIRA_BASE_URL`, `JIRA_EMAIL`, `JIRA_API_TOKEN`, etc.) | Containers, sandboxed agents, automation scripts |
+| 3 | OS keychain or platform secret store | Desktop agents with keychain integration |
+| 4 | `{USER_AGENTS}/{repo_name}/.local-config.json` | Local developer machines (plaintext convenience — acceptable only for local use) |
+| 5 | Interactive prompt | Last resort when no credentials are pre-configured |
+
+Never assume plaintext JSON credentials are available. If the agent is running in a hosted or sandboxed environment, prefer higher-priority sources.
+
+**Temp/output location:**
+
+| Priority | Location | When to use |
+| --- | --- | --- |
+| 1 | `{USER_AGENTS}/{repo_name}/temp/` | Local developer machines |
+| 2 | Agent-provided writable workspace or platform temp path | Sandboxed/remote agents |
+| 3 | Repo-local `.agents/temp/` (gitignored) | Fallback when neither of the above is writable |
+
+Never assume `{USER_AGENTS}` is writable — probe before writing and fall back gracefully.
+
 ## Purpose And Use
 
 `AGENTS.md` is the first file AI-assisted coding agents must read in this repository. It is the **router** that points to framework files — either at `{USER_AGENTS}/` (in an installed project) or at `.agents/` (in the master framework repository itself). Use it before changing source, metadata, documentation, org state, or Git state.
 
 **In the master framework repository** (`sf-agentic-coding-framework`): framework files are read directly from `.agents/` — the same paths that `{USER_AGENTS}/` would resolve to in a local install. Do not run migration, bootstrap, or delete framework source folders.
 
-**In an installed project repository**: if `{USER_AGENTS}/` does not exist on this machine, or `{USER_AGENTS}/{repo_name}/` does not exist for this repo, or `.agents/project/*` is still empty/boilerplate, run [Project Bootstrap]({USER_AGENTS}/workflows/PROJECT_BOOTSTRAP.md) before other work — it initialises the user-level directory, creates the per-repo state, and interviews the user to populate org, VCS, team, and process facts. Also run the [Daily Update Check]({USER_AGENTS}/directives/AGENTIC_FRAMEWORK.md#daily-update-check-automatic) once per calendar day to see whether the master repository has a newer framework version.
+**In an installed project repository**: if the framework is not resolvable via the [Layered Resolution](#layered-resolution) chain, or `{USER_AGENTS}/{repo_name}/` does not exist for this repo, or `.agents/project/*` is still empty/boilerplate, run [Project Bootstrap]({USER_AGENTS}/workflows/PROJECT_BOOTSTRAP.md) before other work — it initialises the user-level directory (or configures the appropriate fallback), creates the per-repo state, and interviews the user to populate org, VCS, team, and process facts. Also run the [Daily Update Check]({USER_AGENTS}/directives/AGENTIC_FRAMEWORK.md#daily-update-check-automatic) once per calendar day to see whether the master repository has a newer framework version.
 
 ## Project Guidance
 
