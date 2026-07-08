@@ -118,7 +118,7 @@ Use the project pattern unless the existing codebase or client standard defines 
 ## Test Class Rules
 
 - A development is not done until tests are written or updated and relevant tests pass.
-- Aim for 90 percent coverage or higher where possible; Salesforce production deployment still requires at least 75 percent coverage.
+- The Salesforce platform minimum for production deployment is 75 percent coverage. This framework enforces a **95 percent** coverage gate for every deploy (including dry-runs) — see [DEPLOYMENT.md](../workflows/DEPLOYMENT.md#apex-test-coverage-gate-mandatory). Do not treat 75 percent as the project target.
 - New features must not reduce meaningful test coverage.
 - `SeeAllData=true` is forbidden unless a rare project exception is explicitly approved.
 - Tests must not rely on existing org data.

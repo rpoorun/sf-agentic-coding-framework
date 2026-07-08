@@ -1,10 +1,10 @@
 # sf-agentic-coding-framework
 
-A drop-in set of AI-agent operating instructions for Salesforce projects. Clone or copy this repo's `AGENTS.md` and `.agents/` folder into a Salesforce project, and any AI coding agent (Claude Code, Cursor, Codex, etc.) that reads `AGENTS.md` will follow a consistent set of guardrails, coding standards, and Salesforce-specific workflows when it touches Apex, LWC, Flow, metadata, or org state.
+A drop-in set of AI-agent operating instructions for Salesforce projects. Copy this repo's `AGENTS.md` (and optionally the `.agents/project/` boilerplate) into a Salesforce project; the shared framework files (directives, standards, skills, workflows) install once at the user level (`~/.agents/`) — or at a fallback location for sandboxed/remote agents — via layered resolution. Any AI coding agent (Claude Code, Cursor, Codex, etc.) that reads `AGENTS.md` will follow a consistent set of guardrails, coding standards, and Salesforce-specific workflows when it touches Apex, LWC, Flow, metadata, or org state. This master repository keeps the full `.agents/` source tree as the canonical source.
 
 | Field | Value |
 | --- | --- |
-| Version | 0.0.9 |
+| Version | 0.1.2 |
 | Author | Rishikesh Poorun |
 | License | [Apache License 2.0](LICENSE) |
 | Master repository | https://github.com/rpoorun/sf-agentic-coding-framework |
@@ -16,7 +16,7 @@ AI agents are good at writing Salesforce code, but left alone they'll happily in
 ## How it works
 
 1. **`AGENTS.md`** is the entry point. It's the first file any agent reads, and it routes to everything else: mandatory directives, coding standards, capability "skills," repeatable workflows, and project-specific facts.
-2. **`.agents/`** holds the actual instruction files, organized by what kind of rule they are:
+2. **`.agents/`** in this master repository holds the canonical framework source, organized by what kind of rule they are:
 
 ```
 .agents/
@@ -24,11 +24,12 @@ AI agents are good at writing Salesforce code, but left alone they'll happily in
 ├── standards/    # Quality bar: Apex/LWC conventions, lean coding, ApexDoc, trigger/constants frameworks
 ├── skills/       # Capability routing: 26 sf-{cloud}-{name} skills covering Apex, LWC, Flow, SOQL, deploy, etc.
 ├── workflows/    # Repeatable processes: bootstrap interview, deployment gates, Git/PR flow, testing
-└── project/      # This project's own facts: org aliases, architecture, schema — boilerplate until you fill it in
+└── project/      # Boilerplate project facts template: org aliases, architecture, schema
 ```
 
-3. **First time you open a project with this framework installed**, the agent runs a short bootstrap interview (one question at a time) to learn your dev org, your Git remote, your team's release process, and whether the framework itself should be committed to your repo or kept local-only — see [`.agents/workflows/PROJECT_BOOTSTRAP.md`](.agents/workflows/PROJECT_BOOTSTRAP.md).
-4. **From then on**, every Apex/LWC/metadata task, every deploy, and every Git action runs through the matching directive, standard, skill, or workflow file automatically — you don't have to remind the agent of the rules each time.
+3. **When installed into a Salesforce project**, the framework uses a local-first, user-level architecture: you copy only `AGENTS.md` into the project repo. On first use, the agent clones the framework into `~/.agents/` (or `%USERPROFILE%\.agents\` on Windows) — shared across all repos on your machine. Per-repo state (credentials, tickets, board) lives at `~/.agents/{repo_name}/`, persisting across branches and sessions. The project repo itself keeps only `AGENTS.md` and `.agents/project/` (team-shared docs). Sandboxed or remote-hosted agents that cannot write to the user level resolve framework files, credentials, state, and temp locations through fallback chains instead — see the Layered Resolution section in [`AGENTS.md`](AGENTS.md).
+4. **First time you open a project with this framework installed**, the agent runs a short bootstrap interview (one question at a time) to learn your dev org, your Git remote, your team's release process, and whether the project docs should be committed to your repo or kept local-only — see [`.agents/workflows/PROJECT_BOOTSTRAP.md`](.agents/workflows/PROJECT_BOOTSTRAP.md).
+5. **From then on**, every Apex/LWC/metadata task, every deploy, and every Git action runs through the matching directive, standard, skill, or workflow file automatically — you don't have to remind the agent of the rules each time.
 
 ## What you get, concretely
 
@@ -58,8 +59,8 @@ sf-agentic-coding-framework/
 
 ## Installing this into your own Salesforce project
 
-1. Copy `AGENTS.md` and `.agents/` into your project's repository root.
-2. Open the project with your AI coding agent. On first read, it will run the [bootstrap interview](.agents/workflows/PROJECT_BOOTSTRAP.md): your dev org, your Git remote/team setup, and whether to commit this framework to your remote or keep it local-only.
+1. Copy `AGENTS.md` into your project's repository root. Optionally copy `.agents/project/` for boilerplate project doc templates.
+2. Open the project with your AI coding agent. On first read, the agent runs the [Project Bootstrap](.agents/workflows/PROJECT_BOOTSTRAP.md): after an environment check, it clones the framework into `~/.agents/` (one-time per machine), creates per-repo state at `~/.agents/{repo_name}/`, and interviews you for your dev org, Git remote, and team setup. In sandboxed or hosted environments where the user level is not writable, bootstrap falls back to agent-provided or repo-local (gitignored) locations — see Layered Resolution in [`AGENTS.md`](AGENTS.md).
 3. From there, just work normally — ask the agent to build the Apex class, LWC component, or Flow you need, and it applies the standards and gates automatically.
 4. To pull future updates from this master repository, or to contribute a generally-useful improvement back, see [Master Framework Repository And Sync Workflow](.agents/directives/AGENTIC_FRAMEWORK.md#master-framework-repository-and-sync-workflow).
 
