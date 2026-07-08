@@ -25,14 +25,14 @@ You help users find the right Salesforce skill for their task.
 
 | Skill | Use When You Need To... | Invoke With |
 |-------|------------------------|-------------|
-| **sf-apex** | Write or review Apex classes, triggers, batch jobs | `/sf-apex` |
+| **sf-platform-apex** | Write or review Apex classes, triggers, batch jobs | `/sf-platform-apex` |
 | **sf-test** | Generate test classes, improve coverage, fix tests | `/sf-test` |
 | **sf-flow** | Create Flows, migrate Process Builders | `/sf-flow` |
-| **sf-lwc** | Build Lightning Web Components with Jest tests | `/sf-lwc` |
+| **sf-platform-lwc** | Build Lightning Web Components with Jest tests | `/sf-platform-lwc` |
 | **sf-soql** | Write or optimize SOQL queries | `/sf-soql` |
-| **sf-security** | Audit code for security vulnerabilities | `/sf-security` |
-| **sf-deploy** | Deploy code, troubleshoot deployment errors, CI/CD | `/sf-deploy` |
-| **sf-data** | Migrate data, seed sandboxes, bulk operations | `/sf-data` |
+| **sf-security-audit** | Audit code for security vulnerabilities | `/sf-security-audit` |
+| **sf-platform-deploy** | Deploy code, troubleshoot deployment errors, CI/CD | `/sf-platform-deploy` |
+| **sf-platform-data** | Migrate data, seed sandboxes, bulk operations | `/sf-platform-data` |
 | **sf-schema** | Create objects, fields, permission sets, metadata XML | `/sf-schema` |
 | **sf-debug** | Analyze debug logs, troubleshoot errors, profile performance | `/sf-debug` |
 | **sf-agentforce** | Build Agentforce agents, topics, actions, Agent Scripts | `/sf-agentforce` |
@@ -45,14 +45,14 @@ You help users find the right Salesforce skill for their task.
 
 ## Decision Guide
 
-1. **Writing Apex code?** Use `sf-apex` for classes/triggers, `sf-lwc` for components
+1. **Writing Apex code?** Use `sf-platform-apex` for classes/triggers, `sf-platform-lwc` for components
 2. **Need tests?** Use `sf-test` — it reads your class and generates comprehensive tests
 3. **Building automation?** Use `sf-flow` for Flow XML generation and PB migration
 4. **Querying data?** Use `sf-soql` for optimized, secure queries
-5. **Ready to deploy?** Use `sf-deploy` for orchestrated deployments with error diagnosis
-6. **Pre-review check?** Use `sf-security` for AppExchange security audit
+5. **Ready to deploy?** Use `sf-platform-deploy` for orchestrated deployments with error diagnosis
+6. **Pre-review check?** Use `sf-security-audit` for AppExchange security audit
 7. **Setting up schema?** Use `sf-schema` for metadata XML generation
-8. **Loading data?** Use `sf-data` for migration, seeding, and bulk operations
+8. **Loading data?** Use `sf-platform-data` for migration, seeding, and bulk operations
 9. **Debugging issues?** Use `sf-debug` for log analysis and governor limit troubleshooting
 10. **Building AI agents?** Use `sf-agentforce` for Agentforce agents, topics, and actions
 11. **Permission problems?** Use `sf-permissions` for access auditing and permission set management

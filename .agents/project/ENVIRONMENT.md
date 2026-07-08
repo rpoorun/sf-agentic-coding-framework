@@ -12,11 +12,11 @@ This project uses named Salesforce CLI aliases for day-to-day org work. Do not s
 
 Used as the `@author`/`@last modified by` value in every generated Apex and LWC comment header — see [SALESFORCE_APEX_STANDARDS.md](../standards/SALESFORCE_APEX_STANDARDS.md#author-identity-required).
 
-**Primary store (local-only, preferred):** `.agents/.local-config.json` — `identity.author_name` and `identity.author_email`. This file is gitignored and never committed. The agent must check here first.
+**Primary store (user-level, preferred):** `{USER_AGENTS}/identity.json` — `author_name` and `author_email`. This file lives outside the repo at `~/.agents/` (Unix) or `%USERPROFILE%\.agents\` (Windows) and is shared across all repos on this machine. The agent must check here first.
 
-**Secondary store (team-shared, when framework is committed to remote):** the table below in this file. Use this when the framework is shared with the team and the author identity should be visible to all developers — typically the team's shared "service account" name used for automated or shared commits, not a personal email. Leave blank if personal identity is stored only in `.local-config.json`.
+**Secondary store (team-shared, when framework is committed to remote):** the table below in this file. Use this when the framework is shared with the team and the author identity should be visible to all developers — typically the team's shared "service account" name used for automated or shared commits, not a personal email. Leave blank if personal identity is stored only in `identity.json`.
 
-Resolution order: if `.local-config.json` has a non-empty `identity.author_name`, use it. Otherwise fall back to this file. If both are blank, ask the user for the identity before generating the first class/method comment header in the session, then ask separately whether to persist it to `.local-config.json` (local-only) or here (team-shared).
+Resolution order: if `{USER_AGENTS}/identity.json` has a non-empty `author_name`, use it. Otherwise fall back to this file. If both are blank, ask the user for the identity before generating the first class/method comment header in the session, then ask separately whether to persist it to `identity.json` (user-level, shared across repos) or here (team-shared, committed to this repo).
 
 | Field | Value |
 | --- | --- |

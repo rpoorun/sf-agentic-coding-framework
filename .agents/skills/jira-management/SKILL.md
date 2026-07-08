@@ -44,7 +44,7 @@ This skill does **not** own:
 
 ## Ticket Key Recognition
 
-After the install flow discovers project prefixes and stores them in `.agents/.local-config.json` under `jira.project_prefixes`, the agent must treat any token matching `{PREFIX}-{number}` (case-insensitive) as a Jira ticket reference. The `jira` keyword is optional:
+After the install flow discovers project prefixes and stores them in `{USER_AGENTS}/{repo_name}/.local-config.json` under `jira.project_prefixes`, the agent must treat any token matching `{PREFIX}-{number}` (case-insensitive) as a Jira ticket reference. The `jira` keyword is optional:
 
 | User says | Interpreted as |
 | --- | --- |
@@ -61,18 +61,20 @@ Commands that are **not** Jira API operations (`analyse`, `build`, `deploy`, `te
 
 When a user says **"install Jira skills"** or **"init Jira"**:
 
-### Step 1 — Check Existing Config
+### Step 1 — Check Existing Credentials (Layered Lookup)
 
-Read `.agents/.local-config.json` and inspect the `jira` block. Identify which fields are blank:
-- `base_url`
-- `email`
-- `api_token`
+Resolve each of the three required values (`base_url`, `email`, `api_token`) through the [layered credential lookup](#credential-loading), in order:
 
-If all three are populated, skip to Step 3.
+1. **Secret manager / platform-provided credentials** — if the hosting platform supplies Jira credentials (CI secrets, connector credentials), use them and skip to Step 3. Do not copy them anywhere.
+2. **Environment variables** — check `JIRA_BASE_URL`, `JIRA_EMAIL`, `JIRA_API_TOKEN` (and `JIRA_PROJECT_PREFIXES`). If all three are set, skip to Step 3.
+3. **OS keychain / platform secret store** — if integrated and populated, use it and skip to Step 3.
+4. **Local config file** (local developer machines only) — read `{USER_AGENTS}/{repo_name}/.local-config.json` and inspect the `jira` block, where `{USER_AGENTS}` is `~/.agents/` (Unix) or `%USERPROFILE%\.agents\` (Windows) and `{repo_name}` is the basename of `git rev-parse --show-toplevel`. If the file does not exist **and** `{USER_AGENTS}` is writable (i.e. this is a local developer machine), create it (and the parent directories) from the template. If all three fields are populated, skip to Step 3.
+
+In a hosted/sandboxed environment where none of sources 1–3 provide credentials and `{USER_AGENTS}` is not writable, do **not** create a plaintext config file — proceed to Step 2 for in-session values and recommend the user configure env vars or platform secrets for future sessions.
 
 ### Step 2 — Prompt for Missing Values
 
-Ask the user **only** for the values that are blank:
+Ask the user **only** for the values that are still unresolved:
 
 **Jira Base URL** (if blank):
 > What is your Jira Cloud base URL?
@@ -87,9 +89,9 @@ Ask the user **only** for the values that are blank:
 > Please provide your Jira API token.
 > Generate one at: https://id.atlassian.com/manage-profile/security/api-tokens
 > Click **Create API token**, give it a label (e.g. "Claude Code"), and copy the value.
-> The token is stored **only** in `.agents/.local-config.json` (gitignored, never committed) and will **never** be displayed in chat.
+> The token will **never** be displayed in chat.
 
-Write each value into `.agents/.local-config.json`. **Never echo the API token.**
+**On local developer machines** (where `{USER_AGENTS}` is writable): write the credentials to `{USER_AGENTS}/{repo_name}/.local-config.json`, creating the directory if needed. **In hosted/sandboxed environments**: keep the values in-session only and recommend the user configure them as env vars (`JIRA_BASE_URL`, `JIRA_EMAIL`, `JIRA_API_TOKEN`) or platform secrets — never write plaintext credentials to an ephemeral or shared filesystem. **Never echo the API token.**
 
 ### Step 3 — Test Connection
 
@@ -119,7 +121,7 @@ Extract each project's `key` and `name`. Present them:
 >
 > Ticket references like `DTT-115` or `COP-42` will be recognised automatically.
 
-Store prefixes in `.agents/.local-config.json` under `jira.project_prefixes`.
+Store prefixes (non-secret metadata) under `jira.project_prefixes` in `{USER_AGENTS}/{repo_name}/.local-config.json` if that file is in use and writable. If credentials came from env vars or a secret manager and no writable state location exists, keep the prefixes in-session (or suggest setting `JIRA_PROJECT_PREFIXES`).
 
 ### Step 5 — Read the Board
 
@@ -142,17 +144,31 @@ If a board is found, display a summary. If not, skip silently.
 > | Command | What it does | Handled by |
 > | --- | --- | --- |
 > | `fetch DTT-115` | Pull latest ticket details from Jira, create/update local ticket file | Jira skill → Project tracking |
-> | `analyse DTT-115` | Requirements analysis, org diff, implementation plan | Project tracking → [SPECIFICATION](../../project/SPECIFICATION.md), [IMPLEMENTATION_PLAN](IMPLEMENTATION_PLAN.md) |
-> | `build DTT-115` | Implement locally, build tests, dry deploy, produce manifest | Project tracking → [DEPLOYMENT](DEPLOYMENT.md), [TESTING](TESTING.md) |
-> | `deploy DTT-115` | Show manifest, confirm, deploy to dev org | Project tracking → [DEPLOYMENT](DEPLOYMENT.md) |
-> | `test DTT-115` | Dry deploy with test runs only | Project tracking → [DEPLOYMENT](DEPLOYMENT.md), [TESTING](TESTING.md) |
+> | `analyse DTT-115` | Requirements analysis, org diff, implementation plan | Project tracking → [SPECIFICATION](../../project/SPECIFICATION.md), [IMPLEMENTATION_PLAN](../../workflows/IMPLEMENTATION_PLAN.md) |
+> | `build DTT-115` | Implement locally, build tests, dry deploy, produce manifest | Project tracking → [DEPLOYMENT](../../workflows/DEPLOYMENT.md), [TESTING](../../workflows/TESTING.md) |
+> | `deploy DTT-115` | Show manifest, confirm, deploy to dev org | Project tracking → [DEPLOYMENT](../../workflows/DEPLOYMENT.md) |
+> | `test DTT-115` | Dry deploy with test runs only | Project tracking → [DEPLOYMENT](../../workflows/DEPLOYMENT.md), [TESTING](../../workflows/TESTING.md) |
 > | `comment DTT-115` | Generate review comment for manual paste into Jira | Project tracking |
 >
 > All Jira access is read-only. Local file creation and Salesforce org deploys follow the framework's existing confirmation gates.
 
 ## Credential Loading
 
-This skill follows the **framework local config convention**: all user-specific values live under a namespaced key in `.agents/.local-config.json` (gitignored, never committed). See `_convention` in `.agents/.local-config.template.json`.
+Credentials are resolved using the framework's [layered credential lookup](../../../AGENTS.md#layered-resolution), in this order:
+
+1. **Hosted/CI secret manager** — platform-provided credentials (e.g. GitHub Actions secrets, Codex connector credentials). Preferred for remote and sandboxed agents.
+2. **Environment variables** — `JIRA_BASE_URL`, `JIRA_EMAIL`, `JIRA_API_TOKEN`, and optionally `JIRA_PROJECT_PREFIXES` (comma-separated). Preferred for containers, CI pipelines, and automation scripts.
+3. **OS keychain / platform secret store** — when available and integrated.
+4. **User-level per-repo config file** — `{USER_AGENTS}/{repo_name}/.local-config.json`. This is the local developer default and stores plaintext credentials for convenience. Acceptable only on local developer machines; hosted agents should use sources 1–3.
+5. **Interactive prompt** — last resort when no credentials are pre-configured.
+
+Where:
+- `{USER_AGENTS}` = `~/.agents/` (Unix) or `%USERPROFILE%\.agents\` (Windows)
+- `{repo_name}` = basename of `git rev-parse --show-toplevel`
+
+On local machines, a developer working on `client-a-platform` and `client-b-crm` has separate credentials for each project, both persisting outside the repo. See `_convention.user_level_structure` in `{USER_AGENTS}/common/templates/.local-config.template.json`.
+
+### Config Shape
 
 The Jira skill owns the `jira` key:
 
@@ -180,9 +196,13 @@ Jira Cloud uses HTTP Basic Auth with email + API token:
 Authorization: Basic <base64(email:api_token)>
 ```
 
+Load credentials using the [layered credential lookup](#credential-loading) — check env vars and secret managers before falling back to the per-repo config file.
+
 On Windows PowerShell:
 ```powershell
-$config = Get-Content ".agents/.local-config.json" | ConvertFrom-Json
+$repoName = Split-Path (git rev-parse --show-toplevel) -Leaf
+$configPath = Join-Path $env:USERPROFILE ".agents\$repoName\.local-config.json"
+$config = Get-Content $configPath | ConvertFrom-Json
 $pair = "$($config.jira.email):$($config.jira.api_token)"
 $bytes = [System.Text.Encoding]::UTF8.GetBytes($pair)
 $base64 = [System.Convert]::ToBase64String($bytes)
@@ -191,7 +211,8 @@ $headers = @{ "Authorization" = "Basic $base64"; "Accept" = "application/json" }
 
 On Bash:
 ```bash
-config=$(cat .agents/.local-config.json)
+repo_name=$(basename "$(git rev-parse --show-toplevel)")
+config=$(cat "$HOME/.agents/$repo_name/.local-config.json")
 base_url=$(echo "$config" | jq -r '.jira.base_url')
 email=$(echo "$config" | jq -r '.jira.email')
 token=$(echo "$config" | jq -r '.jira.api_token')
@@ -316,4 +337,4 @@ function parseADF(node):
 - **Never** make POST, PUT, PATCH, or DELETE requests to the Jira API
 - **Never** include raw sensitive payloads in local ticket files
 - Sanitize error responses before displaying (remove auth details)
-- The `.agents/.local-config.json` file must remain gitignored at all times
+- All credential files live under `{USER_AGENTS}/` (outside the repo) and are inherently untracked — never copy them into a repo or commit their contents

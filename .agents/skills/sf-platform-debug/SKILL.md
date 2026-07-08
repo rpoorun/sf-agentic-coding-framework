@@ -1,6 +1,6 @@
 ---
 name: sf-platform-debug
-description: "Salesforce debug log analysis and troubleshooting with 100-point scoring. TRIGGER when: user analyzes debug logs, hits governor limits, reads stack traces, or touches .log files from Salesforce orgs. DO NOT TRIGGER when: running Apex tests (use platform-apex-test-run), generating or fixing Apex code (use platform-apex-generate), or Agentforce session tracing (use agentforce-observe)."
+description: "Salesforce debug log analysis and troubleshooting with 100-point scoring. TRIGGER when: user analyzes debug logs, hits governor limits, reads stack traces, or touches .log files from Salesforce orgs. DO NOT TRIGGER when: running Apex tests (use sf-platform-test), generating or fixing Apex code (use sf-platform-apex), or Agentforce session tracing (use sf-agentforce-build)."
 metadata:
   version: "1.0"
   cloud: "Platform"
@@ -24,7 +24,7 @@ Use this skill when the user needs **root-cause analysis from debug logs**: gove
 
 ## When This Skill Owns the Task
 
-Use `platform-apex-logs-debug` when the work involves:
+Use `sf-platform-debug` when the work involves:
 - `.log` files from Salesforce
 - stack traces and exception analysis
 - governor limits
@@ -32,9 +32,9 @@ Use `platform-apex-logs-debug` when the work involves:
 - query-plan or performance evidence extracted from logs
 
 Delegate elsewhere when the user is:
-- running or repairing Apex tests → [platform-apex-test-run](../platform-apex-test-run/SKILL.md)
-- generating or implementing the code fix → [platform-apex-generate](../platform-apex-generate/SKILL.md)
-- debugging Agentforce session traces / parquet telemetry → [agentforce-observe](../agentforce-observe/SKILL.md)
+- running or repairing Apex tests → [sf-platform-test](../sf-platform-test/SKILL.md)
+- generating or implementing the code fix → [sf-platform-apex](../sf-platform-apex/SKILL.md)
+- debugging Agentforce session traces / parquet telemetry → [sf-agentforce-build](../sf-agentforce-build/SKILL.md) (nearest installed skill — no dedicated observability skill is installed; if Agentforce session tracing becomes a recurring need, synthesize one from upstream `agentforce-observe` per the [synthesis procedure](../../directives/AGENTIC_FRAMEWORK.md#mandatory-synthesis-procedure-do-not-copy-upstream-skills-verbatim))
 
 ---
 
@@ -125,8 +125,8 @@ Verify: <test or rerun step>
 | Always base fix recommendations on log evidence | Avoid speculative diagnosis — root cause must be traceable in the log |
 | Report all six output fields for every issue found | Ensures actionable, complete findings for each problem |
 | Classify every finding as Critical, Warning, or Info | Helps the user prioritize which issues to address first |
-| Delegate code generation to `platform-apex-generate` | This skill diagnoses; it does not rewrite Apex code |
-| Delegate test execution to `platform-apex-test-run` | This skill does not run or repair test classes |
+| Delegate code generation to `sf-platform-apex` | This skill diagnoses; it does not rewrite Apex code |
+| Delegate test execution to `sf-platform-test` | This skill does not run or repair test classes |
 | Never assume limits are safe without reading `LIMIT_USAGE` events | Limits may be consumed by earlier operations not visible in the failure point |
 
 ---
@@ -147,10 +147,10 @@ Verify: <test or rerun step>
 
 | Need | Delegate to | Reason |
 |---|---|---|
-| Implement Apex fix | [platform-apex-generate](../platform-apex-generate/SKILL.md) | code change generation / review |
-| Reproduce via tests | [platform-apex-test-run](../platform-apex-test-run/SKILL.md) | test execution and coverage loop |
-| Deploy fix | [platform-metadata-deploy](../platform-metadata-deploy/SKILL.md) | deployment orchestration |
-| Create debugging data | [platform-data-manage](../platform-data-manage/SKILL.md) | targeted seed / repro data |
+| Implement Apex fix | [sf-platform-apex](../sf-platform-apex/SKILL.md) | code change generation / review |
+| Reproduce via tests | [sf-platform-test](../sf-platform-test/SKILL.md) | test execution and coverage loop |
+| Deploy fix | [sf-platform-deploy](../sf-platform-deploy/SKILL.md) | deployment orchestration |
+| Create debugging data | [sf-platform-data](../sf-platform-data/SKILL.md) | targeted seed / repro data |
 
 ---
 
@@ -604,11 +604,11 @@ grep "SOQL_EXECUTE_END" debug.log | grep -E "Rows:[0-9]{3,}"
 
 | Need | Delegate to | Reason |
 |------|-------------|--------|
-| Fix Apex code | [sf-apex](../sf-apex/SKILL.md) | Code change generation and review |
-| Write/run tests | [sf-testing](../sf-testing/SKILL.md) | Test execution, coverage, assertions |
-| Deploy fix | [sf-deploy](../sf-deploy/SKILL.md) | Deployment orchestration |
-| Data investigation | [sf-data](../sf-data/SKILL.md) | Query and inspect org data |
-| Security audit | [sf-security](../sf-security/SKILL.md) | CRUD/FLS and sharing review |
+| Fix Apex code | [sf-platform-apex](../sf-platform-apex/SKILL.md) | Code change generation and review |
+| Write/run tests | [sf-platform-test](../sf-platform-test/SKILL.md) | Test execution, coverage, assertions |
+| Deploy fix | [sf-platform-deploy](../sf-platform-deploy/SKILL.md) | Deployment orchestration |
+| Data investigation | [sf-platform-data](../sf-platform-data/SKILL.md) | Query and inspect org data |
+| Security audit | [sf-security-audit](../sf-security-audit/SKILL.md) | CRUD/FLS and sharing review |
 
 ## References
 - [Debug Reference](references/debug-reference.md) -- Limits class methods, log parsing patterns, Execute Anonymous patterns, error handling, performance profiling, Tooling API trace flags

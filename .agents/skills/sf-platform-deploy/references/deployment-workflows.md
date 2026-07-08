@@ -21,7 +21,7 @@ This file contains practical examples of common Salesforce deployment scenarios 
 2. **Validation output**
    ```
    ✓ Deployment validation succeeded
-   ✓ Tests passed: 145/145 (92% coverage)
+   ✓ Tests passed: 145/145 (96% coverage)
    ✓ Components validated: 23
    ```
 
@@ -36,7 +36,7 @@ This file contains practical examples of common Salesforce deployment scenarios 
 
    ✓ Status: Succeeded
    ✓ Components Deployed: 23/23
-   ✓ Tests Passed: 145/145 (92% coverage)
+   ✓ Tests Passed: 145/145 (96% coverage)
    ✓ Duration: 8m 32s
 
    ### Deployed Components:
@@ -323,7 +323,7 @@ This file contains practical examples of common Salesforce deployment scenarios 
    ```
    Overall Code Coverage: 87%
 
-   Classes with <75% coverage:
+   Classes with <95% coverage (framework gate):
    - LeadProcessor: 62%
    - OpportunityHelper: 71%
    - AccountBatchProcessor: 45%
@@ -383,7 +383,7 @@ This file contains practical examples of common Salesforce deployment scenarios 
 
 1. **Always validate first** - Use `--dry-run` for production
 2. **Monitor test execution** - Watch for test failures early
-3. **Check code coverage** - Ensure >75% minimum
+3. **Check code coverage** - Salesforce requires >75% minimum; this framework enforces **95%** per DEPLOYMENT.md
 4. **Deploy incrementally** - Smaller deployments are easier to troubleshoot
 5. **Use version control** - Tag releases for easy rollback
 6. **Document changes** - Keep deployment logs

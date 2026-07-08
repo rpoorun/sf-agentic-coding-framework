@@ -1,4 +1,4 @@
-<!-- Parent: platform-apex-logs-debug/SKILL.md -->
+<!-- Parent: sf-platform-debug/SKILL.md -->
 # Apex Benchmarking Guide
 
 Performance testing is essential for writing efficient Apex code. This guide covers reliable benchmarking techniques and real-world performance data based on established Apex community practices and Salesforce governor limit behavior.

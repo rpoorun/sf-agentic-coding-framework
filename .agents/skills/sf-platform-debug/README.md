@@ -1,6 +1,8 @@
-# platform-apex-logs-debug
+# sf-platform-debug
 
 Salesforce debugging and troubleshooting skill with log analysis, governor limit detection, and agentic fix suggestions. Identify performance bottlenecks and automatically suggest fixes.
+
+> Synthesized from upstream `platform-apex-logs-debug` (forcedotcom/sf-skills) and `sf-debug` (Clientell-Ai/salesforce-skills).
 
 ## Features
 
@@ -17,7 +19,7 @@ Salesforce debugging and troubleshooting skill with log analysis, governor limit
 ### 1. Invoke the skill
 
 ```
-Skill: platform-apex-logs-debug
+Skill: sf-platform-debug
 Request: "Analyze debug logs for AccountTrigger performance issues in org dev"
 ```
 
@@ -58,9 +60,9 @@ sf apex tail log --target-org [alias] --color
 
 | Related Skill | When to Use |
 |---------------|-------------|
-| sf-apex | Fix identified Apex issues |
-| platform-soql-query | Optimize slow SOQL queries |
-| platform-apex-test-run | Re-run tests after fixes |
+| sf-platform-apex | Fix identified Apex issues |
+| sf-platform-soql | Optimize slow SOQL queries |
+| sf-platform-test | Re-run tests after fixes |
 
 ## Documentation
 
