@@ -11,6 +11,9 @@
       "per_repo_config": "{USER_AGENTS}/{repo_name}/.local-config.json — project-specific credentials (Jira, org aliases, etc.)",
       "per_repo_tickets": "{USER_AGENTS}/{repo_name}/project/tickets/ — local ticket files; on local machines they persist across branches and sessions (in constrained environments, persistence is limited to what the resolved {REPO_STATE} tier provides)",
       "per_repo_board": "{USER_AGENTS}/{repo_name}/project/board/ — agile board lanes (same persistence scope as tickets)",
+      "per_repo_environment": "{USER_AGENTS}/{repo_name}/project/ENVIRONMENT.md — this developer's env facts (org aliases, auth status); per developer, never shared or committed",
+      "per_repo_workflows": "{USER_AGENTS}/{repo_name}/workflows/ — project-specific workflows; same-named file overrides the generic framework workflow for this repo",
+      "per_repo_directives": "{USER_AGENTS}/{repo_name}/directives/ — project-specific directives; same-named file overrides the generic framework directive for this repo",
       "per_repo_temp": "{USER_AGENTS}/{repo_name}/temp/ — transient data, cleaned after workflows complete"
     },
     "repo_name_derivation": "The {repo_name} is the basename of `git rev-parse --show-toplevel` — e.g. if the repo is at C:\\repo\\ClientA\\salesforce-project, then repo_name is 'salesforce-project'.",

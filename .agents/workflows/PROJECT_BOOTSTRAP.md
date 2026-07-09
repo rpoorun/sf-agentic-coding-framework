@@ -21,17 +21,19 @@ If all three match, this is the master repo. Do not run migration. Do not delete
 
 ## Detection: Does This Repo Need Migration?
 
-If this repo has framework files at `{repo}/.agents/directives/`, `{repo}/.agents/standards/`, `{repo}/.agents/skills/`, or `{repo}/.agents/workflows/` — **and** the repo is not the master framework repository (see guard above) — it is a pre-user-level install that needs migration. Run the [Migration procedure]({USER_AGENTS}/directives/AGENTIC_FRAMEWORK.md#migration--upgrading-from-repo-level-to-user-level-architecture) in `AGENTIC_FRAMEWORK.md` before proceeding with bootstrap. This moves framework files to `{USER_AGENTS}/`, per-repo state to `{USER_AGENTS}/{repo_name}/`, and cleans up the repo.
+If this repo has framework files at `{repo}/.agents/directives/`, `{repo}/.agents/standards/`, `{repo}/.agents/skills/`, or `{repo}/.agents/workflows/` — **and** the repo is not the master framework repository (see guard above) — it is a pre-user-level install that needs migration. Run the [Migration procedure]({USER_AGENTS}/directives/AGENTIC_FRAMEWORK.md#migration--upgrading-from-repo-level-to-user-level-architecture) in `AGENTIC_FRAMEWORK.md` before proceeding with bootstrap. This moves framework files to `{USER_AGENTS}/`, per-repo state to `{USER_AGENTS}/{repo_name}/`, and cleans up the repo. The migration **scans all local branches and all worktrees** (not just the checked-out one) before moving anything, so Jira ticket files committed on other branches and credentials sitting in other worktrees are inventoried, merged, and preserved — never silently lost.
 
 ## Detection: Is This Project Still Unconfigured?
 
-Treat the project as **not yet bootstrapped** if `.agents/project/ENVIRONMENT.md` still contains only its boilerplate placeholders (e.g. `{client name}-{project name}-{env}`, "Not yet documented") and/or most other `.agents/project/*.md` files still read "No durable ... details have been documented here yet." If the project is already configured (real org aliases, real architecture notes, etc. are present), skip this entire workflow and proceed with the normal [Default Work Pattern](../../AGENTS.md#default-work-pattern).
+Treat the project as **not yet bootstrapped** if the developer's user-level environment file (`{REPO_STATE}/project/ENVIRONMENT.md`) does not exist or still contains only its boilerplate placeholders (e.g. `{client name}-{project name}-{env}`, "Not yet documented"), and/or most `.agents/project/*.md` files in the repo still read "No durable ... details have been documented here yet." Environment details are per developer — a new developer on an already-configured project still runs the environment part of this interview to record their own org access. If the project is already configured (real org aliases, real architecture notes, etc. are present), skip this entire workflow and proceed with the normal [Default Work Pattern](../../AGENTS.md#default-work-pattern).
 
 When the detection condition is met, run this workflow before starting the user's actual task, unless the user's request is itself trivial/read-only (e.g. "what does this repo do") — in that case answer the request first, then offer to run the bootstrap interview.
 
 ## Step 0 — User-Level Framework Initialisation (Runs Once Per Machine, Then Once Per Repo)
 
 This step has its own trigger, separate from the project-config detection above: run it the first time this framework is read in any repository's git context on this machine. Skip sub-steps that are already complete.
+
+**Per-machine, per-OS**: the user-level install is bound to one machine and one OS user profile. The same repo cloned on a second machine (or a different OS — Windows, macOS, Linux; WSL counts as a separate machine from its Windows host because `$HOME` differs) triggers Step 0 again there. `{USER_AGENTS}` resolves per OS — `%USERPROFILE%\.agents\` on Windows, `$HOME/.agents/` on macOS/Linux — and `{repo_name}` derives identically everywhere, so the per-repo folder name matches across machines. User-level state (credentials, tickets, board, environment) does **not** sync between machines: Jira is the sync source for tickets, and each machine's developer environment is recorded fresh. Anything that must travel with the repo belongs in committed `.agents/project/` docs.
 
 ### Environment detection (before Step 0a)
 
@@ -91,19 +93,24 @@ Detection: run this if the per-repo state directory (`{REPO_STATE}` — see the 
    ```
    {REPO_STATE}/
    ├── .local-config.json    (local machines only — from {USER_AGENTS}/common/templates/.local-config.template.json, blank values)
+   ├── workflows/            (project-specific workflows — empty until the project adds any)
+   ├── directives/           (project-specific directives — empty until the project adds any)
    ├── project/
+   │   ├── ENVIRONMENT.md    (this developer's env facts — copied from the repo's .agents/project/ENVIRONMENT.md template)
    │   ├── tickets/
    │   └── board/
-   │       ├── INDEX.MD
-   │       ├── BACKLOG.MD
-   │       ├── IN-PROGRESS.MD
-   │       ├── BLOCKED.MD
-   │       ├── CODE-REVIEW.MD
-   │       └── DONE.MD
+   │       ├── INDEX.md
+   │       ├── BACKLOG.md
+   │       ├── IN-PROGRESS.md
+   │       ├── BLOCKED.md
+   │       ├── CODE-REVIEW.md
+   │       └── DONE.md
    └── temp/
    ```
 3. On local developer machines only: create `.local-config.json` from the user-level template `{USER_AGENTS}/common/templates/.local-config.template.json` with blank values. This file stores per-repo credentials (Jira, org aliases, etc.). Do **not** create a plaintext credential file when `{REPO_STATE}` resolved to a hosted-agent workspace or the repo-local fallback — hosted/sandboxed agents take credentials from the [credential lookup chain](../../AGENTS.md#layered-resolution) (secret manager, env vars) instead.
-4. Create board lane files with empty Markdown table headers.
+4. Copy the environment template into `{REPO_STATE}/project/ENVIRONMENT.md` (from the repo's `.agents/project/ENVIRONMENT.md` if present, else from `{USER_AGENTS}/common/templates/`). Environment details are **per developer**: each developer records their own org aliases and auth status per their access — never copy another developer's populated environment file.
+5. Create board lane files with empty Markdown table headers.
+6. `{REPO_STATE}/workflows/` and `{REPO_STATE}/directives/` hold **project-specific** workflows and directives that apply to this repo only. When a file there has the same name as a generic framework file at `{USER_AGENTS}/workflows/` or `{USER_AGENTS}/directives/`, the project-specific file takes precedence for this repo; otherwise both apply. Sanitized generic lessons from project-specific files may be contributed upstream per [Scenario 2](../directives/AGENTIC_FRAMEWORK.md#scenario-2--forking-learned-improvements-back-to-the-master-framework-contribute-back).
 
 ### Step 0c — Project doc persistence (repo-level)
 
@@ -228,10 +235,10 @@ After the interview, propose where each answer will be written (per the existing
 
 | Answer | Destination |
 | --- | --- |
-| Org aliases, pipeline environments, auth status | [ENVIRONMENT.md](../project/ENVIRONMENT.md) — replace the placeholder table with real aliases following the `{client name}-{project name}-{env}` convention. Use the client and project identifiers the user gave in question 4 or infer from the remote URL. |
+| Org aliases, pipeline environments, auth status | `{REPO_STATE}/project/ENVIRONMENT.md` (user-level, this developer's copy — template at [ENVIRONMENT.md](../project/ENVIRONMENT.md)) — replace the placeholder table with real aliases following the `{client name}-{project name}-{env}` convention. Use the client and project identifiers the user gave in question 4 or infer from the remote URL. Per developer: never write into another developer's copy or into the repo template. |
 | Git remote URL, default branch | [PROJECT_STRUCTURE.md](../project/PROJECT_STRUCTURE.md) and/or [WORKFLOW.md](WORKFLOW.md). |
 | Team size, release tooling | [WORKFLOW.md](WORKFLOW.md) — add a "Project Process" section documenting the team's actual release process (this supersedes generic guidance, it does not duplicate it). |
-| Author name/email | `{USER_AGENTS}/identity.json` (`author_name`, `author_email`) — user-level, shared across all repos. Only write to [ENVIRONMENT.md](../project/ENVIRONMENT.md#author-identity) if the user explicitly wants a team-shared author identity committed to the repo. |
+| Author name/email | `{USER_AGENTS}/identity.json` (`author_name`, `author_email`) — user-level, shared across all repos. Only write to `{REPO_STATE}/project/ENVIRONMENT.md` (Author Identity section) if the user explicitly wants a repo-specific identity override for this project. |
 
 Never write personal credentials, tokens, or session details discovered during this interview into any tracked file — see [TRUST_DATA_SECURITY.md](../directives/TRUST_DATA_SECURITY.md).
 

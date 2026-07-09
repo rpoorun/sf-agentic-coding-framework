@@ -94,15 +94,27 @@ Detection: run this check at the start of Scenario 1 (after fetching the master 
    - `{repo}/.agents/.local-config.template.json` → `{USER_AGENTS}/common/templates/.local-config.template.json` (reference copy)
    Do not overwrite if `{USER_AGENTS}/` already has files from a prior migration of another repo.
 
-4. **Migrate per-repo state** — create `{USER_AGENTS}/{repo_name}/` and move:
-   - `{repo}/.agents/.local-config.json` → `{USER_AGENTS}/{repo_name}/.local-config.json` (credentials)
-   - `{repo}/.agents/project/tickets/` → `{USER_AGENTS}/{repo_name}/project/tickets/` (ticket files)
-   - `{repo}/.agents/project/board/` → `{USER_AGENTS}/{repo_name}/project/board/` (board lanes)
+4. **Scan the entire repo — all branches and all worktrees — for per-repo state (mandatory before any move)**. Pre-user-level installs stored ticket/board files as branch-tracked content and credentials as gitignored per-worktree files, so the currently checked-out branch alone can miss ticket files that exist only on other branches and credentials that exist only in other worktrees. Never migrate from the current working tree alone:
+
+   a. **Enumerate local branches** — `git for-each-ref --format='%(refname:short)' refs/heads/`. For each branch, **without checking it out**, list its tracked state with `git ls-tree -r --name-only <branch> -- .agents/project/tickets/ .agents/project/board/` and extract each found file with `git show <branch>:<path>` into a staging area at `{REPO_TEMP}/migration-scan/branches/<branch>/`. Record each file's last commit date on that branch (`git log -1 --format=%cI <branch> -- <path>`).
+   b. **Enumerate worktrees** — `git worktree list --porcelain`. For each worktree path (including the main one), scan the **filesystem** — this catches untracked and gitignored files that branch scans cannot see: `.agents/.local-config.json`, `.agents/project/tickets/`, `.agents/project/board/`, `.agents/.update-check`. Copy findings into `{REPO_TEMP}/migration-scan/worktrees/<worktree-name>/`, recording file modification times.
+   c. **Build a migration inventory** — for every ticket key: each version found and where (branch or worktree) with its timestamp. For every `.local-config.json` found: which credential fields are non-empty (**report field names and sources only — never print secret values**). Present this inventory to the user before moving anything.
+   d. **Merge rules**:
+      - **Ticket files** — one file per key at the user level. When a key appears in multiple places, keep the version with the newest `Last Synced` value (falling back to commit date / file mtime); preserve every other differing version alongside it as `{KEY}.migrated-from-{branch-or-worktree}.md` so nothing is lost, and list these in the report for manual reconciliation. Never silently discard any version.
+      - **Board lanes** — do not merge lane files textually; rebuild the board from the migrated ticket files' Status fields. Where lane membership conflicts across branches, the newest ticket file wins.
+      - **Credentials** — if multiple `.local-config.json` copies exist and their non-empty fields agree, migrate the union. If values differ, ask the user which copy to keep (identify copies by worktree path and populated field names, never by values); stage the non-chosen copies as `.local-config.migrated-from-{worktree}.json` until the user confirms cleanup.
+   e. **Confirmation gate** — get explicit user confirmation on the inventory and merge plan before step 5 moves anything.
+
+5. **Migrate per-repo state** — create `{USER_AGENTS}/{repo_name}/` and move the **aggregated results of the step-4 scan** (not just the checked-out branch's copies):
+   - merged `.local-config.json` → `{USER_AGENTS}/{repo_name}/.local-config.json` (credentials)
+   - merged ticket files → `{USER_AGENTS}/{repo_name}/project/tickets/` (one per key, plus any `.migrated-from-*` conflict copies)
+   - rebuilt board lanes → `{USER_AGENTS}/{repo_name}/project/board/`
+   - `{repo}/.agents/project/ENVIRONMENT.md` → **copy** (do not delete from repo) to `{USER_AGENTS}/{repo_name}/project/ENVIRONMENT.md` if it contains real (non-boilerplate) values — environment details are per developer from v0.1.3 on; the repo copy reverts to (or remains) the boilerplate template
    - `{repo}/.agents/temp/` → `{USER_AGENTS}/{repo_name}/temp/` (or simply delete — temp data is transient)
+   - create empty `{USER_AGENTS}/{repo_name}/workflows/` and `{USER_AGENTS}/{repo_name}/directives/` for project-specific workflows/directives
+   - delete `{REPO_TEMP}/migration-scan/` once the user confirms the migrated state is complete
 
-5. **Migrate identity** — if `{repo}/.agents/.local-config.json` contains `identity.author_name` and `identity.author_email`, extract them into `{USER_AGENTS}/identity.json`. If `{USER_AGENTS}/identity.json` already exists with values, skip (do not overwrite).
-
-6. **Migrate update check state** — if `{repo}/.agents/.local-config.json` contains `update_check.*` fields, extract them into `{USER_AGENTS}/preferences.json`.
+6. **Migrate identity and update-check state** — check **every** `.local-config.json` found in step 4 (not only the main worktree's): if any contains `identity.author_name`/`identity.author_email`, extract into `{USER_AGENTS}/identity.json` (do not overwrite existing values); if any contains `update_check.*` fields, extract the newest into `{USER_AGENTS}/preferences.json`.
 
 7. **Ask user to confirm deletion** — present the list of repo-level files that will be removed:
    - `{repo}/.agents/directives/` (entire directory)
@@ -118,9 +130,9 @@ Detection: run this check at the start of Scenario 1 (after fetching the master 
 
    **Keep in the repo** (do not delete):
    - `{repo}/AGENTS.md` (routing document — will be updated with new paths)
-   - `{repo}/.agents/project/*.md` (team-shared project docs: ENVIRONMENT.md, ARCHITECTURE.md, etc.)
+   - `{repo}/.agents/project/*.md` (team-shared project docs: ARCHITECTURE.md, SCHEMA.md, etc.; ENVIRONMENT.md stays only as the boilerplate template — the live copy is per developer at `{USER_AGENTS}/{repo_name}/project/ENVIRONMENT.md`)
 
-8. **Delete after confirmation** — remove the files listed above. If any are tracked by git, use `git rm -r` (requires git write confirmation per [MANUAL_CONFIRMATION_GATES.md](MANUAL_CONFIRMATION_GATES.md)). If untracked, delete from disk.
+8. **Delete after confirmation** — remove the files listed above. If any are tracked by git, use `git rm -r` (requires git write confirmation per [MANUAL_CONFIRMATION_GATES.md](MANUAL_CONFIRMATION_GATES.md)). If untracked, delete from disk. Note: deletion on the current branch does **not** remove tracked copies on other branches — those disappear naturally as each branch merges the updated architecture. From this point the user-level copy is the single source of truth: if repo-level ticket/board files are encountered later on another branch or worktree, do **not** blindly re-migrate them over the user-level state — re-run the step-4 inventory comparison and merge only content that is newer than what the user level already holds.
 
 9. **Update `.gitignore`** — remove entries for `.agents/.local-config.json`, `.agents/temp/`, and `.agents/.update-check` (these no longer exist in the repo). Keep or add a comment explaining the user-level architecture.
 
@@ -195,8 +207,9 @@ This checklist applies when working in the master repository (`https://github.co
 
 - Use this framework before creating, moving, renaming, or expanding any file under `.agents` or any major section in `AGENTS.md`.
 - Treat `directives` as the highest authority. Prime directives, safety gates, confirmation gates, trust boundaries, and security rules must not be weakened by standards, skills, workflows, or project notes.
-- Prefer project-specific instructions when they exist for the same scope. If no project-specific instruction exists, fall back to standards, skills, workflows, or general guidance as appropriate.
-- Keep project-specific instructions isolated in `.agents/project`; keep general or reusable instructions isolated in `.agents/standards`, `.agents/skills`, `.agents/workflows`, or `.agents/directives`.
+- Prefer project-specific instructions when they exist for the same scope. If no project-specific instruction exists, fall back to standards, skills, workflows, or general guidance as appropriate. Project-specific workflows and directives live at `{USER_AGENTS}/{repo_name}/workflows/` and `{USER_AGENTS}/{repo_name}/directives/` — a same-named file there overrides its generic counterpart for that repo.
+- Keep project-specific instructions isolated in `.agents/project` (team-shared, committable) or `{USER_AGENTS}/{repo_name}/` (per-developer/per-repo, never committed); keep general or reusable instructions isolated in `.agents/standards`, `.agents/skills`, `.agents/workflows`, or `.agents/directives`.
+- **Cross-platform commands**: any instruction file that includes shell commands must either be OS-neutral or provide both PowerShell (Windows) and Bash (macOS/Linux) forms — never assume one shell. Path examples use the `{USER_AGENTS}`/`{REPO_STATE}`/`{REPO_TEMP}` shorthands, resolved per OS in AGENTS.md. All framework filenames use lowercase `.md` extensions, and cross-references must match filename case exactly (Linux filesystems are case-sensitive).
 - Do not duplicate the same instruction in multiple files. Put the authoritative version in the correct folder and use cross-links from other files.
 - When expanding agentic content, first search for an existing file that already owns the same scope. Update that file instead of creating a parallel instruction.
 - When an agent discovers a repeatable project pattern, developer preference, architectural decision, validation habit, or workflow decision while building, it may propose persisting that learning into the appropriate `.agents` file.
@@ -291,7 +304,7 @@ project/
 - Typical files:
   - PROJECT_STRUCTURE.md
   - ARCHITECTURE.md
-  - ENVIRONMENT.md
+  - ENVIRONMENT.md (template only — the live copy is per developer at `{USER_AGENTS}/{repo_name}/project/ENVIRONMENT.md`)
   - SCHEMA.md
   - INTEGRATIONS.md
   - GLOSSARY.md

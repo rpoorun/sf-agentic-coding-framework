@@ -2,19 +2,19 @@
 
 ## Purpose and Use
 
-This workflow defines the single Jira-facing operation: fetching a ticket from the Jira Cloud API and delivering parsed ticket data. It is the bridge between the [Jira skill](../skills/jira-management/SKILL.md) (API connection layer) and [PROJECT_TRACKING.MD](PROJECT_TRACKING.MD) (local ticket management layer).
+This workflow defines the single Jira-facing operation: fetching a ticket from the Jira Cloud API and delivering parsed ticket data. It is the bridge between the [Jira skill](../skills/jira-management/SKILL.md) (API connection layer) and [PROJECT_TRACKING.md](PROJECT_TRACKING.md) (local ticket management layer).
 
-This workflow does **not** own local ticket files, the agile board, analysis, implementation, deployment, testing, or comment generation. Those responsibilities belong to [PROJECT_TRACKING.MD](PROJECT_TRACKING.MD) and the framework's existing workflows.
+This workflow does **not** own local ticket files, the agile board, analysis, implementation, deployment, testing, or comment generation. Those responsibilities belong to [PROJECT_TRACKING.md](PROJECT_TRACKING.md) and the framework's existing workflows.
 
 ## Prime Directive — Read-Only
 
-All Jira API calls are HTTP GET. No POST, PUT, PATCH, or DELETE requests to Jira are permitted. The `comment` command in [PROJECT_TRACKING.MD](PROJECT_TRACKING.MD) generates text locally for manual copy-paste — it does not post to Jira.
+All Jira API calls are HTTP GET. No POST, PUT, PATCH, or DELETE requests to Jira are permitted. The `comment` command in [PROJECT_TRACKING.md](PROJECT_TRACKING.md) generates text locally for manual copy-paste — it does not post to Jira.
 
 ## Ticket Key Recognition
 
 The `jira` keyword is optional once project prefixes are known. `fetch DTT-115` and `fetch jira DTT-115` are equivalent. A bare ticket key in a natural-language question (e.g. "what is DTT-115 about?") is an implicit fetch. See the [Ticket Key Recognition](../skills/jira-management/SKILL.md#ticket-key-recognition) table in the Jira skill.
 
-Commands other than `fetch` (`analyse`, `build`, `deploy`, `test`, `comment`) are recognised by the same prefix matching but routed to [PROJECT_TRACKING.MD](PROJECT_TRACKING.MD), not this workflow.
+Commands other than `fetch` (`analyse`, `build`, `deploy`, `test`, `comment`) are recognised by the same prefix matching but routed to [PROJECT_TRACKING.md](PROJECT_TRACKING.md), not this workflow.
 
 ---
 
@@ -58,7 +58,7 @@ Commands other than `fetch` (`analyse`, `build`, `deploy`, `test`, `comment`) ar
    - Issue links → relationship type, linked key, summary
 
 7. **Hand off to project tracking**
-   Pass the parsed ticket data to [PROJECT_TRACKING.MD](PROJECT_TRACKING.MD) for local file creation/update and board management. See the [Ticket Sync](PROJECT_TRACKING.MD#ticket-sync) section.
+   Pass the parsed ticket data to [PROJECT_TRACKING.md](PROJECT_TRACKING.md) for local file creation/update and board management. See the [Ticket Sync](PROJECT_TRACKING.md#ticket-sync) section.
 
 ---
 
