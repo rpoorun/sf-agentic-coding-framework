@@ -125,7 +125,7 @@ export default class ExampleComponent extends LightningElement { ... }
  */
 ```
 
-If `.agents/project/ENVIRONMENT.md` does not yet have an author name/email recorded, ask the user before generating the first header in the session — same rule as Apex, never write an AI/tool name as the author.
+If neither `{USER_AGENTS}/identity.json` nor `{REPO_STATE}/project/ENVIRONMENT.md` has an author name/email recorded, ask the user before generating the first header in the session — same rule as Apex, never write an AI/tool name as the author.
 
 ## High-Signal Rules
 

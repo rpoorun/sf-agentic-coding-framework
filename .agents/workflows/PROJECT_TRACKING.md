@@ -5,7 +5,7 @@
 This workflow owns local ticket management: creating and updating ticket Markdown files, managing the agile board, and routing ticket-scoped commands to the framework's existing workflows. It is source-agnostic — ticket data can come from the [Jira skill](../skills/jira-management/SKILL.md), another integration, or manual input.
 
 This workflow does **not** own:
-- Jira API access → owned by the [Jira skill](../skills/jira-management/SKILL.md) and [JIRA.MD](JIRA.MD)
+- Jira API access → owned by the [Jira skill](../skills/jira-management/SKILL.md) and [JIRA.md](JIRA.md)
 - Requirements validation → owned by [SPECIFICATION.md](../project/SPECIFICATION.md)
 - Implementation planning → owned by [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md)
 - Deployment and conflict checks → owned by [DEPLOYMENT.md](DEPLOYMENT.md)
@@ -34,7 +34,7 @@ When the user says a command followed by a ticket key (e.g. `analyse DTT-115`), 
 
 | User Command | This Workflow Does | Then Delegates To |
 | --- | --- | --- |
-| `fetch {KEY}` | Invokes the [Jira fetch workflow](JIRA.MD), then creates/updates the local ticket file and board | [JIRA.MD](JIRA.MD) (API call) |
+| `fetch {KEY}` | Invokes the [Jira fetch workflow](JIRA.md), then creates/updates the local ticket file and board | [JIRA.md](JIRA.md) (API call) |
 | `analyse {KEY}` | Ensures ticket is synced, reads ticket context | [SPECIFICATION.md](../project/SPECIFICATION.md) (requirement validation) → [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) (plan production) |
 | `build {KEY}` | Ensures analysis exists, reads implementation plan from ticket file | Framework standards (code generation) → [DEPLOYMENT.md](DEPLOYMENT.md) (dry deploy + coverage gate) |
 | `deploy {KEY}` | Reads deployment manifest from ticket file, presents to user | [DEPLOYMENT.md](DEPLOYMENT.md) (full deploy with confirmation) |
@@ -262,12 +262,12 @@ The board lives under `{REPO_STATE}/project/board/` (resolved via the [per-repo 
 
 | File | Purpose |
 | --- | --- |
-| `INDEX.MD` | Board overview and usage instructions |
-| `BACKLOG.MD` | Tickets not yet started |
-| `IN-PROGRESS.MD` | Tickets actively being worked on |
-| `BLOCKED.MD` | Tickets blocked by dependencies or issues |
-| `CODE-REVIEW.MD` | Tickets in code review |
-| `DONE.MD` | Completed tickets |
+| `INDEX.md` | Board overview and usage instructions |
+| `BACKLOG.md` | Tickets not yet started |
+| `IN-PROGRESS.md` | Tickets actively being worked on |
+| `BLOCKED.md` | Tickets blocked by dependencies or issues |
+| `CODE-REVIEW.md` | Tickets in code review |
+| `DONE.md` | Completed tickets |
 
 ### Lane File Format
 
