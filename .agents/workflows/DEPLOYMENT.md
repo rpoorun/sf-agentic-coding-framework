@@ -2,11 +2,11 @@
 
 ## Purpose And Use
 
-This file owns the repeatable environment-config check, pre-development retrieve, pre-deploy conflict-check, and test-coverage gates for any Salesforce sandbox or org work. Read it before generating new Apex/LWC/metadata, and before running `sf project deploy validate`, `sf project deploy start`, or any dry-run/quick-deploy variant. Put generation-time and deployment-time conflict detection, org/local merge rules, and Apex coverage gates here; put the day-to-day Git/task sequence in [WORKFLOW.md](WORKFLOW.md), and the manual-approval gates for the deploy command itself in [MANUAL_CONFIRMATION_GATES.md](../directives/MANUAL_CONFIRMATION_GATES.md).
+This file owns the repeatable environment-config check, pre-development retrieve, pre-deploy conflict-check, and test-coverage gates for any Salesforce sandbox or org work. Read it before generating new Apex/LWC/metadata, and before running `sf project deploy validate`, `sf project deploy start`, or any dry-run/quick-deploy variant. Put generation-time and deployment-time conflict detection, org/local merge rules, and Apex coverage gates here; put the day-to-day Git/task sequence in [WORKFLOW.md](WORKFLOW.md), the content-quality self-checklist that must pass before a deployment manifest is generated and before any deploy in [DEVELOPMENT_GATE.md](DEVELOPMENT_GATE.md), and the manual-approval gates for the deploy command itself in [MANUAL_CONFIRMATION_GATES.md](../directives/MANUAL_CONFIRMATION_GATES.md).
 
 ## Environment Config Check (Mandatory, Runs First)
 
-Before any deploy attempt — and before the [Pre-Development Retrieve](#pre-development-retrieve-mandatory) step, since that also needs a target org — check the developer's environment file at `{REPO_STATE}/project/ENVIRONMENT.md` (user-level, per developer; template at [ENVIRONMENT.md](../project/ENVIRONMENT.md)):
+Before any deploy attempt — and before the [Pre-Development Retrieve](#pre-development-retrieve-mandatory) step, since that also needs a target org — check the developer's environment file at `{PROJECT_AGENTS}/project/ENVIRONMENT.md` (project level, per developer; template at [ENVIRONMENT.md](../documentation/ENVIRONMENT.md)):
 
 1. If it does not exist, or still contains only its boilerplate placeholders (e.g. `{client}-{project}-{env}`, "Not yet documented" — see the detection condition in [PROJECT_BOOTSTRAP.md](PROJECT_BOOTSTRAP.md#detection-is-this-project-still-unconfigured)), do not guess an org alias and do not proceed with the deploy.
 2. Ask the user which authenticated org should be the default development org for this deploy. If none is authenticated yet, point them to `sf org login web --alias <alias>` (or the appropriate auth flow) first.

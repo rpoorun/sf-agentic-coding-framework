@@ -21,6 +21,8 @@ Use `.github/pull_request_template.md` when creating or updating a pull request 
 
 Before requesting review, verify the following gates that apply to the actual changed scope. Do not mark a checklist item complete unless it was checked in the repo, org, generated package, or test evidence.
 
+These gates share their quality themes with the [Development Gate](DEVELOPMENT_GATE.md), which runs earlier — before the deployment manifest is generated and before any deploy. A completed Development Gate record in the ticket file is valid evidence for the overlapping items below; re-verify only what changed after that record was written.
+
 ### Scope And Staging
 
 - Stage only files that belong to the ticket or approved refactor.
