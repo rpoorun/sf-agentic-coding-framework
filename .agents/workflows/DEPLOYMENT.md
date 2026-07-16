@@ -6,7 +6,7 @@ This file owns the repeatable environment-config check, pre-development retrieve
 
 ## Environment Config Check (Mandatory, Runs First)
 
-Before any deploy attempt — and before the [Pre-Development Retrieve](#pre-development-retrieve-mandatory) step, since that also needs a target org — check the developer's environment file at `{REPO_STATE}/project/ENVIRONMENT.md` (user-level, per developer; template at [ENVIRONMENT.md](../project/ENVIRONMENT.md)):
+Before any deploy attempt — and before the [Pre-Development Retrieve](#pre-development-retrieve-mandatory) step, since that also needs a target org — check the developer's environment file at `{PROJECT_AGENTS}/project/ENVIRONMENT.md` (project level, per developer; template at [ENVIRONMENT.md](../documentation/ENVIRONMENT.md)):
 
 1. If it does not exist, or still contains only its boilerplate placeholders (e.g. `{client}-{project}-{env}`, "Not yet documented" — see the detection condition in [PROJECT_BOOTSTRAP.md](PROJECT_BOOTSTRAP.md#detection-is-this-project-still-unconfigured)), do not guess an org alias and do not proceed with the deploy.
 2. Ask the user which authenticated org should be the default development org for this deploy. If none is authenticated yet, point them to `sf org login web --alias <alias>` (or the appropriate auth flow) first.

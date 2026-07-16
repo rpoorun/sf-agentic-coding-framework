@@ -213,7 +213,7 @@ Additional naming rules:
 
 ### ApexDoc
 
-Required on **every** class/interface/trigger header and **every** method (not just `public`/`global`), in the exact tag set and alignment below — see [SALESFORCE_APEX_STANDARDS.md](../../standards/SALESFORCE_APEX_STANDARDS.md#apexdoc-comment-block-mandatory) for the full rules. Before generating the first header in a session, resolve the author identity: check `{USER_AGENTS}/identity.json` first, then `{REPO_STATE}/project/ENVIRONMENT.md` as the per-repo fallback — if both are blank, ask the user; never write an AI/tool name as the author.
+Required on **every** class/interface/trigger header and **every** method (not just `public`/`global`), in the exact tag set and alignment below — see [SALESFORCE_APEX_STANDARDS.md](../../standards/SALESFORCE_APEX_STANDARDS.md#apexdoc-comment-block-mandatory) for the full rules. Before generating the first header in a session, resolve the author identity: check `{USER_AGENTS}/identity.json` first, then `{PROJECT_AGENTS}/project/ENVIRONMENT.md` as the per-project fallback — if both are blank, ask the user; never write an AI/tool name as the author.
 
 Class-level format:
 

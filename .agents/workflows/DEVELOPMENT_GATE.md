@@ -23,7 +23,7 @@ This gate checks the **content quality** of what will be deployed — naming, de
 ### Validation, Matching, And Duplicate Rules
 
 - [ ] No word-separating underscores in API names apart from approved prefixes and Salesforce suffixes such as `__c`
-- [ ] Labels and API names use the client-approved language and casing convention (e.g. a French-language org uses French, camel-cased names — see the project [GLOSSARY.md](../project/GLOSSARY.md))
+- [ ] Labels and API names use the client-approved language and casing convention (e.g. a French-language org uses French, camel-cased names — see the project [GLOSSARY.md](../documentation/GLOSSARY.md))
 - [ ] Rule has a description referencing the Jira ticket number
 - [ ] Isolated test classes exist for positive and negative testing of the rule
 - [ ] Relevant regression tests were run to confirm the rule causes no regression (narrowest meaningful scope first, broadened when shared behavior is touched)

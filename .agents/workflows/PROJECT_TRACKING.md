@@ -6,7 +6,7 @@ This workflow owns local ticket management: creating and updating ticket Markdow
 
 This workflow does **not** own:
 - Jira API access → owned by the [Jira skill](../skills/jira-management/SKILL.md) and [JIRA.md](JIRA.md)
-- Requirements validation → owned by [SPECIFICATION.md](../project/SPECIFICATION.md)
+- Requirements validation → owned by [SPECIFICATION.md](../documentation/SPECIFICATION.md)
 - Implementation planning → owned by [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md)
 - Deployment and conflict checks → owned by [DEPLOYMENT.md](DEPLOYMENT.md)
 - Testing strategy → owned by [TESTING.md](TESTING.md)
@@ -15,7 +15,7 @@ This workflow does **not** own:
 
 **One ticket = one file = one source of truth.**
 
-Every ticket is represented by exactly one Markdown file at `{REPO_STATE}/project/tickets/{KEY}.md`, where `{REPO_STATE}` is the per-repo project state location resolved via the [layered resolution chain](../../AGENTS.md#layered-resolution) (on local developer machines this is `{USER_AGENTS}/{repo_name}/` — `~/.agents/{repo_name}/` on Unix or `%USERPROFILE%\.agents\{repo_name}\` on Windows; `{repo_name}` is the basename of `git rev-parse --show-toplevel`). On local machines this file lives **outside the repo** so it persists across branches and sessions. In sandboxed/remote environments, persistence is limited to what the resolved state location provides — do not assume state survives between sandbox sessions. Every operation — regardless of which skill, workflow, or framework layer performs it — reads from and writes back to this same file:
+Every ticket is represented by exactly one Markdown file at `{PROJECT_AGENTS}/project/tickets/{KEY}.md`, where `{PROJECT_AGENTS}` is the project-level state location resolved via the [layered resolution chain](../../AGENTS.md#layered-resolution) (on local developer machines this is `~/.agents/{PROJECT_NAME}/` on Unix or `%USERPROFILE%\.agents\{PROJECT_NAME}\` on Windows; `{PROJECT_NAME}` is the repository name from the git remote URL). This file lives **outside the repo** so it persists across branches, worktrees, and sessions, and is shared by every repo of the project. In sandboxed/remote environments, persistence is limited to what the resolved state location provides — do not assume state survives between sandbox sessions. Every operation — regardless of which skill, workflow, or framework layer performs it — reads from and writes back to this same file:
 
 - The **Jira skill** initialises the file with ticket metadata, description, acceptance criteria, solution, dependencies, and comments.
 - The **`analyse` command** writes the implementation plan, impact assessment, file scope, and test scenarios into the same file.
@@ -35,7 +35,7 @@ When the user says a command followed by a ticket key (e.g. `analyse DTT-115`), 
 | User Command | This Workflow Does | Then Delegates To |
 | --- | --- | --- |
 | `fetch {KEY}` | Invokes the [Jira fetch workflow](JIRA.md), then creates/updates the local ticket file and board | [JIRA.md](JIRA.md) (API call) |
-| `analyse {KEY}` | Ensures ticket is synced, reads ticket context | [SPECIFICATION.md](../project/SPECIFICATION.md) (requirement validation) → [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) (plan production) |
+| `analyse {KEY}` | Ensures ticket is synced, reads ticket context | [SPECIFICATION.md](../documentation/SPECIFICATION.md) (requirement validation) → [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) (plan production) |
 | `build {KEY}` | Ensures analysis exists, reads implementation plan from ticket file | Framework standards (code generation) → [DEPLOYMENT.md](DEPLOYMENT.md) (dry deploy + coverage gate) → [DEVELOPMENT_GATE.md](DEVELOPMENT_GATE.md) (Gate A, pre-manifest) |
 | `deploy {KEY}` | Reads deployment manifest from ticket file, presents to user | [DEVELOPMENT_GATE.md](DEVELOPMENT_GATE.md) (Gate B, pre-deploy) → [DEPLOYMENT.md](DEPLOYMENT.md) (full deploy with confirmation) |
 | `test {KEY}` | Reads ticket scope for targeted test run | [DEPLOYMENT.md](DEPLOYMENT.md) (dry deploy) → [TESTING.md](TESTING.md) (test strategy) |
@@ -47,7 +47,7 @@ When the user says a command followed by a ticket key (e.g. `analyse DTT-115`), 
 
 When ticket data arrives (from the Jira fetch workflow or any other source):
 
-### If a local ticket file exists at `{REPO_STATE}/project/tickets/{KEY}.md`:
+### If a local ticket file exists at `{PROJECT_AGENTS}/project/tickets/{KEY}.md`:
 1. Read the local file
 2. Compare the incoming `updated` timestamp against the local `Last Synced`
 3. Identify changes: field updates, new comments, status changes
@@ -72,9 +72,9 @@ Update the agile board lane to match the ticket's current status.
 
 One self-contained Markdown file per ticket:
 ```
-{REPO_STATE}/project/tickets/{KEY}.md
+{PROJECT_AGENTS}/project/tickets/{KEY}.md
 ```
-`{REPO_STATE}` is resolved via the [per-repo project state chain](../../AGENTS.md#layered-resolution).
+`{PROJECT_AGENTS}` is resolved via the [project state chain](../../AGENTS.md#layered-resolution).
 
 ### Ticket File Template
 
@@ -175,14 +175,14 @@ One self-contained Markdown file per ticket:
 ### `analyse {KEY}`
 
 1. **Ensure ticket is synced** — if the local file is missing or stale, run `fetch {KEY}` first.
-2. **Run requirement validation** — apply the gates in [SPECIFICATION.md](../project/SPECIFICATION.md): verify base objects, field definitions, metadata members, and flag ambiguities.
+2. **Run requirement validation** — apply the gates in [SPECIFICATION.md](../documentation/SPECIFICATION.md): verify base objects, field definitions, metadata members, and flag ambiguities.
 3. **Delegate to [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md)** — using the validated requirements and ticket context, produce:
    - Implementation plan with ordered steps and file-level scope
    - Impact assessment — components affected, potential overrides, conflicts
    - Manual steps — pre-deploy and post-deploy actions
    - Test scenarios — derived from acceptance criteria
    - Risk assessment — deployment conflicts, data migration, permission changes
-4. **Diff local repo against dev org** — retrieve relevant metadata into `{REPO_TEMP}/retrieve-{KEY}/` (the resolved temp workspace — see [Temp Workspace](../directives/AGENT_GUARDRAILS.md#temp-workspace)), diff against local source, document affected metadata.
+4. **Diff local repo against dev org** — retrieve relevant metadata into `{AGENTS_TEMP}/retrieve-{KEY}/` (the resolved temp workspace — see [Temp Workspace](../directives/AGENT_GUARDRAILS.md#temp-workspace)), diff against local source, document affected metadata.
 5. **Save to ticket file** — write the implementation plan, file scope, and impact assessment into the local ticket file.
 6. **Report in chat** — summarise the analysis and flag blockers or questions.
 7. **Do not modify any source files** — analysis only.
@@ -260,7 +260,7 @@ This command is self-contained — it does not delegate to another workflow.
 
 ### Board Structure
 
-The board lives under `{REPO_STATE}/project/board/` (resolved via the [per-repo project state chain](../../AGENTS.md#layered-resolution)) with these lane files (created during project bootstrap if they don't exist):
+The board lives under `{PROJECT_AGENTS}/project/board/` (resolved via the [project state chain](../../AGENTS.md#layered-resolution)) with these lane files (created during project bootstrap if they don't exist):
 
 | File | Purpose |
 | --- | --- |

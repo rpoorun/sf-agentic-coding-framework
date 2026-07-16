@@ -1,9 +1,10 @@
 # sf-agentic-coding-framework: this is the MASTER framework repository.
-# The full .agents/ tree (directives, standards, skills, workflows) is tracked here as canonical source.
-# In installed project repos, framework files live at the user level (~/.agents/) and only
-# AGENTS.md and .agents/project/ remain in the repo.
+# The full .agents/ tree (directives, standards, skills, workflows, documentation) is tracked here as canonical source.
+# In installed project repos, framework files live at the user level (~/.agents/), project state at
+# ~/.agents/{PROJECT_NAME}/, and only AGENTS.md and repo-level .agents/ content (documentation,
+# optional repo-specific workflows/skills) remain in the repo.
 
-# Local config template is tracked; actual config lives at ~/.agents/{repo_name}/.local-config.json
+# Local config template is tracked; actual config lives at ~/.agents/{PROJECT_NAME}/project/.local-config.json
 # (outside the repo). This entry is kept for safety in case any tool creates one locally.
 .agents/.local-config.json
 

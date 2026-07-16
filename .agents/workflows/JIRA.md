@@ -32,7 +32,7 @@ Commands other than `fetch` (`analyse`, `build`, `deploy`, `test`, `comment`) ar
    Check if the branch name contains the ticket key.
 
 2. **Load Jira config**
-   Resolve credentials using the [layered credential lookup](../skills/jira-management/SKILL.md#credential-loading): secret manager → env vars (`JIRA_BASE_URL`, `JIRA_EMAIL`, `JIRA_API_TOKEN`) → OS keychain → `{USER_AGENTS}/{repo_name}/.local-config.json` (local machines only) → interactive prompt. If no source yields complete credentials, run the install flow (see [SKILL.md Install / Setup Flow](../skills/jira-management/SKILL.md#install--setup-flow)).
+   Resolve credentials using the [layered credential lookup](../skills/jira-management/SKILL.md#credential-loading): secret manager → env vars (`JIRA_BASE_URL`, `JIRA_EMAIL`, `JIRA_API_TOKEN`) → OS keychain → `{PROJECT_AGENTS}/project/.local-config.json` (local machines only) → interactive prompt. If no source yields complete credentials, run the install flow (see [SKILL.md Install / Setup Flow](../skills/jira-management/SKILL.md#install--setup-flow)).
 
 3. **Test auth** (first call in session or after a failure)
    ```
