@@ -65,7 +65,7 @@ Trigger: the user of a local install wants the latest directives, standards, ski
 
 Procedure:
 
-1. Fetch the master framework into a temp workspace — clone `https://github.com/rpoorun/sf-agentic-coding-framework` (or the requested tag/release) into the writable temp location resolved via the [layered temp resolution](../../AGENTS.md#layered-resolution) (typically `{USER_AGENTS}/temp/framework-update/` on local machines, or the agent-provided workspace in sandboxed environments). This directory is cleaned up after the merge completes (see [Temp Workspace](AGENT_GUARDRAILS.md#temp-workspace)). Never fetch directly on top of the installed framework files.
+1. Fetch the master framework into a temp workspace — clone `https://github.com/rpoorun/sf-agentic-coding-framework` (or the requested tag/release) into the writable temp location resolved via the [layered temp resolution](../../AGENTS.md#layered-resolution) (typically `{USER_AGENTS}/temp/framework-update/` on local machines, or the agent-provided workspace in sandboxed environments). This directory is cleaned up after the merge completes (see [Temp Workspace](AGENT_GUARDRAILS.md#temp-workspace)). Never fetch directly on top of the installed framework files. Then run the **standing old-structure detection** in [Migration](#migration--upgrading-from-repo-level-to-user-level-architecture): if the current branch, any other local branch, or any worktree still follows the old repo-level structure, the update proceeds *and* the (remnant) migration runs — the update never skips it.
 2. Diff the temp copy against the installed framework at `{USER_AGENTS}/` (directives, standards, skills, workflows) file-by-file. Classify each difference as: new file (master added something local doesn't have), changed file (both sides touched it), or local-only file (project facts, client overrides — master has no equivalent).
 3. Merge with **local instructions taking precedence**: the existing local install's content supersedes the incoming update wherever they conflict. The update is additive/advisory, not authoritative, over local tailoring. New files with no local equivalent (new skills, new directive sections) can be added directly. Changed shared files (e.g. a directive or standard both sides edited) require a reconciled merge, not a blind overwrite.
 4. Detect impact level before applying anything: classify each incoming change as **minor** (wording, additive guidance, new optional skill) or **major** (changed confirmation gates, changed mandatory workflow steps, renamed/restructured folders, removed skills the project depends on, conflicting coding standards).
@@ -75,9 +75,12 @@ Procedure:
 
 ### Migration — Upgrading From Repo-Level To User-Level Architecture
 
-Trigger: a local install still has framework files (directives, standards, skills, workflows) inside the repository's `.agents/` folder instead of at `{USER_AGENTS}/`. This applies to any install from framework version ≤ 0.0.9 upgrading to the user-level architecture introduced in the next release.
+Trigger: a local install still has framework files (directives, standards, skills, workflows) inside the repository's `.agents/` folder instead of at `{USER_AGENTS}/`. This applies to any install from framework version ≤ 0.0.9 upgrading to the user-level architecture — **and to any branch or isolated worktree still carrying the old structure at any later time**, no matter how many updates have shipped since.
 
-Detection: run this check at the start of Scenario 1 (after fetching the master framework into temp) if the incoming version introduces the user-level architecture. First, verify the current repo is **not** the master framework repository (see [Master Repository Guard](../workflows/PROJECT_BOOTSTRAP.md#master-repository-guard) — never migrate or delete framework files from the master repo). Then detect by checking whether `{repo}/.agents/directives/` exists **and** `{USER_AGENTS}/directives/` does not — if both conditions are true, a migration is needed.
+Detection (**standing check — runs on every update install**, not only the release that introduced the user-level architecture): run this at the start of Scenario 1 (after fetching the master framework into temp). First, verify the current repo is **not** the master framework repository (see [Master Repository Guard](../workflows/PROJECT_BOOTSTRAP.md#master-repository-guard) — never migrate or delete framework files from the master repo). Then detect old-structure remnants in two forms:
+
+- **Unmigrated install**: `{repo}/.agents/directives/` (or `standards/`, `skills/`, `workflows/`) exists in the current working tree **and** `{USER_AGENTS}/directives/` does not — run the full migration procedure below.
+- **Stale branch/worktree remnants**: `{USER_AGENTS}/` is already populated, but the currently checked-out branch, another local branch, or an isolated worktree still carries the old structure — repo-level framework folders, a repo-level `.agents/.local-config.json` (credentials), or repo-level tickets/board files (all surfaced by the step-4 scan). In this case, **install the update normally, then run a remnant migration**: inventory-compare the remnant state against the user level per step 4 and merge only content that is *newer* than what `{USER_AGENTS}`/`{REPO_STATE}` already holds; common instruction files (directives, standards, skills, workflows) always stay authoritative at the user level — never re-adopt a repo-level copy over them, but never discard the repo copy's unique content either: merge additive guidance into the user-level file and route project-specific tailoring to `{USER_AGENTS}/{repo_name}/directives|workflows/` (per the merge rule in step 3); then clean the old files off the currently checked-out branch/worktree per steps 7–9. A stale branch or worktree must never silently reintroduce the old architecture, and its credentials and ticket data must never be orphaned or lost.
 
 **Migration procedure** (requires explicit user confirmation before each destructive step):
 
@@ -92,17 +95,29 @@ Detection: run this check at the start of Scenario 1 (after fetching the master 
    - `{repo}/.agents/workflows/` → `{USER_AGENTS}/workflows/`
    - `{repo}/.agents/CHANGELOG.md` → `{USER_AGENTS}/CHANGELOG.md`
    - `{repo}/.agents/.local-config.template.json` → `{USER_AGENTS}/common/templates/.local-config.template.json` (reference copy)
-   Do not overwrite if `{USER_AGENTS}/` already has files from a prior migration of another repo.
+   **Merge, never override or delete**: if `{USER_AGENTS}/` already has a file of the same name (from a prior migration or install) and the repo-level copy differs, do not overwrite the user-level file and do not discard the repo-level copy's unique content. Diff them and merge so they complement each other: the user-level file remains the base; genuinely additive, project-agnostic guidance from the repo copy is folded in (per the Scenario 1 reconciled-merge rules); project-specific tailoring found in the repo copy is moved to `{USER_AGENTS}/{repo_name}/directives/` or `{USER_AGENTS}/{repo_name}/workflows/` as a project-specific override instead of being lost. Never delete an existing user-level instruction as part of a migration.
 
-4. **Migrate per-repo state** — create `{USER_AGENTS}/{repo_name}/` and move:
-   - `{repo}/.agents/.local-config.json` → `{USER_AGENTS}/{repo_name}/.local-config.json` (credentials)
-   - `{repo}/.agents/project/tickets/` → `{USER_AGENTS}/{repo_name}/project/tickets/` (ticket files)
-   - `{repo}/.agents/project/board/` → `{USER_AGENTS}/{repo_name}/project/board/` (board lanes)
+4. **Scan the entire repo — all branches and all worktrees — for per-repo state (mandatory before any move)**. Pre-user-level installs stored ticket/board files as branch-tracked content and credentials as gitignored per-worktree files, so the currently checked-out branch alone can miss ticket files that exist only on other branches and credentials that exist only in other worktrees. Never migrate from the current working tree alone:
+
+   a. **Enumerate local branches** — `git for-each-ref --format='%(refname:short)' refs/heads/`. For each branch, **without checking it out**, list its tracked state with `git ls-tree -r --name-only <branch> -- .agents/project/tickets/ .agents/project/board/` and extract each found file with `git show <branch>:<path>` into a staging area at `{REPO_TEMP}/migration-scan/branches/<branch>/`. Record each file's last commit date on that branch (`git log -1 --format=%cI <branch> -- <path>`).
+   b. **Enumerate worktrees** — `git worktree list --porcelain`. For each worktree path (including the main one), scan the **filesystem** — this catches untracked and gitignored files that branch scans cannot see: `.agents/.local-config.json`, `.agents/project/tickets/`, `.agents/project/board/`, `.agents/.update-check`. Copy findings into `{REPO_TEMP}/migration-scan/worktrees/<worktree-name>/`, recording file modification times.
+   c. **Build a migration inventory** — for every ticket key: each version found and where (branch or worktree) with its timestamp. For every `.local-config.json` found: which credential fields are non-empty (**report field names and sources only — never print secret values**). Present this inventory to the user before moving anything.
+   d. **Merge rules**:
+      - **Ticket files** — one file per key at the user level. When a key appears in multiple places, keep the version with the newest `Last Synced` value (falling back to commit date / file mtime); preserve every other differing version alongside it as `{KEY}.migrated-from-{branch-or-worktree}.md` so nothing is lost, and list these in the report for manual reconciliation. Never silently discard any version.
+      - **Board lanes** — do not merge lane files textually; rebuild the board from the migrated ticket files' Status fields. Where lane membership conflicts across branches, the newest ticket file wins.
+      - **Credentials** — merge at the **connection level**, not file level, so no connection is ever lost: union every top-level connector key (`jira`, org aliases, and any other integration) and every non-empty field across **all** `.local-config.json` copies found. A connection that exists in only one copy is always migrated. Only when the *same field* carries *different non-empty values* ask the user which value to keep (identify copies by worktree path and field names — **never echo values**); stage the non-chosen copies as `.local-config.migrated-from-{worktree}.json` until the user confirms cleanup. After migration, verify each migrated connection still works (e.g. the Jira auth test) before deleting any source copy.
+   e. **Confirmation gate** — get explicit user confirmation on the inventory and merge plan before step 5 moves anything.
+
+5. **Migrate per-repo state** — create `{USER_AGENTS}/{repo_name}/` and move the **aggregated results of the step-4 scan** (not just the checked-out branch's copies):
+   - merged `.local-config.json` → `{USER_AGENTS}/{repo_name}/.local-config.json` (credentials)
+   - merged ticket files → `{USER_AGENTS}/{repo_name}/project/tickets/` (one per key, plus any `.migrated-from-*` conflict copies)
+   - rebuilt board lanes → `{USER_AGENTS}/{repo_name}/project/board/`
+   - `{repo}/.agents/project/ENVIRONMENT.md` → **copy** (do not delete from repo) to `{USER_AGENTS}/{repo_name}/project/ENVIRONMENT.md` if it contains real (non-boilerplate) values — environment details are per developer from v0.1.3 on; the repo copy reverts to (or remains) the boilerplate template
    - `{repo}/.agents/temp/` → `{USER_AGENTS}/{repo_name}/temp/` (or simply delete — temp data is transient)
+   - create empty `{USER_AGENTS}/{repo_name}/workflows/` and `{USER_AGENTS}/{repo_name}/directives/` for project-specific workflows/directives
+   - delete `{REPO_TEMP}/migration-scan/` once the user confirms the migrated state is complete
 
-5. **Migrate identity** — if `{repo}/.agents/.local-config.json` contains `identity.author_name` and `identity.author_email`, extract them into `{USER_AGENTS}/identity.json`. If `{USER_AGENTS}/identity.json` already exists with values, skip (do not overwrite).
-
-6. **Migrate update check state** — if `{repo}/.agents/.local-config.json` contains `update_check.*` fields, extract them into `{USER_AGENTS}/preferences.json`.
+6. **Migrate identity and update-check state** — check **every** `.local-config.json` found in step 4 (not only the main worktree's): if any contains `identity.author_name`/`identity.author_email`, extract into `{USER_AGENTS}/identity.json` (do not overwrite existing values); if any contains `update_check.*` fields, extract the newest into `{USER_AGENTS}/preferences.json`.
 
 7. **Ask user to confirm deletion** — present the list of repo-level files that will be removed:
    - `{repo}/.agents/directives/` (entire directory)
@@ -118,9 +133,9 @@ Detection: run this check at the start of Scenario 1 (after fetching the master 
 
    **Keep in the repo** (do not delete):
    - `{repo}/AGENTS.md` (routing document — will be updated with new paths)
-   - `{repo}/.agents/project/*.md` (team-shared project docs: ENVIRONMENT.md, ARCHITECTURE.md, etc.)
+   - `{repo}/.agents/project/*.md` (team-shared project docs: ARCHITECTURE.md, SCHEMA.md, etc.; ENVIRONMENT.md stays only as the boilerplate template — the live copy is per developer at `{USER_AGENTS}/{repo_name}/project/ENVIRONMENT.md`)
 
-8. **Delete after confirmation** — remove the files listed above. If any are tracked by git, use `git rm -r` (requires git write confirmation per [MANUAL_CONFIRMATION_GATES.md](MANUAL_CONFIRMATION_GATES.md)). If untracked, delete from disk.
+8. **Delete after confirmation** — remove the files listed above. If any are tracked by git, use `git rm -r` (requires git write confirmation per [MANUAL_CONFIRMATION_GATES.md](MANUAL_CONFIRMATION_GATES.md)). If untracked, delete from disk. Note: deletion on the current branch does **not** remove tracked copies on other branches — those disappear naturally as each branch merges the updated architecture. From this point the user-level copy is the single source of truth: if repo-level ticket/board files are encountered later on another branch or worktree, do **not** blindly re-migrate them over the user-level state — re-run the step-4 inventory comparison and merge only content that is newer than what the user level already holds.
 
 9. **Update `.gitignore`** — remove entries for `.agents/.local-config.json`, `.agents/temp/`, and `.agents/.update-check` (these no longer exist in the repo). Keep or add a comment explaining the user-level architecture.
 
@@ -195,8 +210,9 @@ This checklist applies when working in the master repository (`https://github.co
 
 - Use this framework before creating, moving, renaming, or expanding any file under `.agents` or any major section in `AGENTS.md`.
 - Treat `directives` as the highest authority. Prime directives, safety gates, confirmation gates, trust boundaries, and security rules must not be weakened by standards, skills, workflows, or project notes.
-- Prefer project-specific instructions when they exist for the same scope. If no project-specific instruction exists, fall back to standards, skills, workflows, or general guidance as appropriate.
-- Keep project-specific instructions isolated in `.agents/project`; keep general or reusable instructions isolated in `.agents/standards`, `.agents/skills`, `.agents/workflows`, or `.agents/directives`.
+- Prefer project-specific instructions when they exist for the same scope. If no project-specific instruction exists, fall back to standards, skills, workflows, or general guidance as appropriate. Project-specific workflows and directives live at `{USER_AGENTS}/{repo_name}/workflows/` and `{USER_AGENTS}/{repo_name}/directives/` — a same-named file there overrides its generic counterpart for that repo.
+- Keep project-specific instructions isolated in `.agents/project` (team-shared, committable) or `{USER_AGENTS}/{repo_name}/` (per-developer/per-repo, never committed); keep general or reusable instructions isolated in `.agents/standards`, `.agents/skills`, `.agents/workflows`, or `.agents/directives`.
+- **Cross-platform commands**: any instruction file that includes shell commands must either be OS-neutral or provide both PowerShell (Windows) and Bash (macOS/Linux) forms — never assume one shell. Path examples use the `{USER_AGENTS}`/`{REPO_STATE}`/`{REPO_TEMP}` shorthands, resolved per OS in AGENTS.md. All framework filenames use lowercase `.md` extensions, and cross-references must match filename case exactly (Linux filesystems are case-sensitive).
 - Do not duplicate the same instruction in multiple files. Put the authoritative version in the correct folder and use cross-links from other files.
 - When expanding agentic content, first search for an existing file that already owns the same scope. Update that file instead of creating a parallel instruction.
 - When an agent discovers a repeatable project pattern, developer preference, architectural decision, validation habit, or workflow decision while building, it may propose persisting that learning into the appropriate `.agents` file.
@@ -291,7 +307,7 @@ project/
 - Typical files:
   - PROJECT_STRUCTURE.md
   - ARCHITECTURE.md
-  - ENVIRONMENT.md
+  - ENVIRONMENT.md (template only — the live copy is per developer at `{USER_AGENTS}/{repo_name}/project/ENVIRONMENT.md`)
   - SCHEMA.md
   - INTEGRATIONS.md
   - GLOSSARY.md

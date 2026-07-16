@@ -30,10 +30,10 @@ This skill owns **only** the Jira API connection layer:
 - Comment and issue link retrieval
 
 This skill does **not** own:
-- Local ticket file creation or management → owned by [PROJECT_TRACKING.MD](../../workflows/PROJECT_TRACKING.MD)
-- Agile board updates → owned by [PROJECT_TRACKING.MD](../../workflows/PROJECT_TRACKING.MD)
-- Ticket analysis, implementation, deployment, testing → owned by the framework's existing workflows, invoked through [PROJECT_TRACKING.MD](../../workflows/PROJECT_TRACKING.MD)
-- Comment generation for Jira → owned by [PROJECT_TRACKING.MD](../../workflows/PROJECT_TRACKING.MD)
+- Local ticket file creation or management → owned by [PROJECT_TRACKING.md](../../workflows/PROJECT_TRACKING.md)
+- Agile board updates → owned by [PROJECT_TRACKING.md](../../workflows/PROJECT_TRACKING.md)
+- Ticket analysis, implementation, deployment, testing → owned by the framework's existing workflows, invoked through [PROJECT_TRACKING.md](../../workflows/PROJECT_TRACKING.md)
+- Comment generation for Jira → owned by [PROJECT_TRACKING.md](../../workflows/PROJECT_TRACKING.md)
 
 ## When to Use
 
@@ -55,7 +55,7 @@ After the install flow discovers project prefixes and stores them in `{USER_AGEN
 
 The prefix match is case-insensitive. Normalise the key to uppercase for API calls and file names.
 
-Commands that are **not** Jira API operations (`analyse`, `build`, `deploy`, `test`, `comment`) are recognised by the same prefix matching but routed to [PROJECT_TRACKING.MD](../../workflows/PROJECT_TRACKING.MD), not this skill.
+Commands that are **not** Jira API operations (`analyse`, `build`, `deploy`, `test`, `comment`) are recognised by the same prefix matching but routed to [PROJECT_TRACKING.md](../../workflows/PROJECT_TRACKING.md), not this skill.
 
 ## Install / Setup Flow
 

@@ -15,7 +15,7 @@ This framework uses a **local-first, user-level architecture** with fallbacks fo
 
 1. **Master framework repository** (this repo, `sf-agentic-coding-framework`): contains the full `.agents/` source tree — directives, standards, skills, workflows, and CHANGELOG. This is the canonical source from which installs are cloned. Do not run migration, do not delete `.agents/` folders, do not treat this repo as a local install.
 2. **Installed project repository** (a Salesforce project using this framework): contains only `AGENTS.md` (routing document) and `.agents/project/` (team-shared docs) as committed content. All framework files are installed at the user level. In constrained environments, gitignored `.agents/temp/` and `.agents/state/` fallback directories may additionally exist locally — they are never committed.
-3. **User-level runtime install** (`{USER_AGENTS}/`): shared framework files (directives, standards, skills, workflows) installed once per machine. Per-repo state (credentials, tickets, board, temp data) is stored in a repo-named subdirectory, persisting across branches and sessions.
+3. **User-level runtime install** (`{USER_AGENTS}/`): shared framework files (directives, standards, skills, workflows) installed once per machine. Per-repo state — credentials, tickets, board, temp data, this developer's `project/ENVIRONMENT.md`, and project-specific `workflows/`/`directives/` — is stored in a repo-named subdirectory, persisting across branches and sessions.
 
 | Shorthand | Unix/macOS | Windows | Purpose |
 | --- | --- | --- | --- |
@@ -24,6 +24,8 @@ This framework uses a **local-first, user-level architecture** with fallbacks fo
 | `{REPO_STATE}` | resolved via chain (see below) | resolved via chain (see below) | Per-repo project state (tickets, board, config) — first writable tier of the state chain |
 
 `{repo_name}` is derived from `basename "$(git rev-parse --show-toplevel)"`.
+
+**Cross-platform notes**: `{USER_AGENTS}` resolves per OS — `%USERPROFILE%\.agents\` on Windows (PowerShell: `Join-Path $env:USERPROFILE '.agents'`), `$HOME/.agents/` on macOS and Linux — and `SF_AGENTIC_FRAMEWORK_HOME` overrides on all three. `{repo_name}` derivation is identical everywhere, so the per-repo folder name matches across machines. The user-level install is **per machine and per OS user profile**: the same repo on a second machine (or in WSL, which has its own `$HOME` separate from its Windows host) bootstraps its own install, and user-level state does not sync between machines — Jira is the sync source for tickets; anything that must travel with the repo belongs in committed `.agents/project/` docs. On Linux, filesystem paths and links are case-sensitive — all framework files use lowercase `.md` extensions and cross-references must match filename case exactly.
 
 ### Layered Resolution
 
@@ -59,7 +61,7 @@ Never assume plaintext JSON credentials are available. If the agent is running i
 | 2 | Agent-provided writable workspace or platform temp path | Sandboxed/remote agents |
 | 3 | Repo-local `.agents/temp/` (gitignored) | Fallback when neither of the above is writable |
 
-**Per-repo project state location** (`{REPO_STATE}` — ticket files, board lanes, per-repo config):
+**Per-repo project state location** (`{REPO_STATE}` — ticket files, board lanes, per-repo config, developer environment, project-specific workflows/directives):
 
 | Priority | Location | When to use |
 | --- | --- | --- |
@@ -71,6 +73,8 @@ Never assume plaintext JSON credentials are available. If the agent is running i
 Write `{REPO_STATE}` in workflow instructions to mean "the first writable location in this chain". State stored in tiers 3–4 persists only as long as the hosting environment persists it — do not promise cross-session or cross-sandbox persistence unless tier 1 or 2 resolved. Note that `SF_AGENTIC_FRAMEWORK_HOME` may point to a read-only mount (e.g. in CI) — that satisfies the framework-files chain but not this one; when tier 1 is not writable, fall through to the next writable tier rather than failing.
 
 Never assume `{USER_AGENTS}` is writable — probe before writing and fall back gracefully.
+
+**Project-specific workflows and directives**: `{REPO_STATE}/workflows/` and `{REPO_STATE}/directives/` hold workflows and directives that apply to this repo only. When a file there shares its name with a generic framework file at `{USER_AGENTS}/workflows/` or `{USER_AGENTS}/directives/`, the project-specific file takes precedence for this repo; otherwise both apply (project-specific extends the generic base). Sanitized generic lessons may be upstreamed per Scenario 2 in AGENTIC_FRAMEWORK.md.
 
 ## Purpose And Use
 
@@ -88,7 +92,7 @@ Never assume `{USER_AGENTS}` is writable — probe before writing and fall back 
 - For Apex work, read `{USER_AGENTS}/standards/SALESFORCE_APEX_STANDARDS.md` and `{USER_AGENTS}/standards/PMD_APEX_RULESET.md`.
 - For tool or skill routing, read `{USER_AGENTS}/skills/SALESFORCE_SKILLS.md`.
 - For writing or updating project technical documentation (`docs/` describing implemented Apex, LWC, or config), read `{USER_AGENTS}/standards/DOCUMENTATION.md` first — never document anything without verifying it against source per that file.
-- For Jira setup or ticket fetching, read `{USER_AGENTS}/skills/jira-management/SKILL.md` and `{USER_AGENTS}/workflows/JIRA.MD`. For local ticket management, agile board, and ticket-scoped commands (`analyse`, `build`, `deploy`, `test`, `comment`), read `{USER_AGENTS}/workflows/PROJECT_TRACKING.MD` — it routes to the framework's existing workflows. To install Jira, follow the Install / Setup Flow in the Jira skill.
+- For Jira setup or ticket fetching, read `{USER_AGENTS}/skills/jira-management/SKILL.md` and `{USER_AGENTS}/workflows/JIRA.md`. For local ticket management, agile board, and ticket-scoped commands (`analyse`, `build`, `deploy`, `test`, `comment`), read `{USER_AGENTS}/workflows/PROJECT_TRACKING.md` — it routes to the framework's existing workflows. To install Jira, follow the Install / Setup Flow in the Jira skill.
 
 ## Required Reading Order
 
@@ -126,7 +130,7 @@ In the master framework repository, the full `.agents/` tree is tracked as the c
 - `identity.json` — author name and email for code comment headers.
 - `preferences.json` — framework version and update check state.
 - `CHANGELOG.md` — per-version history of framework changes.
-- `{repo_name}/` — per-repo persistent state: credentials, tickets, board, temp data.
+- `{repo_name}/` — per-repo persistent state: credentials, tickets, board, temp data, this developer's `project/ENVIRONMENT.md` (org aliases and env facts — per developer, never shared), and project-specific `workflows/` and `directives/`.
 
 **Repo-level (`.agents/project/`)** — project facts for this repository:
 - Contains durable project facts: structure, environment, requirements, schema, integrations, glossary, and UX context.
@@ -211,7 +215,7 @@ All files in this table are at `{USER_AGENTS}/skills/`.
 | File | Intended purpose |
 | --- | --- |
 | `SALESFORCE_SKILLS.md` | Naming convention, synthesis procedure, and routing rules for the `sf-{cloud}-{name}` agent skills. |
-| `jira-management/SKILL.md` | Read-only Jira Cloud API integration: credential setup, ticket retrieval, ADF parsing, and project prefix discovery. Activate on "install Jira skills" or `fetch {KEY}`. Does not own local tracking, analysis, or deployment — those are handled by `{USER_AGENTS}/workflows/PROJECT_TRACKING.MD` and the framework's existing workflows. |
+| `jira-management/SKILL.md` | Read-only Jira Cloud API integration: credential setup, ticket retrieval, ADF parsing, and project prefix discovery. Activate on "install Jira skills" or `fetch {KEY}`. Does not own local tracking, analysis, or deployment — those are handled by `{USER_AGENTS}/workflows/PROJECT_TRACKING.md` and the framework's existing workflows. |
 
 ## Workflow Reference Files
 
@@ -226,8 +230,8 @@ All files in this table are at `{USER_AGENTS}/workflows/`.
 | `PULL_REQUEST.md` | Pull request template usage, final commit, back-merge, and review-readiness checklist. |
 | `TESTING.md` | Verification protocols, test commands, mocking strategies, coverage expectations, and acceptance checks. |
 | `IMPLEMENTATION_PLAN.md` | Delivery sequencing, dependency ordering, implementation planning, rollout steps, and open task tracking. |
-| `JIRA.MD` | Jira fetch workflow: the single Jira-facing operation that retrieves a ticket and delivers parsed data to project tracking. |
-| `PROJECT_TRACKING.MD` | Local ticket management: ticket files at `{REPO_STATE}/project/tickets/`, agile board, and ticket-scoped command routing (`analyse`, `build`, `deploy`, `test`, `comment`) that delegates to the framework's existing workflows. |
+| `JIRA.md` | Jira fetch workflow: the single Jira-facing operation that retrieves a ticket and delivers parsed data to project tracking. |
+| `PROJECT_TRACKING.md` | Local ticket management: ticket files at `{REPO_STATE}/project/tickets/`, agile board, and ticket-scoped command routing (`analyse`, `build`, `deploy`, `test`, `comment`) that delegates to the framework's existing workflows. |
 
 ## Project-Specific Reference Files
 
@@ -235,7 +239,7 @@ All files in this table are at `{USER_AGENTS}/workflows/`.
 | --- | --- |
 | [PROJECT_STRUCTURE.md](.agents/project/PROJECT_STRUCTURE.md) | Repository topology, source folders, metadata locations, and orientation checklist. |
 | [ARCHITECTURE.md](.agents/project/ARCHITECTURE.md) | System topology, modules, services, dependencies, data flows, and ownership boundaries. |
-| [ENVIRONMENT.md](.agents/project/ENVIRONMENT.md) | Local setup, required tools, org aliases, environment matrix, secrets handling, and bootstrap steps. |
+| [ENVIRONMENT.md](.agents/project/ENVIRONMENT.md) | **Template only in this repo** — the live copy is per developer at `{REPO_STATE}/project/ENVIRONMENT.md`. Local setup, required tools, org aliases, environment matrix, secrets handling. Each developer records their own org access; never inherited from another developer. |
 | [SCHEMA.md](.agents/project/SCHEMA.md) | Data models, Salesforce object relationships, schema diagrams, field ownership, and data constraints. |
 | [INTEGRATIONS.md](.agents/project/INTEGRATIONS.md) | API connections, external systems, named credentials, payload contracts, and integration constraints. |
 | [GLOSSARY.md](.agents/project/GLOSSARY.md) | Domain vocabulary, business terms, certified datasets, project jargon, and naming constraints. |
