@@ -6,6 +6,21 @@ This file records all notable changes to `sf-agentic-coding-framework` in human-
 
 ---
 
+## [0.2.0] — 2026-07-16
+
+### Changed (breaking — three-tier architecture)
+- **Three explicit tiers replace the per-repo model**: **user level** (`{USER_AGENTS}` = `~/.agents/`) holds the general working framework — common directives, workflows, standards, routing, and generic parameterized skills; **project level** (`{PROJECT_AGENTS}` = `{USER_AGENTS}/{PROJECT_NAME}/`) holds everything specific to one project but shared across all of its repos, branches, and worktrees; **repo level** (repo-root `.agents/`) holds team-shared documentation and repo-/feature-specific instructions, committed via git. All tiers share the same subfolder shape: `directives/`, `standards/`, `documentation/`, `workflows/`, `skills/`, `project/`.
+- **`{PROJECT_NAME}` replaces `{repo_name}` as the state key**: derived from the git remote URL's repository name (e.g. `rehlko-dtt` from `github.com/rpoorun/rehlko-dtt.git`); repos sharing that name share one project tier. If no remote exists, the agent asks in chat and persists the answer in repo-level `.agents/project/`. Shorthands `{REPO_STATE}`/`{REPO_TEMP}` are replaced by `{PROJECT_AGENTS}`/`{AGENTS_TEMP}` throughout.
+- **Repo `.agents/project/` renamed to `.agents/documentation/`** (git mv): team-shared project facts (architecture, schema, glossary, specs, UX). Documentation lives at repo level because it is shared; machine-/author-specific docs (e.g. meeting notes) go to the project- or user-tier `documentation/` folders. The `project/` subfolder name is repurposed at every tier for configuration, credentials, parameters, and variables.
+- **Temp moved to the OS temp directory**: `{AGENTS_TEMP}` = `{OS temp}/.agents/{PROJECT_NAME}/` (`%TEMP%` on Windows, `$TMPDIR`/`/tmp` on Unix) — the platform owns cleanup; transient data no longer pollutes the user folder or the repo. The framework-update clone moves to `{OS temp}/.agents/framework-update/`.
+- **Credential tier rules**: credentials are never stored at repo level (sole exception: a plain identifier explicitly requested by the user, after a second confirmation in chat). System-wide credentials → user tier (`{USER_AGENTS}/project/`); project connections/credentials → project tier (`{PROJECT_AGENTS}/project/.local-config.json`), optionally segregated per environment under `project/environments/{dev|uat|staging|production}/`.
+- **Skills doctrine**: skills are installed at the user tier only — generic, parameterized, fully self-contained (instructions, JSON schemas, callout guardrails, samples, docs, object structures, scripts, update instructions, live repo references) and exportable. The project tier gets a same-named skill folder holding `{SKILL_NAME}_HELPER.md`, which bridges the user-tier skill's invocables to the project's environments and credentials; project-level workflows orchestrate helper consumption and sequencing.
+- **Tickets and board are project-scoped**: `{PROJECT_AGENTS}/project/tickets|board/` is accessible from within any repo of the project, regardless of branch, state, or worktree.
+- `AGENTIC_FRAMEWORK.md` — target-architecture tree and folder scopes rewritten for the three tiers; added a v0.1.x → v0.2.0 upgrade procedure (rename per-repo folder to `{PROJECT_NAME}`, reshape to the common tier layout, delete the old `temp/`, `git mv` repo `project/` → `documentation/`).
+- `AGENTS.md`, `PROJECT_BOOTSTRAP.md`, `AGENT_GUARDRAILS.md`, `PROJECT_TRACKING.md`, `DEPLOYMENT.md`, `JIRA.md`, `jira-management/SKILL.md`, `SALESFORCE_APEX_STANDARDS.md`, `sf-platform-apex/SKILL.md`, `sf-platform-lwc/SKILL.md`, `.local-config.template.json`, `.gitignore`, `README.md` — paths, resolution chains, bootstrap steps, and wording updated to the three-tier vocabulary.
+
+---
+
 ## [0.1.3] — Unreleased
 
 ### Added

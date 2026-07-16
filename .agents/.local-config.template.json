@@ -1,23 +1,24 @@
 {
-  "_info": "This template documents the shape of per-repo config files stored at {USER_AGENTS}/{repo_name}/.local-config.json. It is tracked in git so new installs know the expected structure. The live config files are NEVER in the repo — they live under the user-level framework directory.",
+  "_info": "This template documents the shape of project-level config files stored at {PROJECT_AGENTS}/project/.local-config.json (i.e. {USER_AGENTS}/{PROJECT_NAME}/project/.local-config.json). It is tracked in git so new installs know the expected structure. The live config files are NEVER in the repo — they live under the project-level framework directory.",
   "_convention": {
-    "rule": "On local developer machines, all local-only configuration lives under the user-level framework directory (~/.agents/ on Unix, %USERPROFILE%\\.agents\\ on Windows). Global identity and preferences are root-level files. Per-repo credentials and state live at {USER_AGENTS}/{repo_name}/.local-config.json. This file is the local-machine default only — sandboxed/hosted agents resolve credentials and state via the layered resolution chains in AGENTS.md (secret manager / env vars for credentials; {REPO_STATE} tiers for state) and never create this file on ephemeral or shared filesystems.",
-    "user_level_structure": {
+    "rule": "On local developer machines, all local-only configuration lives under the user-level framework directory (~/.agents/ on Unix, %USERPROFILE%\\.agents\\ on Windows). Global identity and preferences are root-level files; system-wide credentials unrelated to any project live at {USER_AGENTS}/project/. Project credentials and state live at {PROJECT_AGENTS}/project/.local-config.json, optionally segregated per environment under {PROJECT_AGENTS}/project/environments/. Credentials are never stored at repo level (sole exception: a plain identifier the user explicitly requested, after a second confirmation in chat). This file is the local-machine default only — sandboxed/hosted agents resolve credentials and state via the layered resolution chains in AGENTS.md (secret manager / env vars for credentials; {PROJECT_AGENTS} tiers for state) and never create this file on ephemeral or shared filesystems.",
+    "tier_structure": {
       "root": "~/.agents/ (Unix) or %USERPROFILE%\\.agents\\ (Windows) — referred to as {USER_AGENTS}",
-      "identity": "{USER_AGENTS}/identity.json — author name and email, shared across all repos",
+      "identity": "{USER_AGENTS}/identity.json — author name and email, shared across all projects",
       "preferences": "{USER_AGENTS}/preferences.json — framework version, update check state, global defaults",
-      "framework_files": "{USER_AGENTS}/directives/, standards/, skills/, workflows/ — installed from master repo, shared across all repos",
+      "framework_files": "{USER_AGENTS}/directives/, standards/, skills/, workflows/, documentation/, project/ — installed from master repo, shared across all projects",
       "common_templates": "{USER_AGENTS}/common/templates/ — ticket template, board template, reusable scaffolding",
-      "per_repo_config": "{USER_AGENTS}/{repo_name}/.local-config.json — project-specific credentials (Jira, org aliases, etc.)",
-      "per_repo_tickets": "{USER_AGENTS}/{repo_name}/project/tickets/ — local ticket files; on local machines they persist across branches and sessions (in constrained environments, persistence is limited to what the resolved {REPO_STATE} tier provides)",
-      "per_repo_board": "{USER_AGENTS}/{repo_name}/project/board/ — agile board lanes (same persistence scope as tickets)",
-      "per_repo_environment": "{USER_AGENTS}/{repo_name}/project/ENVIRONMENT.md — this developer's env facts (org aliases, auth status); per developer, never shared or committed",
-      "per_repo_workflows": "{USER_AGENTS}/{repo_name}/workflows/ — project-specific workflows; same-named file overrides the generic framework workflow for this repo",
-      "per_repo_directives": "{USER_AGENTS}/{repo_name}/directives/ — project-specific directives; same-named file overrides the generic framework directive for this repo",
-      "per_repo_temp": "{USER_AGENTS}/{repo_name}/temp/ — transient data, cleaned after workflows complete"
+      "project_config": "{PROJECT_AGENTS}/project/.local-config.json — project-specific credentials (Jira, org aliases, etc.); per-environment overrides under {PROJECT_AGENTS}/project/environments/{env}/",
+      "project_tickets": "{PROJECT_AGENTS}/project/tickets/ — local ticket files, shared by every repo/branch/worktree of the project; on local machines they persist across branches and sessions (in constrained environments, persistence is limited to what the resolved {PROJECT_AGENTS} tier provides)",
+      "project_board": "{PROJECT_AGENTS}/project/board/ — agile board lanes (same persistence scope as tickets)",
+      "project_environment": "{PROJECT_AGENTS}/project/ENVIRONMENT.md — this developer's env facts (org aliases, auth status); per developer, never shared or committed",
+      "project_workflows": "{PROJECT_AGENTS}/workflows/ — project-specific workflows (incl. skill-helper orchestration); same-named file overrides the generic framework workflow for this project",
+      "project_directives": "{PROJECT_AGENTS}/directives/ — project-specific directives; same-named file overrides the generic framework directive for this project",
+      "project_skills": "{PROJECT_AGENTS}/skills/{skill-name}/{SKILL_NAME}_HELPER.md — bridges user-tier skills to this project's environments and credentials",
+      "temp": "{OS temp}/.agents/{PROJECT_NAME}/ — transient data in the platform temp directory (%TEMP% on Windows, $TMPDIR//tmp on Unix); the OS owns cleanup"
     },
-    "repo_name_derivation": "The {repo_name} is the basename of `git rev-parse --show-toplevel` — e.g. if the repo is at C:\\repo\\ClientA\\salesforce-project, then repo_name is 'salesforce-project'.",
-    "how_to_add": "1. Add a new top-level key to this template with empty placeholder values. 2. Document the key in the skill's SKILL.md under 'Credential Loading' or 'Local Config'. 3. The install flow reads {USER_AGENTS}/{repo_name}/.local-config.json, detects blank fields under its key, and prompts the user only for what is missing. 4. Never create parallel local config files or directories.",
+    "project_name_derivation": "The {PROJECT_NAME} is the repository name from the git remote URL — e.g. https://github.com/rpoorun/rehlko-dtt.git gives 'rehlko-dtt'. If no git remote is configured, the agent asks for the project name in chat and persists it in the repo-level .agents/project/ configuration. Repos sharing the same remote name share one project tier.",
+    "how_to_add": "1. Add a new top-level key to this template with empty placeholder values. 2. Document the key in the skill's SKILL.md under 'Credential Loading' or 'Local Config'. 3. The install flow reads {PROJECT_AGENTS}/project/.local-config.json, detects blank fields under its key, and prompts the user only for what is missing. 4. Never create parallel local config files or directories.",
     "naming": "Use lowercase, short, descriptive key names (e.g. 'jira', 'slack', 'github'). Nest related fields one level deep. Do not nest deeper than two levels.",
     "security": "Keys that hold secrets (tokens, passwords, private keys) must be named clearly (e.g. 'api_token', 'secret'). The install flow must never echo secret values back to the user. The SKILL.md must document which fields are sensitive."
   },

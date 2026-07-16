@@ -45,7 +45,7 @@ This repository (`AGENTS.md` plus `.agents/`) is itself a reusable framework. It
 
 **https://github.com/rpoorun/sf-agentic-coding-framework**
 
-Once this framework is cloned or installed into a client/project repository (a "local install"), that local install diverges over time: it picks up project-specific facts in `.agents/project/`, client-specific overrides in standards/workflows, and possibly new or re-synthesized skills. Two sync directions are expected and must be handled differently.
+Once this framework is cloned or installed into a client/project repository (a "local install"), that local install diverges over time: it picks up project-specific facts in `.agents/documentation/`, client-specific overrides in standards/workflows, and possibly new or re-synthesized skills. Two sync directions are expected and must be handled differently.
 
 ### Daily Update Check (Automatic)
 
@@ -71,7 +71,7 @@ Procedure:
 4. Detect impact level before applying anything: classify each incoming change as **minor** (wording, additive guidance, new optional skill) or **major** (changed confirmation gates, changed mandatory workflow steps, renamed/restructured folders, removed skills the project depends on, conflicting coding standards).
 5. **Stop and seek explicit user approval before merging** when the change is major, or when any conflict exists between local and incoming content. Present the user with: which files are affected, a summary of what changed, why it's classified minor/major, and the specific consequence of accepting vs. rejecting each conflicting change. Do not silently resolve conflicts in favor of either side.
 6. Once approved, apply the merge, re-run the synthesis procedure above for any newly pulled skills, and report exactly what was merged, what was rejected/kept-local, and what still needs a follow-up decision.
-7. Never overwrite per-repo state (`{USER_AGENTS}/{repo_name}/`) or repo-level project docs (`.agents/project/*`) from the master framework — those are always local-only. The update applies only to the shared framework files at `{USER_AGENTS}/directives/`, `{USER_AGENTS}/standards/`, `{USER_AGENTS}/skills/`, `{USER_AGENTS}/workflows/`, and `{USER_AGENTS}/CHANGELOG.md`.
+7. Never overwrite project state (`{PROJECT_AGENTS}/`) or repo-level project docs (`.agents/documentation/*`) from the master framework — those are always local-only. The update applies only to the shared framework files at `{USER_AGENTS}/directives/`, `{USER_AGENTS}/standards/`, `{USER_AGENTS}/skills/`, `{USER_AGENTS}/workflows/`, and `{USER_AGENTS}/CHANGELOG.md`.
 
 ### Migration — Upgrading From Repo-Level To User-Level Architecture
 
@@ -80,11 +80,11 @@ Trigger: a local install still has framework files (directives, standards, skill
 Detection (**standing check — runs on every update install**, not only the release that introduced the user-level architecture): run this at the start of Scenario 1 (after fetching the master framework into temp). First, verify the current repo is **not** the master framework repository (see [Master Repository Guard](../workflows/PROJECT_BOOTSTRAP.md#master-repository-guard) — never migrate or delete framework files from the master repo). Then detect old-structure remnants in two forms:
 
 - **Unmigrated install**: `{repo}/.agents/directives/` (or `standards/`, `skills/`, `workflows/`) exists in the current working tree **and** `{USER_AGENTS}/directives/` does not — run the full migration procedure below.
-- **Stale branch/worktree remnants**: `{USER_AGENTS}/` is already populated, but the currently checked-out branch, another local branch, or an isolated worktree still carries the old structure — repo-level framework folders, a repo-level `.agents/.local-config.json` (credentials), or repo-level tickets/board files (all surfaced by the step-4 scan). In this case, **install the update normally, then run a remnant migration**: inventory-compare the remnant state against the user level per step 4 and merge only content that is *newer* than what `{USER_AGENTS}`/`{REPO_STATE}` already holds; common instruction files (directives, standards, skills, workflows) always stay authoritative at the user level — never re-adopt a repo-level copy over them, but never discard the repo copy's unique content either: merge additive guidance into the user-level file and route project-specific tailoring to `{USER_AGENTS}/{repo_name}/directives|workflows/` (per the merge rule in step 3); then clean the old files off the currently checked-out branch/worktree per steps 7–9. A stale branch or worktree must never silently reintroduce the old architecture, and its credentials and ticket data must never be orphaned or lost.
+- **Stale branch/worktree remnants**: `{USER_AGENTS}/` is already populated, but the currently checked-out branch, another local branch, or an isolated worktree still carries the old structure — repo-level framework folders, a repo-level `.agents/.local-config.json` (credentials), or repo-level tickets/board files (all surfaced by the step-4 scan). In this case, **install the update normally, then run a remnant migration**: inventory-compare the remnant state against the user level per step 4 and merge only content that is *newer* than what `{USER_AGENTS}`/`{PROJECT_AGENTS}` already holds; common instruction files (directives, standards, skills, workflows) always stay authoritative at the user level — never re-adopt a repo-level copy over them, but never discard the repo copy's unique content either: merge additive guidance into the user-level file and route project-specific tailoring to `{PROJECT_AGENTS}/directives|workflows/` (per the merge rule in step 3); then clean the old files off the currently checked-out branch/worktree per steps 7–9. A stale branch or worktree must never silently reintroduce the old architecture, and its credentials and ticket data must never be orphaned or lost.
 
 **Migration procedure** (requires explicit user confirmation before each destructive step):
 
-1. **Inform the user**: "This update introduces a user-level framework architecture. Framework files (directives, standards, skills, workflows) will be moved from this repo to `{USER_AGENTS}/`, and per-repo state (credentials, tickets, board) will be moved to `{USER_AGENTS}/{repo_name}/`. This is a one-time migration."
+1. **Inform the user**: "This update introduces the three-tier (user / project / repo) framework architecture. Framework files (directives, standards, skills, workflows) will be moved from this repo to `{USER_AGENTS}/`, and project state (credentials, tickets, board) will be moved to `{PROJECT_AGENTS}/`. This is a one-time migration."
 
 2. **Initialise the user-level directory** — run [Step 0a of PROJECT_BOOTSTRAP.md](../workflows/PROJECT_BOOTSTRAP.md#step-0a--initialise-user-level-framework-directory) if `{USER_AGENTS}/` does not exist.
 
@@ -95,12 +95,12 @@ Detection (**standing check — runs on every update install**, not only the rel
    - `{repo}/.agents/workflows/` → `{USER_AGENTS}/workflows/`
    - `{repo}/.agents/CHANGELOG.md` → `{USER_AGENTS}/CHANGELOG.md`
    - `{repo}/.agents/.local-config.template.json` → `{USER_AGENTS}/common/templates/.local-config.template.json` (reference copy)
-   **Merge, never override or delete**: if `{USER_AGENTS}/` already has a file of the same name (from a prior migration or install) and the repo-level copy differs, do not overwrite the user-level file and do not discard the repo-level copy's unique content. Diff them and merge so they complement each other: the user-level file remains the base; genuinely additive, project-agnostic guidance from the repo copy is folded in (per the Scenario 1 reconciled-merge rules); project-specific tailoring found in the repo copy is moved to `{USER_AGENTS}/{repo_name}/directives/` or `{USER_AGENTS}/{repo_name}/workflows/` as a project-specific override instead of being lost. Never delete an existing user-level instruction as part of a migration.
+   **Merge, never override or delete**: if `{USER_AGENTS}/` already has a file of the same name (from a prior migration or install) and the repo-level copy differs, do not overwrite the user-level file and do not discard the repo-level copy's unique content. Diff them and merge so they complement each other: the user-level file remains the base; genuinely additive, project-agnostic guidance from the repo copy is folded in (per the Scenario 1 reconciled-merge rules); project-specific tailoring found in the repo copy is moved to `{PROJECT_AGENTS}/directives/` or `{PROJECT_AGENTS}/workflows/` as a project-specific override instead of being lost. Never delete an existing user-level instruction as part of a migration.
 
 4. **Scan the entire repo — all branches and all worktrees — for per-repo state (mandatory before any move)**. Pre-user-level installs stored ticket/board files as branch-tracked content and credentials as gitignored per-worktree files, so the currently checked-out branch alone can miss ticket files that exist only on other branches and credentials that exist only in other worktrees. Never migrate from the current working tree alone:
 
-   a. **Enumerate local branches** — `git for-each-ref --format='%(refname:short)' refs/heads/`. For each branch, **without checking it out**, list its tracked state with `git ls-tree -r --name-only <branch> -- .agents/project/tickets/ .agents/project/board/` and extract each found file with `git show <branch>:<path>` into a staging area at `{REPO_TEMP}/migration-scan/branches/<branch>/`. Record each file's last commit date on that branch (`git log -1 --format=%cI <branch> -- <path>`).
-   b. **Enumerate worktrees** — `git worktree list --porcelain`. For each worktree path (including the main one), scan the **filesystem** — this catches untracked and gitignored files that branch scans cannot see: `.agents/.local-config.json`, `.agents/project/tickets/`, `.agents/project/board/`, `.agents/.update-check`. Copy findings into `{REPO_TEMP}/migration-scan/worktrees/<worktree-name>/`, recording file modification times.
+   a. **Enumerate local branches** — `git for-each-ref --format='%(refname:short)' refs/heads/`. For each branch, **without checking it out**, list its tracked state with `git ls-tree -r --name-only <branch> -- .agents/project/tickets/ .agents/project/board/` (the legacy repo-level layout) and extract each found file with `git show <branch>:<path>` into a staging area at `{AGENTS_TEMP}/migration-scan/branches/<branch>/`. Record each file's last commit date on that branch (`git log -1 --format=%cI <branch> -- <path>`).
+   b. **Enumerate worktrees** — `git worktree list --porcelain`. For each worktree path (including the main one), scan the **filesystem** — this catches untracked and gitignored files that branch scans cannot see: `.agents/.local-config.json`, `.agents/project/tickets/`, `.agents/project/board/` (legacy layout), `.agents/.update-check`. Copy findings into `{AGENTS_TEMP}/migration-scan/worktrees/<worktree-name>/`, recording file modification times.
    c. **Build a migration inventory** — for every ticket key: each version found and where (branch or worktree) with its timestamp. For every `.local-config.json` found: which credential fields are non-empty (**report field names and sources only — never print secret values**). Present this inventory to the user before moving anything.
    d. **Merge rules**:
       - **Ticket files** — one file per key at the user level. When a key appears in multiple places, keep the version with the newest `Last Synced` value (falling back to commit date / file mtime); preserve every other differing version alongside it as `{KEY}.migrated-from-{branch-or-worktree}.md` so nothing is lost, and list these in the report for manual reconciliation. Never silently discard any version.
@@ -108,14 +108,14 @@ Detection (**standing check — runs on every update install**, not only the rel
       - **Credentials** — merge at the **connection level**, not file level, so no connection is ever lost: union every top-level connector key (`jira`, org aliases, and any other integration) and every non-empty field across **all** `.local-config.json` copies found. A connection that exists in only one copy is always migrated. Only when the *same field* carries *different non-empty values* ask the user which value to keep (identify copies by worktree path and field names — **never echo values**); stage the non-chosen copies as `.local-config.migrated-from-{worktree}.json` until the user confirms cleanup. After migration, verify each migrated connection still works (e.g. the Jira auth test) before deleting any source copy.
    e. **Confirmation gate** — get explicit user confirmation on the inventory and merge plan before step 5 moves anything.
 
-5. **Migrate per-repo state** — create `{USER_AGENTS}/{repo_name}/` and move the **aggregated results of the step-4 scan** (not just the checked-out branch's copies):
-   - merged `.local-config.json` → `{USER_AGENTS}/{repo_name}/.local-config.json` (credentials)
-   - merged ticket files → `{USER_AGENTS}/{repo_name}/project/tickets/` (one per key, plus any `.migrated-from-*` conflict copies)
-   - rebuilt board lanes → `{USER_AGENTS}/{repo_name}/project/board/`
-   - `{repo}/.agents/project/ENVIRONMENT.md` → **copy** (do not delete from repo) to `{USER_AGENTS}/{repo_name}/project/ENVIRONMENT.md` if it contains real (non-boilerplate) values — environment details are per developer from v0.1.3 on; the repo copy reverts to (or remains) the boilerplate template
-   - `{repo}/.agents/temp/` → `{USER_AGENTS}/{repo_name}/temp/` (or simply delete — temp data is transient)
-   - create empty `{USER_AGENTS}/{repo_name}/workflows/` and `{USER_AGENTS}/{repo_name}/directives/` for project-specific workflows/directives
-   - delete `{REPO_TEMP}/migration-scan/` once the user confirms the migrated state is complete
+5. **Migrate the scanned state to the project tier** — create `{PROJECT_AGENTS}/` and move the **aggregated results of the step-4 scan** (not just the checked-out branch's copies):
+   - merged `.local-config.json` → `{PROJECT_AGENTS}/project/.local-config.json` (credentials)
+   - merged ticket files → `{PROJECT_AGENTS}/project/tickets/` (one per key, plus any `.migrated-from-*` conflict copies)
+   - rebuilt board lanes → `{PROJECT_AGENTS}/project/board/`
+   - `{repo}/.agents/project/ENVIRONMENT.md` (legacy path) → **copy** (do not delete from repo) to `{PROJECT_AGENTS}/project/ENVIRONMENT.md` if it contains real (non-boilerplate) values — environment details are per developer from v0.1.3 on; the repo copy reverts to (or remains) the boilerplate template
+   - `{repo}/.agents/temp/` → `{AGENTS_TEMP}/` (or simply delete — temp data is transient)
+   - create the remaining project-tier subfolders (`workflows/`, `directives/`, `standards/`, `skills/`, `documentation/`) per Step 0b of PROJECT_BOOTSTRAP.md
+   - delete `{AGENTS_TEMP}/migration-scan/` once the user confirms the migrated state is complete
 
 6. **Migrate identity and update-check state** — check **every** `.local-config.json` found in step 4 (not only the main worktree's): if any contains `identity.author_name`/`identity.author_email`, extract into `{USER_AGENTS}/identity.json` (do not overwrite existing values); if any contains `update_check.*` fields, extract the newest into `{USER_AGENTS}/preferences.json`.
 
@@ -127,19 +127,26 @@ Detection (**standing check — runs on every update install**, not only the rel
    - `{repo}/.agents/CHANGELOG.md`
    - `{repo}/.agents/.local-config.json`
    - `{repo}/.agents/.local-config.template.json`
-   - `{repo}/.agents/project/board/` (moved to user-level)
-   - `{repo}/.agents/project/tickets/` (moved to user-level)
+   - `{repo}/.agents/project/board/` (legacy path — moved to the project level)
+   - `{repo}/.agents/project/tickets/` (legacy path — moved to the project level)
    - `{repo}/.agents/temp/` (transient data)
 
    **Keep in the repo** (do not delete):
    - `{repo}/AGENTS.md` (routing document — will be updated with new paths)
-   - `{repo}/.agents/project/*.md` (team-shared project docs: ARCHITECTURE.md, SCHEMA.md, etc.; ENVIRONMENT.md stays only as the boilerplate template — the live copy is per developer at `{USER_AGENTS}/{repo_name}/project/ENVIRONMENT.md`)
+   - The team-shared project docs (ARCHITECTURE.md, SCHEMA.md, etc.) — renamed from the legacy `{repo}/.agents/project/` folder to `{repo}/.agents/documentation/` (use `git mv`); ENVIRONMENT.md stays only as the boilerplate template — the live copy is per developer at `{PROJECT_AGENTS}/project/ENVIRONMENT.md`
 
 8. **Delete after confirmation** — remove the files listed above. If any are tracked by git, use `git rm -r` (requires git write confirmation per [MANUAL_CONFIRMATION_GATES.md](MANUAL_CONFIRMATION_GATES.md)). If untracked, delete from disk. Note: deletion on the current branch does **not** remove tracked copies on other branches — those disappear naturally as each branch merges the updated architecture. From this point the user-level copy is the single source of truth: if repo-level ticket/board files are encountered later on another branch or worktree, do **not** blindly re-migrate them over the user-level state — re-run the step-4 inventory comparison and merge only content that is newer than what the user level already holds.
 
 9. **Update `.gitignore`** — remove entries for `.agents/.local-config.json`, `.agents/temp/`, and `.agents/.update-check` (these no longer exist in the repo). Keep or add a comment explaining the user-level architecture.
 
 10. **Update `AGENTS.md`** — replace the repo's `AGENTS.md` with the version from the incoming update, which already has `{USER_AGENTS}/` paths. Preserve any project-specific customisations the user may have added.
+
+**Upgrading a v0.1.x install (per-repo keyed) to the v0.2.0 three-tier layout** — for machines that already have a user-level install with per-repo state at `{USER_AGENTS}/{repo_name}/`:
+
+1. Derive `{PROJECT_NAME}` from the repo's git remote (ask in chat if there is none). If `{repo_name}` ≠ `{PROJECT_NAME}`, rename/move `{USER_AGENTS}/{repo_name}/` → `{USER_AGENTS}/{PROJECT_NAME}/`; if several repos of one project each have their own folder, merge them using the same connection-level credential merge and newest-ticket-wins rules as above, with user confirmation of the inventory first.
+2. Reshape the folder to the common tier layout: move `.local-config.json` → `project/.local-config.json`; keep `project/tickets/`, `project/board/`, `project/ENVIRONMENT.md` in place; create `standards/`, `skills/`, `documentation/`, and optionally `project/environments/{env}/`.
+3. Delete `{USER_AGENTS}/{PROJECT_NAME}/temp/` after confirming nothing in it is needed — transient data now lives at `{AGENTS_TEMP}` (`{OS temp}/.agents/{PROJECT_NAME}/`), owned and cleaned by the operating system.
+4. In each installed repo, rename `.agents/project/` → `.agents/documentation/` (`git mv`, commit gated per [MANUAL_CONFIRMATION_GATES.md](MANUAL_CONFIRMATION_GATES.md)) and update the repo's `AGENTS.md` from the incoming version.
 
 11. **Report** — summarise what was migrated, what was deleted, and confirm the user-level directory is ready. Suggest the user run `install Jira skills` (or any other plugin) to verify credentials are accessible from the new location.
 
@@ -152,7 +159,7 @@ Trigger: while working in a local install, the agent or user identifies a genera
 Procedure:
 
 1. Before persisting anything as a candidate for contribution, apply the existing learning rules in "Framework Maintenance Rules" below: distinguish durable, reusable learning from project-specific facts, and get the user's permission to persist it locally first.
-2. Isolate only the generally-applicable files/sections — never include `.agents/project/*` content, client names, org aliases, credentials, or any project-specific fact when preparing content for the master repository.
+2. Isolate only the generally-applicable files/sections — never include `.agents/documentation/*` content, client names, org aliases, credentials, or any project-specific fact when preparing content for the master repository.
 3. Propose forking `https://github.com/rpoorun/sf-agentic-coding-framework` (or pushing a branch/PR against it, per the user's preferred contribution flow) and isolating the candidate change there, scoped to exactly the directive/standard/skill/workflow file(s) affected.
 4. State clearly to the user: which files are being proposed for upstream contribution, why they are generic enough to apply beyond this project, and that this is a candidate for the maintainers to review and merge into the next release — not a guaranteed or automatic merge.
 5. Treat pushing to, branching, or opening a PR against the master repository as a Git/source-control action requiring explicit user confirmation under the existing confirmation gates (see [AGENT_GUARDRAILS.md](AGENT_GUARDRAILS.md) and [MANUAL_CONFIRMATION_GATES.md](MANUAL_CONFIRMATION_GATES.md)) — do not push or open a PR without that confirmation.
@@ -171,7 +178,7 @@ Use this contribution path:
    - ordered delivery or PR/deploy process -> `.agents/workflows/*`;
    - reusable quality expectations -> `.agents/standards/*`.
 3. Work in a dedicated branch or fork of `https://github.com/rpoorun/sf-agentic-coding-framework`, never directly in a client repository branch.
-4. Edit only the generic master-framework files needed for the learned rule. Do not include `.agents/project/*`, local install files, retrieved Salesforce metadata, generated package files, or project-specific docs.
+4. Edit only the generic master-framework files needed for the learned rule. Do not include `.agents/documentation/*`, local install files, retrieved Salesforce metadata, generated package files, or project-specific docs.
 5. Add a concise changelog entry describing the reusable learning.
 6. Re-check the diff for sanitized content and scope before committing.
 7. Push the branch or fork and open a pull request against the master framework's integration branch, usually `develop`, with a PR body that states the source learning in generic terms and names the affected skill/directive/workflow files.
@@ -183,12 +190,12 @@ Always sanitize instruction content before it is proposed, forked, branched, or 
 Scan for and remove or genericize:
 
 - Client, customer, or program names (e.g. a literal company name embedded in a title, purpose statement, or example).
-- Org aliases, sandbox/production URLs, usernames, or email addresses — replace with the `{client}-{project}-{env}` placeholder pattern documented in [ENVIRONMENT.md](../project/ENVIRONMENT.md#org-alias-naming-convention).
+- Org aliases, sandbox/production URLs, usernames, or email addresses — replace with the `{client}-{project}-{env}` placeholder pattern documented in [ENVIRONMENT.md](../documentation/ENVIRONMENT.md#org-alias-naming-convention).
 - Real ticket/case IDs, Jira keys, or support-case numbers — replace with a generic placeholder (e.g. `PROJ-123`) or drop the identifier entirely if it adds no instructional value.
 - Internal consultancy, vendor, or partner names used as a stand-in for "the project's baseline standard" — replace with a bracket placeholder such as `[Org]` and a note that the local install should substitute its own organization's name.
 - Any credential, token, secret, or PII, per [TRUST_DATA_SECURITY.md](TRUST_DATA_SECURITY.md) — these must never appear in any file regardless of destination.
 
-For every `.agents/project/*` file specifically: project files may be shared within an installed project repo (committed and pushed to the project's own remote when the team chooses), but they must never be contributed back to the master framework repository — not even in sanitized form. If a pattern discovered in a project file is generally useful, extract the *generic lesson* into the appropriate `directives`, `standards`, `skills`, or `workflows` file as a boilerplate example (placeholders, not real facts) — do not push the project file itself.
+For every `.agents/documentation/*` file specifically: project files may be shared within an installed project repo (committed and pushed to the project's own remote when the team chooses), but they must never be contributed back to the master framework repository — not even in sanitized form. If a pattern discovered in a project file is generally useful, extract the *generic lesson* into the appropriate `directives`, `standards`, `skills`, or `workflows` file as a boilerplate example (placeholders, not real facts) — do not push the project file itself.
 
 When in doubt whether a string is client-identifying, treat it as client-identifying and ask the user before including it in anything destined for the master repository.
 
@@ -201,7 +208,7 @@ Before proposing or executing a merge from `develop` (or any feature branch) to 
    - List every user-visible change in the merge as bullet points under `### Added`, `### Changed`, or `### Removed` sub-headings.
    - Be self-contained enough that a user reading only that entry understands what arrived in this version without needing to read the diff.
    - Be accurate and complete — relay this entry to the user during the next [Daily Update Check](#daily-update-check-automatic) notification.
-3. **Sanitize** any `.agents/project/*` content or client-identifying detail per the [Sanitizing Instructions](#sanitizing-instructions-before-any-master-framework-contribution) section.
+3. **Sanitize** any `.agents/documentation/*` content or client-identifying detail per the [Sanitizing Instructions](#sanitizing-instructions-before-any-master-framework-contribution) section.
 4. **Run any local checks** available (lint, format) and confirm no stale cross-links.
 
 This checklist applies when working in the master repository (`https://github.com/rpoorun/sf-agentic-coding-framework`) and is a confirmation-gated action per [MANUAL_CONFIRMATION_GATES.md](MANUAL_CONFIRMATION_GATES.md).
@@ -210,14 +217,14 @@ This checklist applies when working in the master repository (`https://github.co
 
 - Use this framework before creating, moving, renaming, or expanding any file under `.agents` or any major section in `AGENTS.md`.
 - Treat `directives` as the highest authority. Prime directives, safety gates, confirmation gates, trust boundaries, and security rules must not be weakened by standards, skills, workflows, or project notes.
-- Prefer project-specific instructions when they exist for the same scope. If no project-specific instruction exists, fall back to standards, skills, workflows, or general guidance as appropriate. Project-specific workflows and directives live at `{USER_AGENTS}/{repo_name}/workflows/` and `{USER_AGENTS}/{repo_name}/directives/` — a same-named file there overrides its generic counterpart for that repo.
-- Keep project-specific instructions isolated in `.agents/project` (team-shared, committable) or `{USER_AGENTS}/{repo_name}/` (per-developer/per-repo, never committed); keep general or reusable instructions isolated in `.agents/standards`, `.agents/skills`, `.agents/workflows`, or `.agents/directives`.
-- **Cross-platform commands**: any instruction file that includes shell commands must either be OS-neutral or provide both PowerShell (Windows) and Bash (macOS/Linux) forms — never assume one shell. Path examples use the `{USER_AGENTS}`/`{REPO_STATE}`/`{REPO_TEMP}` shorthands, resolved per OS in AGENTS.md. All framework filenames use lowercase `.md` extensions, and cross-references must match filename case exactly (Linux filesystems are case-sensitive).
+- Prefer project-specific instructions when they exist for the same scope. If no project-specific instruction exists, fall back to standards, skills, workflows, or general guidance as appropriate. Project-specific workflows and directives live at `{PROJECT_AGENTS}/workflows/` and `{PROJECT_AGENTS}/directives/` — a same-named file there overrides its generic counterpart for that repo.
+- Keep project-specific instructions isolated in `.agents/documentation` (team-shared, committable) or `{PROJECT_AGENTS}/` (project tier — per developer, never committed); keep general or reusable instructions isolated in `.agents/standards`, `.agents/skills`, `.agents/workflows`, or `.agents/directives`.
+- **Cross-platform commands**: any instruction file that includes shell commands must either be OS-neutral or provide both PowerShell (Windows) and Bash (macOS/Linux) forms — never assume one shell. Path examples use the `{USER_AGENTS}`/`{PROJECT_AGENTS}`/`{AGENTS_TEMP}` shorthands, resolved per OS in AGENTS.md. All framework filenames use lowercase `.md` extensions, and cross-references must match filename case exactly (Linux filesystems are case-sensitive).
 - Do not duplicate the same instruction in multiple files. Put the authoritative version in the correct folder and use cross-links from other files.
 - When expanding agentic content, first search for an existing file that already owns the same scope. Update that file instead of creating a parallel instruction.
 - When an agent discovers a repeatable project pattern, developer preference, architectural decision, validation habit, or workflow decision while building, it may propose persisting that learning into the appropriate `.agents` file.
 - The agent must request permission before persisting newly identified project patterns or decision-making rules into `.agents`. The request should name the proposed file, the pattern, the source evidence, and why it is durable enough to preserve.
-- If permission is granted, store project-specific learned patterns in `.agents/project` or capability routing lessons in `.agents/skills`, depending on whether the content is a project fact or a reusable skill adaptation.
+- If permission is granted, store project-specific learned patterns in `.agents/documentation` or capability routing lessons in `.agents/skills`, depending on whether the content is a project fact or a reusable skill adaptation.
 - Do not persist temporary ticket details, secrets, credentials, sensitive data, transient run IDs, or one-off implementation notes into the agent framework.
 
 ## Copy-Paste Prompt
@@ -233,24 +240,36 @@ This framework is not only for reorganizing another repository. It also governs 
 
 Target folder architecture and labels:
 
-The framework uses a split architecture:
+The framework uses a three-tier architecture — user level, project level, repo level — with the same subfolder shape at every tier:
 
-{USER_AGENTS}/                # User-level (shared across all repos)
+{USER_AGENTS}/                # User level (shared across all projects on this machine)
   directives/                 # Mandatory rules: what the agent must obey.
   standards/                  # Quality rules: what good work must look like.
-  skills/                     # Capability routing: which skill/tool/capability applies.
+  skills/                     # Generic, parameterized, self-contained skills + capability routing.
   workflows/                  # Repeatable processes: which steps the agent follows.
+  documentation/              # User-level, author-specific notes tied to no project.
+  project/                    # User-level config: system-wide credentials, env vars, parameters.
   identity.json               # Author name and email.
   preferences.json            # Framework version, update check state.
-  {repo_name}/                # Per-repo persistent state.
-    .local-config.json        # Project credentials.
-    project/tickets/          # Local ticket files.
-    project/board/            # Agile board lanes.
-    temp/                     # Transient data.
+  {PROJECT_NAME}/             # Project level (shared by every repo/branch/worktree of one project)
+    directives/               # Project-specific directives (override user level by name).
+    standards/                # Project-specific standards and naming conventions.
+    workflows/                # Project-specific workflows, incl. skill-helper orchestration.
+    skills/                   # {skill-name}/{SKILL_NAME}_HELPER.md — bridges user-tier skills
+                              # to this project's environments and credentials.
+    documentation/            # Machine-/developer-specific project docs (e.g. meeting notes).
+    project/                  # Project config: .local-config.json (credentials),
+      environments/           # per-environment config (development/uat/staging/production),
+      tickets/                # local ticket files (agile/scrum),
+      board/                  # agile board lanes — accessible from any repo of the project.
 
-{repo}/                       # In each project repo
+{OS temp}/.agents/{PROJECT_NAME}/   # Transient data — in the platform temp dir; the OS owns cleanup.
+
+{repo}/                       # Repo level (committed, shared with the team via git)
   AGENTS.md                   # Router — points to {USER_AGENTS}/ paths.
-  .agents/project/            # Repository facts: what is true about this project.
+  .agents/documentation/      # Team-shared repository facts: what is true about this project.
+  .agents/workflows|skills|directives|standards/   # Optional repo-/feature-specific instructions.
+  .agents/project/            # Non-secret repo config (e.g. persisted PROJECT_NAME). Never credentials.
 
 Folder scope and function:
 
@@ -277,15 +296,18 @@ standards/
   - PMD_APEX_RULESET.md
 
 skills/
-- Capability and routing guidance.
+- Capability and routing guidance, plus the skills themselves.
 - Skill selection, tool-routing, build/development capability guidance, and adaptations of external skill packs or reusable agent capabilities.
 - These files answer: "Which capability should the agent use for this kind of task?"
+- At the user tier, every skill is generic, parameterized, and fully self-contained: its folder carries all instructions, JSON schemas, callout guardrails, samples, documentation, object structures, scripts, auto/manual update instructions, and live repo references, so the skill is independent of any project specification and exportable as-is.
+- At the project tier, a same-named skill folder contains only the implementation helper `{SKILL_NAME}_HELPER.md`, which bridges the user-tier skill's invocables to the project's environments and credentials (`{PROJECT_AGENTS}/project/`). Project-level workflows orchestrate how these helpers are consumed and sequenced.
 - Do not put ordinary process checklists here unless they are truly about selecting or adapting a capability.
 - Put guidance here when the file maps task types to agent skills, tools, plugins, or build/development capabilities.
 - Typical files:
   - SALESFORCE_SKILLS.md
   - LWC_SKILL_ROUTER.md
   - INTEGRATION_SKILL_ROUTER.md
+  - jira-management/SKILL.md (user tier) + jira-management/JIRA_MANAGEMENT_HELPER.md (project tier)
 
 workflows/
 - Repeatable task processes.
@@ -299,15 +321,15 @@ workflows/
   - PULL_REQUEST.md
   - IMPLEMENTATION_PLAN.md
 
-project/
-- Repository-specific facts.
-- Architecture, environment aliases, schema, integrations, glossary, product requirements, technical requirements, UX context, and project-specific assumptions.
+documentation/ (repo level — formerly labelled project/)
+- Team-shared repository facts, committed and shared via git.
+- Architecture, environment matrix, schema, integrations, glossary, product requirements, technical requirements, UX context, and project-specific assumptions.
 - These files answer: "What is true about this project?"
-- Put durable project knowledge here. Do not put generic coding rules here unless the project has a specific override.
+- Put durable project knowledge here. Do not put generic coding rules here unless the project has a specific override. Documentation lives at repo level because it is shared; only machine- or author-specific documents (e.g. meeting notes) belong in the project- or user-tier documentation/ folders instead.
 - Typical files:
   - PROJECT_STRUCTURE.md
   - ARCHITECTURE.md
-  - ENVIRONMENT.md (template only — the live copy is per developer at `{USER_AGENTS}/{repo_name}/project/ENVIRONMENT.md`)
+  - ENVIRONMENT.md (template only — the live copy is per developer at `{PROJECT_AGENTS}/project/ENVIRONMENT.md`)
   - SCHEMA.md
   - INTEGRATIONS.md
   - GLOSSARY.md
@@ -315,6 +337,11 @@ project/
   - PRODUCT_REQUIREMENTS.md
   - TECHNICAL_REQUIREMENTS.md
   - USER_EXPERIENCE.md
+
+project/ (per tier)
+- Configuration, credentials, parameters, and variables scoped to that tier.
+- User tier: system-wide credentials and environment variables unrelated to any one project. Project tier: project connections and credentials (optionally per environment under environments/), this developer's ENVIRONMENT.md, plus the agile tickets/ and board/. Repo tier: non-secret configuration only — credentials are never stored at repo level (sole exception: a plain identifier the user explicitly requested, after a second confirmation in chat).
+- These files answer: "What does this tier connect to, and with which parameters?"
 
 Instruction precedence:
 
@@ -331,7 +358,7 @@ Project-specific instructions take priority over standards, skills, workflows, a
 Naming and labeling rules:
 
 - Keep the root entry file named AGENTS.md.
-- Use lowercase directory names that label the function of the folder: directives, standards, skills, workflows, project.
+- Use lowercase directory names that label the function of the folder: directives, standards, skills, workflows, documentation, project.
 - Use uppercase Markdown file stems for instruction files: AGENT_GUARDRAILS.md, DEVELOPMENT.md, DOCUMENTATION.md.
 - Use one exception only when the user explicitly requests a specific filename; record that exception in AGENTS.md.
 - Use short, descriptive file names based on the file's function, not the current ticket.

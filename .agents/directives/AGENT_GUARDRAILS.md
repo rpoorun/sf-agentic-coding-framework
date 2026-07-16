@@ -58,7 +58,7 @@ Every time a file (Apex class, LWC component, Flow, metadata) is generated or mo
 - If the user asks for analysis only, do not edit files, stage files, commit, deploy, run destructive commands, or modify the org. Deploy validation and org test runs are allowed only if the user explicitly allows verification checks in analysis-only mode.
 - If the user asks whether behavior already exists, answer the current-state question before proposing changes.
 - Use ticket solution tables, refinement sections, and latest comments as authoritative over older summary wording.
-- For this project requirement work, perform the project requirement-validity gate in [SPECIFICATION.md](../project/SPECIFICATION.md) before feasibility analysis or implementation. Treat ambiguous object mappings, wrong data types, and mismatches between client wording and org metadata as blockers to clarify, not details to guess through.
+- For this project requirement work, perform the project requirement-validity gate in [SPECIFICATION.md](../documentation/SPECIFICATION.md) before feasibility analysis or implementation. Treat ambiguous object mappings, wrong data types, and mismatches between client wording and org metadata as blockers to clarify, not details to guess through.
 - Keep unrelated local changes untouched.
 
 ## Source Control Safety
@@ -133,42 +133,42 @@ Usually exclude:
 - `.sf`
 - `.sfdx`
 - debug logs
-- `{REPO_TEMP}` — the resolved temp workspace (see Temp Workspace below)
+- `{AGENTS_TEMP}` — the resolved temp workspace (see Temp Workspace below)
 - coverage output
 - local PMD reports
 - scratch scripts
 - generated package files not requested by the user
-- `{USER_AGENTS}/{repo_name}/.local-config.json` (per-repo credentials — never framework content; see `{USER_AGENTS}/common/templates/.local-config.template.json` for the shape reference)
+- `{PROJECT_AGENTS}/project/.local-config.json` (project-level credentials — never framework content, never committed to any repo; see `{USER_AGENTS}/common/templates/.local-config.template.json` for the shape reference)
 - `{USER_AGENTS}/identity.json` (author name/email — shared across repos, lives outside every repo)
 
 ## Temp Workspace
 
-All transient, intermediate, and retrieved data that should never be committed must go into a writable temp workspace, written as `{REPO_TEMP}` below. The location is resolved using the framework's [layered temp resolution](../../AGENTS.md#layered-resolution):
+All transient, intermediate, and retrieved data that should never be committed must go into a writable temp workspace, written as `{AGENTS_TEMP}` below. Temp data lives in the **operating system's temp directory** — never in the user-level `.agents` folder and never in the repo — so the platform's own cleanup handles transient files and they cannot pollute the durable tiers. The location is resolved using the framework's [layered temp resolution](../../AGENTS.md#layered-resolution):
 
-1. `{USER_AGENTS}/{repo_name}/temp/` — preferred on local developer machines.
-2. Agent-provided writable workspace or platform temp path — for sandboxed/remote agents that cannot write to `{USER_AGENTS}`.
+1. `{OS temp}/.agents/{PROJECT_NAME}/` — the platform temp directory plus the same `.agents/{PROJECT_NAME}/` substructure, irrespective of the system: `%TEMP%\.agents\{PROJECT_NAME}\` on Windows (PowerShell: `Join-Path $env:TEMP ".agents\{PROJECT_NAME}"`), `$TMPDIR/.agents/{PROJECT_NAME}/` on macOS, `${TMPDIR:-/tmp}/.agents/{PROJECT_NAME}/` on Linux.
+2. Agent-provided writable workspace or platform temp path — for sandboxed/remote agents.
 3. Repo-local `.agents/temp/` (gitignored) — fallback when neither of the above is writable.
 
-`{REPO_TEMP}` means "the first writable location in this chain". `{USER_AGENTS}` is `~/.agents/` (Unix) or `%USERPROFILE%\.agents\` (Windows). `{repo_name}` is the basename of `git rev-parse --show-toplevel`. Never assume `{USER_AGENTS}` is writable — probe before writing and fall back gracefully.
+`{AGENTS_TEMP}` means "the first writable location in this chain". `{PROJECT_NAME}` is derived from the git remote URL (see [AGENTS.md](../../AGENTS.md#framework-location)). Because the OS may purge its temp directory at any time (reboot, disk cleanup, retention policies), never store anything in `{AGENTS_TEMP}` that must survive the session — that is by design.
 
-### What belongs in `{REPO_TEMP}`
+### What belongs in `{AGENTS_TEMP}`
 
-- Retrieved org metadata for diff/analysis (e.g. `sf project retrieve start --output-dir {REPO_TEMP}/retrieve-{KEY}`)
+- Retrieved org metadata for diff/analysis (e.g. `sf project retrieve start --output-dir {AGENTS_TEMP}/retrieve-{KEY}`)
 - Dry-deploy output and validation results
 - Coverage reports and PMD scan output
-- Master framework clone during update checks (at `{USER_AGENTS}/temp/framework-update/` on local machines — shared, not per-repo; sandboxed agents use their resolved temp workspace)
+- Master framework clone during update checks (at `{OS temp}/.agents/framework-update/` on local machines — shared, not per-project; sandboxed agents use their resolved temp workspace)
 - Any intermediate files generated during `analyse`, `build`, or `test` workflows
 - API response caches (field metadata, project lists)
 
 ### What does NOT belong in temp
 
-- Credentials, tokens, or secrets (those come from the [credential lookup chain](../../AGENTS.md#layered-resolution); on local machines the default store is `{USER_AGENTS}/{repo_name}/.local-config.json`)
-- Ticket files or board state (those go in `{REPO_STATE}/project/` — see the [per-repo project state chain](../../AGENTS.md#layered-resolution))
+- Credentials, tokens, or secrets (those come from the [credential lookup chain](../../AGENTS.md#layered-resolution); on local machines the default store is `{PROJECT_AGENTS}/project/.local-config.json`)
+- Ticket files or board state (those go in `{PROJECT_AGENTS}/project/` — see the [project state chain](../../AGENTS.md#layered-resolution))
 - Anything the user expects to persist across sessions
 
 ### Cleanup rules
 
-The agent must clean up `{REPO_TEMP}` in the following situations:
+The agent must clean up `{AGENTS_TEMP}` in the following situations:
 
 1. **Before branch checkout** — delete the contents of the temp directory before switching branches to prevent cross-branch contamination.
 2. **Before merge** — delete the contents of the temp directory before merging to ensure no transient data leaks into the merge commit.
@@ -177,10 +177,10 @@ The agent must clean up `{REPO_TEMP}` in the following situations:
 
 ### Folder structure convention
 
-Use descriptive subfolders within `{REPO_TEMP}` to keep operations isolated:
+Use descriptive subfolders within `{AGENTS_TEMP}` to keep operations isolated:
 
 ```
-{REPO_TEMP}/
+{AGENTS_TEMP}/
 ├── retrieve-{KEY}/        # Retrieved org metadata for a specific ticket
 ├── deploy-{KEY}/          # Dry-deploy output for a specific ticket
 ├── coverage/              # Test coverage reports
@@ -198,7 +198,7 @@ When proposing or completing work, be exact:
 
 ## Code Comment Authorship
 
-Generated Apex and LWC comment headers (`@author`/`@last modified by`) must use the configured human author identity, resolved in this order: primary — `{USER_AGENTS}/identity.json` (user-level, shared across repos); secondary — `{REPO_STATE}/project/ENVIRONMENT.md` (per-repo override; template at [ENVIRONMENT.md](../project/ENVIRONMENT.md#author-identity)), only when a repo-specific identity is explicitly configured there. If neither has a value, ask the user just-in-time — see [SALESFORCE_APEX_STANDARDS.md](../standards/SALESFORCE_APEX_STANDARDS.md#author-identity-required) for the full rule. Never attribute generated code comments to an AI model, assistant, or tool (e.g. `OpenAI`, `Anthropic`, `Claude`, `ChatGPT`, `GPT`, `Copilot`, `Gemini`, `AI Assistant`) under any circumstance.
+Generated Apex and LWC comment headers (`@author`/`@last modified by`) must use the configured human author identity, resolved in this order: primary — `{USER_AGENTS}/identity.json` (user-level, shared across repos); secondary — `{PROJECT_AGENTS}/project/ENVIRONMENT.md` (per-project override; template at [ENVIRONMENT.md](../documentation/ENVIRONMENT.md#author-identity)), only when a project-specific identity is explicitly configured there. If neither has a value, ask the user just-in-time — see [SALESFORCE_APEX_STANDARDS.md](../standards/SALESFORCE_APEX_STANDARDS.md#author-identity-required) for the full rule. Never attribute generated code comments to an AI model, assistant, or tool (e.g. `OpenAI`, `Anthropic`, `Claude`, `ChatGPT`, `GPT`, `Copilot`, `Gemini`, `AI Assistant`) under any circumstance.
 
 ## Chat Brevity While Working
 
