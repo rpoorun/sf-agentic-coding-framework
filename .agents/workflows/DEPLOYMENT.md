@@ -2,7 +2,7 @@
 
 ## Purpose And Use
 
-This file owns the repeatable environment-config check, pre-development retrieve, pre-deploy conflict-check, and test-coverage gates for any Salesforce sandbox or org work. Read it before generating new Apex/LWC/metadata, and before running `sf project deploy validate`, `sf project deploy start`, or any dry-run/quick-deploy variant. Put generation-time and deployment-time conflict detection, org/local merge rules, and Apex coverage gates here; put the day-to-day Git/task sequence in [WORKFLOW.md](WORKFLOW.md), and the manual-approval gates for the deploy command itself in [MANUAL_CONFIRMATION_GATES.md](../directives/MANUAL_CONFIRMATION_GATES.md).
+This file owns the repeatable environment-config check, pre-development retrieve, pre-deploy conflict-check, and test-coverage gates for any Salesforce sandbox or org work. Read it before generating new Apex/LWC/metadata, and before running `sf project deploy validate`, `sf project deploy start`, or any dry-run/quick-deploy variant. Put generation-time and deployment-time conflict detection, org/local merge rules, and Apex coverage gates here; put the day-to-day Git/task sequence in [WORKFLOW.md](WORKFLOW.md), the content-quality self-checklist that must pass before a deployment manifest is generated and before any deploy in [DEVELOPMENT_GATE.md](DEVELOPMENT_GATE.md), and the manual-approval gates for the deploy command itself in [MANUAL_CONFIRMATION_GATES.md](../directives/MANUAL_CONFIRMATION_GATES.md).
 
 ## Environment Config Check (Mandatory, Runs First)
 

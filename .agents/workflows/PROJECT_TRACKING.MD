@@ -19,7 +19,7 @@ Every ticket is represented by exactly one Markdown file at `{REPO_STATE}/projec
 
 - The **Jira skill** initialises the file with ticket metadata, description, acceptance criteria, solution, dependencies, and comments.
 - The **`analyse` command** writes the implementation plan, impact assessment, file scope, and test scenarios into the same file.
-- The **`build` command** updates the file with the deployment manifest, pre/post steps, and build status.
+- The **`build` command** updates the file with the deployment manifest, pre/post steps, the Development Gate (Gate A) checklist record, and build status.
 - The **`test` command** writes test results and coverage data to the QA Notes section of the same file.
 - The **`deploy` command** records the deployment outcome and timestamp in the same file.
 - The **`comment` command** reads the same file to compose a review summary.
@@ -36,8 +36,8 @@ When the user says a command followed by a ticket key (e.g. `analyse DTT-115`), 
 | --- | --- | --- |
 | `fetch {KEY}` | Invokes the [Jira fetch workflow](JIRA.MD), then creates/updates the local ticket file and board | [JIRA.MD](JIRA.MD) (API call) |
 | `analyse {KEY}` | Ensures ticket is synced, reads ticket context | [SPECIFICATION.md](../project/SPECIFICATION.md) (requirement validation) → [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) (plan production) |
-| `build {KEY}` | Ensures analysis exists, reads implementation plan from ticket file | Framework standards (code generation) → [DEPLOYMENT.md](DEPLOYMENT.md) (dry deploy + coverage gate) |
-| `deploy {KEY}` | Reads deployment manifest from ticket file, presents to user | [DEPLOYMENT.md](DEPLOYMENT.md) (full deploy with confirmation) |
+| `build {KEY}` | Ensures analysis exists, reads implementation plan from ticket file | Framework standards (code generation) → [DEPLOYMENT.md](DEPLOYMENT.md) (dry deploy + coverage gate) → [DEVELOPMENT_GATE.md](DEVELOPMENT_GATE.md) (Gate A, pre-manifest) |
+| `deploy {KEY}` | Reads deployment manifest from ticket file, presents to user | [DEVELOPMENT_GATE.md](DEVELOPMENT_GATE.md) (Gate B, pre-deploy) → [DEPLOYMENT.md](DEPLOYMENT.md) (full deploy with confirmation) |
 | `test {KEY}` | Reads ticket scope for targeted test run | [DEPLOYMENT.md](DEPLOYMENT.md) (dry deploy) → [TESTING.md](TESTING.md) (test strategy) |
 | `comment {KEY}` | Reads ticket file, composes review comment, outputs to chat | None — self-contained, local-only |
 
@@ -145,7 +145,7 @@ One self-contained Markdown file per ticket:
 
 ## Deployment & Validation Plan
 
-{Populated by the `build` command. Deployment manifest, pre/post steps.}
+{Populated by the `build` command. Deployment manifest, pre/post steps, Development Gate checklist record ([DEVELOPMENT_GATE.md](DEVELOPMENT_GATE.md)).}
 
 ## QA Notes
 
@@ -198,21 +198,23 @@ One self-contained Markdown file per ticket:
    - `sf project deploy start --dry-run` with test execution
    - 95% coverage gate (mandatory)
    - If errors occur, fix locally and re-run
-6. **Build deployment manifest** — save to the ticket file: components, dependencies, deployment order, pre/post manual steps, test classes, expected coverage.
-7. **Stop — do not deploy.** If deployment conflicts were detected, advise the user in chat.
+6. **Run the Development Gate (Gate A)** — complete the self-checklist in [DEVELOPMENT_GATE.md](DEVELOPMENT_GATE.md) for every applicable section, with evidence. Any applicable item that fails blocks manifest generation — fix and re-run the gate first.
+7. **Build deployment manifest** — save to the ticket file: components, dependencies, deployment order, pre/post manual steps, test classes, expected coverage, and the completed Gate A checklist record.
+8. **Stop — do not deploy.** If deployment conflicts were detected, advise the user in chat.
 
 ### `deploy {KEY}`
 
 1. **Read deployment manifest** from the ticket file. If none exists, tell the user to run `build {KEY}` first.
-2. **Present manifest in chat** — components, dependencies, pre-deploy manual steps, post-deploy manual steps, expected test coverage.
-3. **Delegate to [DEPLOYMENT.md](DEPLOYMENT.md)** — execute the full deployment workflow:
+2. **Run the Development Gate (Gate B)** — per [DEVELOPMENT_GATE.md](DEVELOPMENT_GATE.md): re-verify any Gate A item whose subject changed since the manifest was built, and run the Manifest Integrity checks. Any failure blocks the deploy — do not proceed to confirmation.
+3. **Present manifest in chat** — components, dependencies, pre-deploy manual steps, post-deploy manual steps, expected test coverage, and the Gate B result.
+4. **Delegate to [DEPLOYMENT.md](DEPLOYMENT.md)** — execute the full deployment workflow:
    - Environment config check
    - Pre-deploy conflict check
    - User confirmation (required by [MANUAL_CONFIRMATION_GATES.md](../directives/MANUAL_CONFIRMATION_GATES.md))
    - `sf project deploy start` to the default dev org
    - 95% coverage gate
    - Reporting
-4. **Update ticket file** — record deployment outcome, timestamp, and post-deploy observations.
+5. **Update ticket file** — record deployment outcome, timestamp, and post-deploy observations.
 
 ### `test {KEY}`
 

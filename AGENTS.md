@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | Framework | sf-agentic-coding-framework |
-| Version | 0.1.2 |
+| Version | 0.1.3 |
 | Author | Rishikesh Poorun |
 | Master repository | https://github.com/rpoorun/sf-agentic-coding-framework |
 | Last updated | 2026-07-08 |
@@ -102,16 +102,17 @@ All framework files below are at `{USER_AGENTS}/` unless prefixed with `.agents/
 6. [Project structure](.agents/project/PROJECT_STRUCTURE.md) — in this repo
 7. `{USER_AGENTS}/workflows/WORKFLOW.md` — Workflow
 8. `{USER_AGENTS}/workflows/DEPLOYMENT.md` — Deployment workflow
-9. `{USER_AGENTS}/workflows/PULL_REQUEST.md` — Pull request workflow
-10. [Requirement and specification rules](.agents/project/SPECIFICATION.md) — in this repo
-11. `{USER_AGENTS}/standards/SALESFORCE_PROJECT_BEST_PRACTICES.md` — Salesforce project best practices
-12. `{USER_AGENTS}/skills/SALESFORCE_SKILLS.md` — Salesforce skills
-13. `{USER_AGENTS}/standards/SALESFORCE_APEX_STANDARDS.md` — Salesforce Apex standards
-14. `{USER_AGENTS}/standards/PMD_APEX_RULESET.md` — PMD Apex ruleset guide
-15. `{USER_AGENTS}/standards/LEAN_CODE_STANDARDS.md` — Lean code standards
-16. `{USER_AGENTS}/standards/APEX_TRIGGER_FRAMEWORK.md` — Apex trigger framework
-17. `{USER_AGENTS}/standards/APEX_CONSTANTS_FRAMEWORK.md` — Apex constants framework
-18. `{USER_AGENTS}/standards/DOCUMENTATION.md` — Documentation standards
+9. `{USER_AGENTS}/workflows/DEVELOPMENT_GATE.md` — Development gate (pre-manifest / pre-deploy self-checklist)
+10. `{USER_AGENTS}/workflows/PULL_REQUEST.md` — Pull request workflow
+11. [Requirement and specification rules](.agents/project/SPECIFICATION.md) — in this repo
+12. `{USER_AGENTS}/standards/SALESFORCE_PROJECT_BEST_PRACTICES.md` — Salesforce project best practices
+13. `{USER_AGENTS}/skills/SALESFORCE_SKILLS.md` — Salesforce skills
+14. `{USER_AGENTS}/standards/SALESFORCE_APEX_STANDARDS.md` — Salesforce Apex standards
+15. `{USER_AGENTS}/standards/PMD_APEX_RULESET.md` — PMD Apex ruleset guide
+16. `{USER_AGENTS}/standards/LEAN_CODE_STANDARDS.md` — Lean code standards
+17. `{USER_AGENTS}/standards/APEX_TRIGGER_FRAMEWORK.md` — Apex trigger framework
+18. `{USER_AGENTS}/standards/APEX_CONSTANTS_FRAMEWORK.md` — Apex constants framework
+19. `{USER_AGENTS}/standards/DOCUMENTATION.md` — Documentation standards
 
 ## Documentation Layout
 
@@ -221,6 +222,7 @@ All files in this table are at `{USER_AGENTS}/workflows/`.
 | `PROJECT_BOOTSTRAP.md` | First-install: initialises user-level framework directory, per-repo state, and interview (org, VCS, team, release process) that populates `.agents/project/*` when it is still empty boilerplate. |
 | `WORKFLOW.md` | Git workflow, task flow, branch conventions, PR expectations, and release handoff process. |
 | `DEPLOYMENT.md` | Mandatory pre-deploy org-conflict check/merge and the 95% Apex coverage gate for every sandbox/org deploy, dry-run included. |
+| `DEVELOPMENT_GATE.md` | Mandatory content-quality self-checklist run before any deployment manifest is generated (Gate A) and before any deploy is executed (Gate B): naming, descriptions, FLS/access, picklist rules, Apex standards, tests, manifest integrity. |
 | `PULL_REQUEST.md` | Pull request template usage, final commit, back-merge, and review-readiness checklist. |
 | `TESTING.md` | Verification protocols, test commands, mocking strategies, coverage expectations, and acceptance checks. |
 | `IMPLEMENTATION_PLAN.md` | Delivery sequencing, dependency ordering, implementation planning, rollout steps, and open task tracking. |

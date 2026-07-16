@@ -6,6 +6,19 @@ This file records all notable changes to `sf-agentic-coding-framework` in human-
 
 ---
 
+## [0.1.3] — 2026-07-10
+
+### Added
+- **`DEVELOPMENT_GATE.md`** (new workflow file): mandatory content-quality self-checklist executed at two checkpoints — **Gate A** before any deployment manifest is generated (`build {KEY}` step 6) and **Gate B** before any deployment is executed (`deploy {KEY}` step 2, ahead of the manual confirmation request). Covers validation/matching/duplicate rules, new/updated fields, picklist values (new, global-value-set conversion, renamed/deactivated), Apex classes/methods (new, deleted, refactored), Apex test classes, page layouts/Lightning pages, general best practices (scoped staging, no hardcoding, destructive packages), async Apex, and web-service integrations. Every ticked item requires named evidence; non-applicable sections must be marked `N/A` with a reason; any applicable failure blocks manifest generation or deployment. Gate B additionally verifies manifest integrity (manifest matches the working tree and dry-run state, manual pre/post steps acknowledged, destructive changes approved). Coverage items reference the framework's existing 95% gate in `DEPLOYMENT.md`, not the Salesforce 75% platform minimum; language/casing items reference the client-approved convention rather than a hardcoded language.
+
+### Changed
+- `PROJECT_TRACKING.MD` — `build {KEY}` now runs Gate A before building the deployment manifest and saves the completed checklist record into the ticket file; `deploy {KEY}` now runs Gate B (re-verification + manifest integrity) before presenting the manifest and requesting confirmation; command-routing table and ticket-file template updated accordingly.
+- `DEPLOYMENT.md` — Purpose And Use now routes the pre-manifest/pre-deploy content-quality checklist to `DEVELOPMENT_GATE.md`.
+- `PULL_REQUEST.md` — Review-Readiness Gates note that a completed Development Gate record in the ticket file is valid evidence for the overlapping items; only changes made after that record need re-verification.
+- `AGENTS.md` — `DEVELOPMENT_GATE.md` added to the Required Reading Order (after `DEPLOYMENT.md`) and to the Workflow Reference Files table; version bumped to 0.1.3.
+
+---
+
 ## [0.1.2] — 2026-07-08
 
 ### Added
