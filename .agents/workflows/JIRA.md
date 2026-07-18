@@ -6,9 +6,9 @@ This workflow defines the single Jira-facing operation: fetching a ticket from t
 
 This workflow does **not** own local ticket files, the agile board, analysis, implementation, deployment, testing, or comment generation. Those responsibilities belong to [PROJECT_TRACKING.md](PROJECT_TRACKING.md) and the framework's existing workflows.
 
-## Prime Directive — Read-Only
+## Prime Directive — Fetch Is Read-Only
 
-All Jira API calls are HTTP GET. No POST, PUT, PATCH, or DELETE requests to Jira are permitted. The `comment` command in [PROJECT_TRACKING.md](PROJECT_TRACKING.md) generates text locally for manual copy-paste — it does not post to Jira.
+Everything this workflow does is HTTP GET. Write access to Jira (POST/PUT/DELETE) exists only through the [Jira skill](../skills/jira-management/SKILL.md#capability--scoping-model) in installs whose project-tier scope allows it, and every write passes a per-call confirmation gate. In the default read-only scope, the `comment` command in [PROJECT_TRACKING.md](PROJECT_TRACKING.md) generates text locally for manual copy-paste — it does not post to Jira.
 
 ## Ticket Key Recognition
 

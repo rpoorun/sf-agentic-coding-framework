@@ -15,6 +15,7 @@ This file defines actions that require human approval in the current task before
 | Salesforce org config | Switching default org globally, changing dev hub, installing Salesforce CLI plugins, creating scratch orgs, deleting scratch orgs, changing org settings. |
 | Git writes | Commit, push, merge, rebase, branch deletion, tag creation, worktree deletion, reset, restore, checkout that discards changes. |
 | Destructive local actions | Recursive delete, force delete, overwriting tracked files from generated output, deleting generated-but-unreviewed work. |
+| Existing test methods | Refactoring, deleting, renaming, or weakening any existing test class or test method (Prime Directive 10 in [AGENT_GUARDRAILS.md](AGENT_GUARDRAILS.md)) — requires **double validation**: (1) user approval of a consequence analysis listing each affected test method and the business requirement that loses executable coverage, then (2) a separate execution confirmation immediately before the change. Adding new test classes/methods needs no gate. |
 | Dependencies and CI | Package install/update, lockfile rewrite, CI/CD pipeline changes, release automation changes. |
 | Production-like systems | Any write operation against production, pre-production, UAT, client org, shared sandbox, or customer environment. |
 

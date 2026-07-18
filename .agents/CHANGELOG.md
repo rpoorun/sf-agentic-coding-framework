@@ -6,6 +6,28 @@ This file records all notable changes to `sf-agentic-coding-framework` in human-
 
 ---
 
+## [0.2.3] — Unreleased
+
+### Added (Prime Directive 10 — existing test methods are business requirements)
+- **`AGENT_GUARDRAILS.md` — new Prime Directive 10 (user-tier)**: existing test classes and test methods are the executable record of validated business requirements and must **never be refactored, deleted, renamed-away, or weakened** (assertion removal, scenario narrowing, skipping) — silently altering them overrides an accepted requirement. Coverage grows by **adding new test classes/methods** for new or changed requirements, which remains always allowed. When a refactor or deletion of an existing test method is genuinely necessary, a **double validation** is mandatory: (1) user approval of a consequence analysis naming each affected test method, the business requirement/scenario it covers, and exactly what loses executable coverage; (2) a second, separate execution confirmation immediately before the change — one approval never covers both gates, and per-method approval never extends to other methods. Replacement tests are generated first and shown side by side with the old ones in the analysis. A failing test is never "fixed" by editing the test unless the user confirms the requirement itself changed.
+- `MANUAL_CONFIRMATION_GATES.md` — "Existing test methods" row added to the Always Require Confirmation table, pointing at the double-validation gate.
+- `AGENTS.md` — Prime Directive summary updated from nine to ten rules with item 10.
+
+### Changed (jira-management skill rebuilt — v3.0, full API surface with project-tier method scoping)
+- **`jira-management/SKILL.md` rebuilt from the official Jira Cloud platform REST API v3 OpenAPI spec** (`swagger-v3.v3.json`, snapshot 2026-07-17) and Postman collection. The skill is no longer hard-limited to GET: the **user tier documents the full capability** — all 616 operations (275 GET, 134 POST, 118 PUT, 89 DELETE) across 99 resource groups — while each **project-tier install scopes what is actually callable** via `jira.allowed_methods` (any subset of GET/POST/PUT/DELETE, default `["GET"]` read-only) and an optional `jira.allowed_operations` whitelist, optionally segregated per environment. Every in-scope write still passes a per-call manual confirmation gate; DELETE gates add an irreversibility warning; the agent may never widen scope itself — only the user can, via an explicit re-scoping flow.
+- **New skill reference materials** (self-contained support files under `skills/jira-management/`):
+  - `references/api-reference.md` — generated catalog of all 616 operations grouped by resource, with per-group method counts, operation IDs, and experimental/deprecated flags.
+  - `references/setup-guide.md` — step-by-step first-time initialisation from within a repo: credential resolution, connection test, **method-scope selection (new install step)**, prefix discovery, project-tier helper creation, command glossary, re-scoping flow, and troubleshooting.
+  - `references/schema-structure.md` — official documentation links (intro/about, spec + Postman downloads, auth, ADF, pagination, rate limiting), the OpenAPI spec's structure (paths/tags/970 schemas/securitySchemes/`x-experimental`), URL namespaces, API conventions, and the regeneration procedure for keeping the skill current.
+  - `templates/JIRA_MANAGEMENT_HELPER.template.md` — template for the project-tier `{PROJECT_AGENTS}/skills/jira-management/JIRA_MANAGEMENT_HELPER.md` created at install (scope, environments, prefixes, project conventions).
+  - `samples/` — ready-to-adapt request/response JSON (ADF document, `getIssue` response extraction paths, JQL search, create/edit issue, add comment, transition) with per-file endpoint + scope annotations and an index README.
+  - `schemas/jira-config.schema.json` — JSON Schema (draft-07) for the project-tier `jira` config block (`base_url`/`email`/`api_token`/`project_prefixes`/`allowed_methods`/`allowed_operations`).
+  - `scripts/generate-api-reference.py` — stdlib-only regeneration script for `api-reference.md` (`--download` live spec or `--spec` local file); wired into the update procedure in `schema-structure.md`.
+- `JIRA.md` — Prime Directive reframed: the fetch workflow remains GET-only; Jira writes exist only through the skill's project-tier scope with per-call gates.
+- `AGENTS.md` — jira-management rows in Registered Plugins and Skill Reference Files updated to the scoped-capability description.
+
+---
+
 ## [0.2.0] — 2026-07-16
 
 ### Changed (breaking — three-tier architecture)

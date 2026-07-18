@@ -1,0 +1,7 @@
+{
+  "_comment": "Request body for POST /rest/api/3/search/jql (operationId: searchAndReconsileIssuesUsingJqlPost) — the current JQL search endpoint (the older /rest/api/3/search is deprecated). Also usable as query parameters on the GET variant. Paginate with nextPageToken from the response until absent. Strip _comment keys before sending.",
+  "jql": "project = DTT AND sprint in openSprints() AND status != Done ORDER BY priority DESC, updated DESC",
+  "maxResults": 50,
+  "fields": ["summary", "status", "assignee", "priority", "issuetype", "updated"],
+  "expand": ""
+}

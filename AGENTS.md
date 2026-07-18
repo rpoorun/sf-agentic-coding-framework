@@ -3,10 +3,10 @@
 | Field | Value |
 | --- | --- |
 | Framework | sf-agentic-coding-framework |
-| Version | 0.2.0 |
+| Version | 0.2.3 |
 | Author | Rishikesh Poorun |
 | Master repository | https://github.com/rpoorun/sf-agentic-coding-framework |
-| Last updated | 2026-07-16 |
+| Last updated | 2026-07-18 |
 | License | Apache License 2.0 |
 
 ## Framework Location
@@ -178,7 +178,7 @@ Plugins extend the core framework with additional skills, integrations, or workf
 
 | Plugin | Source | Version | Install command | Description |
 | --- | --- | --- | --- | --- |
-| jira-management | https://github.com/rpoorun/sf-agentic-coding-framework | `main` | `install Jira skills` | Read-only Jira Cloud integration: ticket retrieval, ADF parsing, project prefix discovery. Delivers ticket data to the project tracking workflow. |
+| jira-management | https://github.com/rpoorun/sf-agentic-coding-framework | `main` | `install Jira skills` | Jira Cloud REST API v3 integration: full method catalog (GET/POST/PUT/DELETE) documented at the user tier; each project install scopes the callable methods (default read-only). Ticket retrieval, ADF parsing, project prefix discovery, scoped writes behind confirmation gates. |
 
 ### Installation Procedure
 
@@ -237,7 +237,7 @@ All files in this table are at `{USER_AGENTS}/skills/`.
 | File | Intended purpose |
 | --- | --- |
 | `SALESFORCE_SKILLS.md` | Naming convention, synthesis procedure, and routing rules for the `sf-{cloud}-{name}` agent skills. |
-| `jira-management/SKILL.md` | Read-only Jira Cloud API integration: credential setup, ticket retrieval, ADF parsing, and project prefix discovery. Activate on "install Jira skills" or `fetch {KEY}`. Does not own local tracking, analysis, or deployment — those are handled by `{USER_AGENTS}/workflows/PROJECT_TRACKING.md` and the framework's existing workflows. |
+| `jira-management/SKILL.md` | Jira Cloud REST API v3 integration: credential setup, ticket retrieval, ADF parsing, project prefix discovery, and the full 616-operation method catalog (`references/api-reference.md`). Method scope is set per project install (`jira.allowed_methods`, default GET-only); writes require per-call confirmation. Activate on "install Jira skills" or `fetch {KEY}`. Does not own local tracking, analysis, or deployment — those are handled by `{USER_AGENTS}/workflows/PROJECT_TRACKING.md` and the framework's existing workflows. |
 
 ## Workflow Reference Files
 
@@ -274,7 +274,7 @@ All files in this table are at repo-level `.agents/documentation/` — committed
 
 ## Prime Directive
 
-Nine mandatory behavioral rules govern every prompt, every task, every session — defined in full in `{USER_AGENTS}/directives/AGENT_GUARDRAILS.md` (Prime Directives section). In summary:
+Ten mandatory behavioral rules govern every prompt, every task, every session — defined in full in `{USER_AGENTS}/directives/AGENT_GUARDRAILS.md` (Prime Directives section). In summary:
 
 1. **Never execute a prompt verbatim** — interpret intent, not literal words.
 2. **Understand context before acting** — know the problem, the codebase state, and what already exists.
@@ -285,6 +285,7 @@ Nine mandatory behavioral rules govern every prompt, every task, every session �
 7. **Conflict verification before any deploy** — retrieve and diff org state against local source; never overwrite org-side changes without explicit user acknowledgement.
 8. **Persist user decisions** — durable decisions made during a session should be proposed for storage in the appropriate `.agents` file before the session moves on.
 9. **Iteration tracking in memory only** — track how many times each file has been generated or modified in the session; never write iteration numbers into files or file names.
+10. **Existing test methods are business requirements** — never refactor, delete, or weaken an existing test class or test method; add new test classes/methods to cover new requirements instead. Where a refactor or deletion is genuinely necessary, a double validation is required: first user approval of a consequence analysis naming each affected test method and the business requirement that would lose coverage, then a second explicit confirmation before executing.
 
 Make the smallest correct change, preserve unrelated work, and stop for human confirmation before any action that changes an org, shared branch, deployment state, credentials, secrets, production data, or irreversible local state.
 

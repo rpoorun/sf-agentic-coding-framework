@@ -1,0 +1,16 @@
+{
+  "_comment": "Request body for PUT /rest/api/3/issue/{issueIdOrKey} (operationId: editIssue). Requires project-tier scope: PUT. Use 'fields' to overwrite a value, 'update' for granular add/remove/set verbs — do not put the same field in both. Editable fields per issue: GET /rest/api/3/issue/{issueIdOrKey}/editmeta. Strip _comment keys before sending.",
+  "fields": {
+    "summary": "Add upsert path to AccountService (external ID)",
+    "priority": { "name": "High" }
+  },
+  "update": {
+    "labels": [
+      { "add": "sprint-24" },
+      { "remove": "triage" }
+    ],
+    "fixVersions": [
+      { "add": { "name": "2026.08" } }
+    ]
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "sf-agentic-coding-framework/skills/jira-management/jira-config",
+  "title": "jira-management project-tier configuration",
+  "description": "Schema for the 'jira' block the skill owns inside {PROJECT_AGENTS}/project/.local-config.json (and per-environment overrides under {PROJECT_AGENTS}/project/environments/{env}/). api_token is sensitive: never echo it, never commit the file.",
+  "type": "object",
+  "properties": {
+    "jira": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["base_url", "email", "api_token"],
+      "properties": {
+        "base_url": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^https://[^/]+$",
+          "description": "Jira Cloud site root, no trailing slash or path — e.g. https://yourcompany.atlassian.net",
+          "examples": ["https://example.atlassian.net"]
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "Login email paired with the API token for basic auth."
+        },
+        "api_token": {
+          "type": "string",
+          "minLength": 1,
+          "description": "SENSITIVE. Jira API token from https://id.atlassian.com/manage-profile/security/api-tokens. Never echo, log, or commit."
+        },
+        "project_prefixes": {
+          "type": "array",
+          "items": { "type": "string", "pattern": "^[A-Z][A-Z0-9_]*$" },
+          "uniqueItems": true,
+          "description": "Jira project keys recognised as ticket prefixes (e.g. DTT-115). Populated during install step 5.",
+          "examples": [["DTT", "COP"]]
+        },
+        "allowed_methods": {
+          "type": "array",
+          "items": { "enum": ["GET", "POST", "PUT", "DELETE"] },
+          "uniqueItems": true,
+          "default": ["GET"],
+          "description": "Project-tier method scope chosen at install step 4. Missing or empty means [\"GET\"] (read-only) — never 'everything'. Only the user may widen this, via the re-scoping flow."
+        },
+        "allowed_operations": {
+          "type": "array",
+          "items": { "type": "string" },
+          "uniqueItems": true,
+          "default": [],
+          "description": "Optional finer-grained whitelist. Each entry is 'METHOD /path' (e.g. 'POST /rest/api/3/issue/{issueIdOrKey}/comment') or an operationId from references/api-reference.md. When non-empty, a write call must match BOTH allowed_methods and this list. GET is never restricted by this list."
+        }
+      }
+    }
+  },
+  "required": ["jira"]
+}
