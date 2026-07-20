@@ -1,0 +1,24 @@
+{
+  "_comment": "Request body for POST /rest/api/3/issue (operationId: createIssue). Requires project-tier scope: POST. Field availability depends on the create screen — check GET /rest/api/3/issue/createmeta/{projectIdOrKey}/issuetypes/{issueTypeId} first. Strip _comment keys before sending.",
+  "fields": {
+    "project": { "key": "DTT" },
+    "issuetype": { "name": "Story" },
+    "summary": "Add upsert path to AccountService",
+    "description": {
+      "type": "doc",
+      "version": 1,
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [{ "type": "text", "text": "As an integration user I need AccountService to upsert by external ID so that nightly loads stop creating duplicates." }]
+        }
+      ]
+    },
+    "priority": { "name": "Medium" },
+    "labels": ["integration", "nightly-load"],
+    "components": [{ "name": "Services" }],
+    "assignee": { "accountId": "5b10a2844c20165700ede21g" },
+    "customfield_10016": 5
+  },
+  "update": {}
+}

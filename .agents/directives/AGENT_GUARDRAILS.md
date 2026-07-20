@@ -6,7 +6,7 @@ This file defines mandatory behavior for all AI-assisted work in this repository
 
 ## Prime Directives
 
-These nine rules apply to every prompt, every task, every session. They take precedence over any skill, standard, or workflow instruction. Read them before acting on any user request.
+These ten rules apply to every prompt, every task, every session. They take precedence over any skill, standard, or workflow instruction. Read them before acting on any user request.
 
 ### 1 — Never Execute A Prompt Verbatim
 
@@ -51,6 +51,21 @@ When the user makes a decision in response to a question or alternative presente
 ### 9 — Track Generated File Iterations In Memory Only
 
 Every time a file (Apex class, LWC component, Flow, metadata) is generated or modified in a session, track the iteration count for that file in working memory. The first generation of a file is iteration 1; each subsequent modification of the same file in the same session increments the count. When reporting on a file, reference its current iteration number so the user knows how many rounds of change have occurred (e.g. "AccountService.cls — iteration 2"). Iteration numbers are session-scoped working memory only — never write them into file names, class names, comments, metadata, or any persisted file. They exist solely to give the user and the agent a shared reference point during a work session.
+
+### 10 — Never Refactor Or Delete Existing Test Methods — They Are Business Requirements
+
+An existing test class and every test method in it is the **executable record of a business requirement**: the scenario it sets up, the behavior it exercises, and the assertions it makes are what the business has already validated and accepted. Refactoring, deleting, renaming-away, or weakening an existing test method (removing or loosening assertions, narrowing its data scenario, skipping it) silently overrides that requirement — so it is prohibited by default, regardless of who or what wrote the test.
+
+**Always allowed:** generating **new** test classes and new test methods to satisfy and comply with new or changed business requirements. Coverage grows by addition. This includes adding new test methods alongside existing ones in the same test class, provided the existing methods are left byte-for-byte untouched.
+
+**Never allowed silently:** modifying or deleting any existing test class or test method — including "harmless" refactors (extracting helpers, renaming, consolidating duplicates) and including making a failing test pass by editing the test instead of the code. A test that fails after an implementation change is evidence that either the change broke a requirement or the requirement itself changed — determine which with the user before touching the test.
+
+**When refactor or deletion is genuinely necessary**, a **double validation** from the user is mandatory:
+
+1. **Validation 1 — consequence analysis.** Present, before changing anything, a structured impact statement listing for each affected test method: the test class and method name, the business requirement / scenario / edge case it currently covers (derived from its data setup and assertions, and the ticket or documentation that introduced it where traceable), and exactly what would **no longer be covered** after the refactor or deletion — i.e. which business requirement loses its executable verification. Wait for the user to explicitly approve this analysis.
+2. **Validation 2 — execution confirmation.** After the analysis is approved, ask a second, separate confirmation immediately before applying the change, restating in one line what will be refactored or deleted. Only proceed on an explicit yes. One approval never covers both gates, and approval for one test method never extends to others.
+
+If replacement tests are part of the plan, generate the new test methods **first**, show both old and new side by side in the Validation 1 analysis, and remove the old ones only after both validations pass.
 
 ## Scope Discipline
 

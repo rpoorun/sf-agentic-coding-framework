@@ -1,0 +1,59 @@
+{
+  "_comment": "Sample Atlassian Document Format (ADF) body — the structure used by issue descriptions, comment bodies, and worklog comments in Jira Cloud REST API v3. Spec: https://developer.atlassian.com/cloud/jira/platform/apis/document/structure/. Strip _comment keys before sending.",
+  "type": "doc",
+  "version": 1,
+  "content": [
+    {
+      "type": "heading",
+      "attrs": { "level": 2 },
+      "content": [{ "type": "text", "text": "Review summary" }]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "text": "Implementation for " },
+        {
+          "type": "text",
+          "text": "DTT-115",
+          "marks": [{ "type": "link", "attrs": { "href": "https://example.atlassian.net/browse/DTT-115" } }]
+        },
+        { "type": "text", "text": " is " },
+        { "type": "text", "text": "ready for review", "marks": [{ "type": "strong" }] },
+        { "type": "text", "text": ". Ping " },
+        { "type": "mention", "attrs": { "id": "5b10a2844c20165700ede21g", "text": "@Jane Doe" } },
+        { "type": "text", "text": " for the functional check." }
+      ]
+    },
+    {
+      "type": "bulletList",
+      "content": [
+        {
+          "type": "listItem",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                { "type": "text", "text": "AccountService.cls", "marks": [{ "type": "code" }] },
+                { "type": "text", "text": " — new upsert path" }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "listItem",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [{ "type": "text", "text": "Tests at 96% coverage" }]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "codeBlock",
+      "attrs": { "language": "text" },
+      "content": [{ "type": "text", "text": "sf project deploy start --manifest manifest/package.xml --dry-run" }]
+    }
+  ]
+}

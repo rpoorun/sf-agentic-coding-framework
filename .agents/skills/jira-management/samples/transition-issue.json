@@ -1,0 +1,25 @@
+{
+  "_comment": "Request body for POST /rest/api/3/issue/{issueIdOrKey}/transitions (operationId: doTransition). Requires project-tier scope: POST. The transition id comes from GET .../transitions (ids are workflow-specific — never hardcode). 'fields'/'update' entries are only allowed if the transition screen exposes them; the comment below is added as part of the transition. Strip _comment keys before sending.",
+  "transition": { "id": "31" },
+  "fields": {
+    "resolution": { "name": "Done" }
+  },
+  "update": {
+    "comment": [
+      {
+        "add": {
+          "body": {
+            "type": "doc",
+            "version": 1,
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [{ "type": "text", "text": "Deployed to production in release 2026.08 — closing." }]
+              }
+            ]
+          }
+        }
+      }
+    ]
+  }
+}
