@@ -1,0 +1,21 @@
+{
+  "_comment": "Request body for POST /rest/api/3/issue/{issueIdOrKey}/comment (operationId: addComment). Same shape for PUT .../comment/{id} (updateComment). Requires project-tier scope: POST (PUT for update). 'visibility' is optional — omit for a comment everyone can see. Strip _comment keys before sending.",
+  "body": {
+    "type": "doc",
+    "version": 1,
+    "content": [
+      {
+        "type": "paragraph",
+        "content": [
+          { "type": "text", "text": "Build deployed to the dev org and validated — " },
+          { "type": "text", "text": "ready for functional review", "marks": [{ "type": "strong" }] },
+          { "type": "text", "text": ". Manifest and test results attached." }
+        ]
+      }
+    ]
+  },
+  "visibility": {
+    "type": "role",
+    "value": "Developers"
+  }
+}

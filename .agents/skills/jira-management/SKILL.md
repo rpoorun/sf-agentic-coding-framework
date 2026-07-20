@@ -1,10 +1,11 @@
 ---
 name: jira-management
-description: "Read-only Jira Cloud API integration: connect to Jira, fetch ticket details, parse ADF content, and deliver structured ticket data. Activate when the user says 'install Jira skills', 'init Jira', 'fetch jira {KEY}', or mentions a ticket key matching a known project prefix."
+description: "Jira Cloud REST API v3 integration skill: connect to Jira, invoke any of the API's 616 documented operations (GET/POST/PUT/DELETE), parse ADF content, and deliver structured ticket data. Full capability is documented at the user tier; each project-tier install scopes the callable methods (default: GET only). Activate when the user says 'install Jira skills', 'init Jira', 'fetch jira {KEY}', or mentions a ticket key matching a known project prefix."
 metadata:
-  version: "2.0"
+  version: "3.0"
   category: "Integration"
   api: "Jira Cloud REST API v3"
+  api_spec: "swagger-v3.v3.json (OpenAPI 3.0.1)"
 ---
 
 # jira-management: Jira Cloud Integration
@@ -13,38 +14,83 @@ metadata:
 | --- | --- |
 | Skill ID | `jira-management` |
 | Category | Integration |
-| Version | 2.0 |
-| API | Jira Cloud REST API v3 |
+| Version | 3.0 |
+| API | Jira Cloud REST API v3 (`/rest/api/3/`) + Jira Agile v1 (`/rest/agile/1.0/`) |
+| API surface | 616 operations — 275 GET, 134 POST, 118 PUT, 89 DELETE ([full catalog](references/api-reference.md)) |
+| Setup guide | [references/setup-guide.md](references/setup-guide.md) |
+| Schema & links | [references/schema-structure.md](references/schema-structure.md) |
+| Payload samples | [samples/README.md](samples/README.md) |
+| Config schema | [schemas/jira-config.schema.json](schemas/jira-config.schema.json) |
+| Project helper template | [templates/JIRA_MANAGEMENT_HELPER.template.md](templates/JIRA_MANAGEMENT_HELPER.template.md) |
+| Update script | [scripts/generate-api-reference.py](scripts/generate-api-reference.py) |
 
-## Prime Directive
+## Skill Contents (Self-Contained Layout)
 
-**This skill is strictly read-only on the Jira platform.** All Jira API calls must be HTTP GET. No POST, PUT, PATCH, or DELETE requests to Jira are permitted under any circumstances. If the user requests a Jira write action, explain that this skill is read-only and suggest they perform the action manually in Jira.
+Everything the skill needs travels in this folder — no external dependency beyond the Jira API itself:
 
-## Scope
+```
+jira-management/
+├── SKILL.md                                  # this file — capability model, auth, operations, guardrails
+├── references/
+│   ├── api-reference.md                      # generated full catalog: all 616 operations by resource group
+│   ├── setup-guide.md                        # step-by-step first-time install from within a repo
+│   └── schema-structure.md                   # official links, OpenAPI spec structure, update procedure
+├── samples/                                  # ready-to-adapt request/response JSON (see samples/README.md)
+│   ├── adf-document.json                     # ADF body structure
+│   ├── issue-response-extract.json           # getIssue response with standard extraction paths
+│   ├── jql-search.json                       # JQL search body
+│   ├── create-issue.json / edit-issue.json / add-comment.json / transition-issue.json
+│   └── README.md
+├── schemas/
+│   └── jira-config.schema.json               # JSON Schema for the project-tier `jira` config block
+├── scripts/
+│   └── generate-api-reference.py             # regenerates references/api-reference.md from the official spec
+└── templates/
+    └── JIRA_MANAGEMENT_HELPER.template.md    # project-tier helper created at install
+```
+
+## Capability / Scoping Model
+
+This skill follows the framework's two-level skill doctrine (see [Skills across tiers](../../../AGENTS.md#layered-resolution)):
+
+- **User tier (this folder)** — the skill is generic, parameterized, and self-contained. It documents the **entire** Jira Cloud platform REST API v3 capability: every GET, POST, PUT, and DELETE operation ([references/api-reference.md](references/api-reference.md)), authentication, schemas, guardrails, and setup instructions. Nothing here is bound to any project.
+- **Project tier (per install)** — a working invocation exists only after the skill is **installed for a repo/project**. The install creates `{PROJECT_AGENTS}/skills/jira-management/JIRA_MANAGEMENT_HELPER.md` (from the [template](templates/JIRA_MANAGEMENT_HELPER.template.md)) and a `jira` block in `{PROJECT_AGENTS}/project/.local-config.json`. The helper and config define the **scope** of that install: which HTTP methods (and optionally which specific operations) the agent may call for that project.
+
+**Scoping rules:**
+
+1. The effective capability of an install is the **intersection** of this skill's catalog and the project scope. An operation absent from `jira.allowed_methods` / `jira.allowed_operations` is not callable in that project, even though the skill documents it.
+2. **Default scope on install is `["GET"]` (read-only).** Write methods (POST, PUT, DELETE) are enabled only when the user explicitly opts in during setup (or later re-scoping), per repo requirement.
+3. Every **write call** (POST/PUT/DELETE), even when in scope, passes a [manual confirmation gate](#write-operation-gates) before execution — show the method, URL, and payload summary, and wait for approval.
+4. Scope may be **segregated per environment** (`{PROJECT_AGENTS}/project/environments/{dev|uat|staging|production}/`) — e.g. writes allowed against a sandbox Jira project but read-only against production projects.
+5. If the user requests an out-of-scope operation, do not call it. Explain the current scope and offer the re-scoping flow ([setup guide § 7b](references/setup-guide.md#7b--re-scoping-an-existing-install)).
+
+## Scope of Ownership
 
 This skill owns **only** the Jira API connection layer:
 - Credential setup and auth testing
 - Project prefix discovery
-- Ticket retrieval and field extraction
+- Issue retrieval, search (JQL), and field extraction
 - ADF (Atlassian Document Format) parsing
 - Comment and issue link retrieval
+- Scoped write operations (create/update/transition/comment/delete) where the project-tier scope permits them
 
 This skill does **not** own:
 - Local ticket file creation or management → owned by [PROJECT_TRACKING.md](../../workflows/PROJECT_TRACKING.md)
 - Agile board updates → owned by [PROJECT_TRACKING.md](../../workflows/PROJECT_TRACKING.md)
 - Ticket analysis, implementation, deployment, testing → owned by the framework's existing workflows, invoked through [PROJECT_TRACKING.md](../../workflows/PROJECT_TRACKING.md)
-- Comment generation for Jira → owned by [PROJECT_TRACKING.md](../../workflows/PROJECT_TRACKING.md)
+- Deciding *when* a write to Jira is appropriate → owned by the invoking workflow; this skill only executes in-scope, gate-approved calls
 
 ## When to Use
 
-- User says "install Jira skills" or "init Jira"
+- User says "install Jira skills" or "init Jira" → run the [setup guide](references/setup-guide.md)
 - User says `fetch jira {KEY}` or `fetch {KEY}` (once prefixes are known)
 - User asks "what is DTT-115 about?" (implicit fetch)
+- User asks for an in-scope Jira write (e.g. "comment on DTT-115 in Jira", "transition DTT-115 to Done") — only in installs scoped for those methods
 - Another workflow or skill needs raw ticket data from Jira (internal invocation)
 
 ## Ticket Key Recognition
 
-After the install flow discovers project prefixes and stores them in `{USER_AGENTS}/{repo_name}/.local-config.json` under `jira.project_prefixes`, the agent must treat any token matching `{PREFIX}-{number}` (case-insensitive) as a Jira ticket reference. The `jira` keyword is optional:
+After the install flow discovers project prefixes and stores them in `{PROJECT_AGENTS}/project/.local-config.json` under `jira.project_prefixes`, the agent must treat any token matching `{PREFIX}-{number}` (case-insensitive) as a Jira ticket reference. The `jira` keyword is optional:
 
 | User says | Interpreted as |
 | --- | --- |
@@ -59,118 +105,35 @@ Commands that are **not** Jira API operations (`analyse`, `build`, `deploy`, `te
 
 ## Install / Setup Flow
 
-When a user says **"install Jira skills"** or **"init Jira"**:
+The full step-by-step first-time initialisation (run from within a repo) is in **[references/setup-guide.md](references/setup-guide.md)**. Summary:
 
-### Step 1 — Check Existing Credentials (Layered Lookup)
-
-Resolve each of the three required values (`base_url`, `email`, `api_token`) through the [layered credential lookup](#credential-loading), in order:
-
-1. **Secret manager / platform-provided credentials** — if the hosting platform supplies Jira credentials (CI secrets, connector credentials), use them and skip to Step 3. Do not copy them anywhere.
-2. **Environment variables** — check `JIRA_BASE_URL`, `JIRA_EMAIL`, `JIRA_API_TOKEN` (and `JIRA_PROJECT_PREFIXES`). If all three are set, skip to Step 3.
-3. **OS keychain / platform secret store** — if integrated and populated, use it and skip to Step 3.
-4. **Local config file** (local developer machines only) — read `{USER_AGENTS}/{repo_name}/.local-config.json` and inspect the `jira` block, where `{USER_AGENTS}` is `~/.agents/` (Unix) or `%USERPROFILE%\.agents\` (Windows) and `{repo_name}` is the basename of `git rev-parse --show-toplevel`. If the file does not exist **and** `{USER_AGENTS}` is writable (i.e. this is a local developer machine), create it (and the parent directories) from the template. If all three fields are populated, skip to Step 3.
-
-In a hosted/sandboxed environment where none of sources 1–3 provide credentials and `{USER_AGENTS}` is not writable, do **not** create a plaintext config file — proceed to Step 2 for in-session values and recommend the user configure env vars or platform secrets for future sessions.
-
-### Step 2 — Prompt for Missing Values
-
-Ask the user **only** for the values that are still unresolved:
-
-**Jira Base URL** (if blank):
-> What is your Jira Cloud base URL?
-> Example: `https://yourcompany.atlassian.net`
-> This is the URL you see in your browser when using Jira (without `/browse` or other paths).
-
-**Jira Email** (if blank):
-> What email address do you use to log in to Jira?
-> This is typically your work email, e.g. `jane.doe@company.com`.
-
-**Jira API Token** (if blank):
-> Please provide your Jira API token.
-> Generate one at: https://id.atlassian.com/manage-profile/security/api-tokens
-> Click **Create API token**, give it a label (e.g. "Claude Code"), and copy the value.
-> The token will **never** be displayed in chat.
-
-**On local developer machines** (where `{USER_AGENTS}` is writable): write the credentials to `{USER_AGENTS}/{repo_name}/.local-config.json`, creating the directory if needed. **In hosted/sandboxed environments**: keep the values in-session only and recommend the user configure them as env vars (`JIRA_BASE_URL`, `JIRA_EMAIL`, `JIRA_API_TOKEN`) or platform secrets — never write plaintext credentials to an ephemeral or shared filesystem. **Never echo the API token.**
-
-### Step 3 — Test Connection
-
-```
-GET {base_url}/rest/api/3/myself
-```
-
-Report:
-- Success: `Jira connection OK — authenticated as {displayName}`
-- Failure: `Jira connection FAILED — HTTP {status}. Please check your credentials.`
-
-Do not print the response body, auth headers, or token.
-
-### Step 4 — Discover Project Prefixes
-
-```
-GET {base_url}/rest/api/3/project?expand=description&status=live
-```
-
-Extract each project's `key` and `name`. Present them:
-
-> **Discovered Jira projects:**
-> | Project Key | Project Name |
-> | --- | --- |
-> | DTT | Digital Transformation Team |
-> | COP | Customer Operations Platform |
->
-> Ticket references like `DTT-115` or `COP-42` will be recognised automatically.
-
-Store prefixes (non-secret metadata) under `jira.project_prefixes` in `{USER_AGENTS}/{repo_name}/.local-config.json` if that file is in use and writable. If credentials came from env vars or a secret manager and no writable state location exists, keep the prefixes in-session (or suggest setting `JIRA_PROJECT_PREFIXES`).
-
-### Step 5 — Read the Board
-
-Attempt to fetch the active sprint or board:
-
-```
-GET {base_url}/rest/agile/1.0/board?type=scrum
-```
-
-If a board is found, display a summary. If not, skip silently.
-
-### Step 6 — Confirm Setup & Show Command Glossary
-
-> **Jira skills installed successfully.**
->
-> This skill provides **read-only access** to your Jira platform. It will **never modify anything in Jira**. Comments for Jira are generated locally for you to copy-paste manually.
->
-> **Available commands** (examples use your project prefixes):
->
-> | Command | What it does | Handled by |
-> | --- | --- | --- |
-> | `fetch DTT-115` | Pull latest ticket details from Jira, create/update local ticket file | Jira skill → Project tracking |
-> | `analyse DTT-115` | Requirements analysis, org diff, implementation plan | Project tracking → [SPECIFICATION](../../project/SPECIFICATION.md), [IMPLEMENTATION_PLAN](../../workflows/IMPLEMENTATION_PLAN.md) |
-> | `build DTT-115` | Implement locally, build tests, dry deploy, produce manifest | Project tracking → [DEPLOYMENT](../../workflows/DEPLOYMENT.md), [TESTING](../../workflows/TESTING.md) |
-> | `deploy DTT-115` | Show manifest, confirm, deploy to dev org | Project tracking → [DEPLOYMENT](../../workflows/DEPLOYMENT.md) |
-> | `test DTT-115` | Dry deploy with test runs only | Project tracking → [DEPLOYMENT](../../workflows/DEPLOYMENT.md), [TESTING](../../workflows/TESTING.md) |
-> | `comment DTT-115` | Generate review comment for manual paste into Jira | Project tracking |
->
-> All Jira access is read-only. Local file creation and Salesforce org deploys follow the framework's existing confirmation gates.
+1. Resolve credentials via the [layered credential lookup](#credential-loading); prompt only for missing values.
+2. Test the connection (`GET /rest/api/3/myself`).
+3. Discover project prefixes (`GET /rest/api/3/project/search`).
+4. **Scope the install** — ask the user which methods this repo needs; default `["GET"]`.
+5. Create the project-tier helper `{PROJECT_AGENTS}/skills/jira-management/JIRA_MANAGEMENT_HELPER.md` from the [template](templates/JIRA_MANAGEMENT_HELPER.template.md).
+6. Optionally read the board (`GET /rest/agile/1.0/board?type=scrum`).
+7. Confirm setup and show the command glossary.
 
 ## Credential Loading
 
 Credentials are resolved using the framework's [layered credential lookup](../../../AGENTS.md#layered-resolution), in this order:
 
 1. **Hosted/CI secret manager** — platform-provided credentials (e.g. GitHub Actions secrets, Codex connector credentials). Preferred for remote and sandboxed agents.
-2. **Environment variables** — `JIRA_BASE_URL`, `JIRA_EMAIL`, `JIRA_API_TOKEN`, and optionally `JIRA_PROJECT_PREFIXES` (comma-separated). Preferred for containers, CI pipelines, and automation scripts.
+2. **Environment variables** — `JIRA_BASE_URL`, `JIRA_EMAIL`, `JIRA_API_TOKEN`, and optionally `JIRA_PROJECT_PREFIXES` (comma-separated) and `JIRA_ALLOWED_METHODS` (comma-separated). Preferred for containers, CI pipelines, and automation scripts.
 3. **OS keychain / platform secret store** — when available and integrated.
-4. **User-level per-repo config file** — `{USER_AGENTS}/{repo_name}/.local-config.json`. This is the local developer default and stores plaintext credentials for convenience. Acceptable only on local developer machines; hosted agents should use sources 1–3.
+4. **Project-level config file** — `{PROJECT_AGENTS}/project/.local-config.json`. This is the local developer default and stores plaintext credentials for convenience. Acceptable only on local developer machines; hosted agents should use sources 1–3.
 5. **Interactive prompt** — last resort when no credentials are pre-configured.
 
 Where:
 - `{USER_AGENTS}` = `~/.agents/` (Unix) or `%USERPROFILE%\.agents\` (Windows)
-- `{repo_name}` = basename of `git rev-parse --show-toplevel`
+- `{PROJECT_NAME}` = repository name from the git remote URL (e.g. `rehlko-dtt` from `github.com/rpoorun/rehlko-dtt.git`); `{PROJECT_AGENTS}` = `{USER_AGENTS}/{PROJECT_NAME}/`
 
-On local machines, a developer working on `client-a-platform` and `client-b-crm` has separate credentials for each project, both persisting outside the repo. See `_convention.user_level_structure` in `{USER_AGENTS}/common/templates/.local-config.template.json`.
+On local machines, a developer working on `client-a-platform` and `client-b-crm` has separate credentials and separate scopes for each project, both persisting outside the repo. See `_convention.user_level_structure` in `{USER_AGENTS}/common/templates/.local-config.template.json`.
 
 ### Config Shape
 
-The Jira skill owns the `jira` key:
+The Jira skill owns the `jira` key (formal JSON Schema: [schemas/jira-config.schema.json](schemas/jira-config.schema.json)):
 
 ```json
 {
@@ -178,30 +141,35 @@ The Jira skill owns the `jira` key:
     "base_url": "https://example.atlassian.net",
     "email": "user@example.com",
     "api_token": "YOUR_TOKEN",
-    "project_prefixes": ["DTT", "COP"]
+    "project_prefixes": ["DTT", "COP"],
+    "allowed_methods": ["GET"],
+    "allowed_operations": []
   }
 }
 ```
 
 - `api_token` is a **sensitive field** — never echo it or write it to tracked files.
 - `project_prefixes` is populated during install and used for ticket key recognition.
+- `allowed_methods` is the project-tier method scope — any subset of `["GET", "POST", "PUT", "DELETE"]`. Default `["GET"]`. An empty or missing value means `["GET"]`, never "everything".
+- `allowed_operations` (optional, finer grain) — a whitelist of specific operations, each as `"METHOD /path"` (e.g. `"POST /rest/api/3/issue/{issueIdOrKey}/comment"`) or an `operationId` from the [catalog](references/api-reference.md). When non-empty, a write call must match **both** `allowed_methods` and `allowed_operations`. GET is never restricted by this list.
+- Per-environment overrides may live in `{PROJECT_AGENTS}/project/environments/{env}/` using the same shape; the environment's `jira` block wins over the project default when an environment is targeted.
 
 ## Authentication
 
 ### Building the Auth Header
 
-Jira Cloud uses HTTP Basic Auth with email + API token:
+Jira Cloud uses HTTP Basic Auth with email + API token (generate tokens at https://id.atlassian.com/manage-profile/security/api-tokens):
 
 ```
 Authorization: Basic <base64(email:api_token)>
 ```
 
-Load credentials using the [layered credential lookup](#credential-loading) — check env vars and secret managers before falling back to the per-repo config file.
+Load credentials using the [layered credential lookup](#credential-loading) — check env vars and secret managers before falling back to the project-level config file.
 
 On Windows PowerShell:
 ```powershell
 $repoName = Split-Path (git rev-parse --show-toplevel) -Leaf
-$configPath = Join-Path $env:USERPROFILE ".agents\$repoName\.local-config.json"
+$configPath = Join-Path $env:USERPROFILE ".agents\$repoName\project\.local-config.json"
 $config = Get-Content $configPath | ConvertFrom-Json
 $pair = "$($config.jira.email):$($config.jira.api_token)"
 $bytes = [System.Text.Encoding]::UTF8.GetBytes($pair)
@@ -211,13 +179,15 @@ $headers = @{ "Authorization" = "Basic $base64"; "Accept" = "application/json" }
 
 On Bash:
 ```bash
-repo_name=$(basename "$(git rev-parse --show-toplevel)")
-config=$(cat "$HOME/.agents/$repo_name/.local-config.json")
+repo_name=$(basename -s .git "$(git remote get-url origin)")
+config=$(cat "$HOME/.agents/$repo_name/project/.local-config.json")
 base_url=$(echo "$config" | jq -r '.jira.base_url')
 email=$(echo "$config" | jq -r '.jira.email')
 token=$(echo "$config" | jq -r '.jira.api_token')
 auth=$(echo -n "$email:$token" | base64)
 ```
+
+Other auth schemes exist (OAuth 2.0 3LO with granular scopes, Forge/Connect app auth) — see [schema-structure.md](references/schema-structure.md#authentication-schemes). This skill's default is basic auth with an API token; note that Connect (`/rest/atlassian-connect/`) and Forge (`/rest/forge/`) endpoints in the catalog require app auth and are not callable with basic auth.
 
 ### Testing Auth
 
@@ -227,13 +197,23 @@ GET {base_url}/rest/api/3/myself
 
 Report only `OK — authenticated as <displayName>` or `FAILED — HTTP {status}`. Never print auth headers, tokens, or the full response body.
 
-## Retrieving Issues
+## Core Operations (Read)
 
-### Fetch a Single Issue
+These GET operations cover the framework's day-to-day needs and are in scope for every install. The complete list of all 275 GET operations is in the [catalog](references/api-reference.md).
 
-```
-GET {base_url}/rest/api/3/issue/{issueKey}?expand=renderedFields,names
-```
+| Purpose | Call |
+| --- | --- |
+| Auth test / current user | `GET /rest/api/3/myself` |
+| Get issue (with rendered fields) | `GET /rest/api/3/issue/{issueIdOrKey}?expand=renderedFields,names` |
+| Search issues (JQL, paginated) | `GET /rest/api/3/search/jql?jql={jql}&fields={fields}` |
+| List projects (paginated) | `GET /rest/api/3/project/search` |
+| List all fields (find custom fields) | `GET /rest/api/3/field` |
+| Issue comments (paginated) | `GET /rest/api/3/issue/{issueIdOrKey}/comment` |
+| Issue transitions available | `GET /rest/api/3/issue/{issueIdOrKey}/transitions` |
+| Issue watchers | `GET /rest/api/3/issue/{issueIdOrKey}/watchers` |
+| Server info / API health | `GET /rest/api/3/serverInfo` |
+| Boards (Agile API) | `GET /rest/agile/1.0/board?type=scrum` |
+| Active sprint issues | `GET /rest/agile/1.0/board/{boardId}/sprint?state=active` |
 
 ### Standard Fields to Extract
 
@@ -263,20 +243,13 @@ Jira stores custom fields as `customfield_NNNNN`. To find relevant fields:
 GET {base_url}/rest/api/3/field
 ```
 
-Search for fields whose `name` matches (case-insensitive):
-- Acceptance Criteria
-- Solution
-- Rules & Conditions / Rules and Conditions
-- Scope
-- Story Points
-- Requirement
-- Dependency
+Search for fields whose `name` matches (case-insensitive): Acceptance Criteria, Solution, Rules & Conditions / Rules and Conditions, Scope, Story Points, Requirement, Dependency.
 
 Cache the field-ID-to-name mapping for the session. Retrieve non-empty values from the issue.
 
 ### Retrieving Comments
 
-Comments are at `fields.comment.comments[]`. Each has:
+Comments are at `fields.comment.comments[]` (or paginated via `GET /rest/api/3/issue/{issueIdOrKey}/comment`). Each has:
 - `author.displayName`
 - `created`
 - `body` (ADF format — parse the same way as descriptions)
@@ -288,9 +261,41 @@ Issue links are at `fields.issuelinks[]`. Each has:
 - `inwardIssue.key` / `outwardIssue.key`
 - `inwardIssue.fields.summary` / `outwardIssue.fields.summary`
 
+## Common Operations (Write — scope-gated)
+
+Callable **only** when the project-tier scope includes the method (and the operation, if `allowed_operations` is set), and **always** behind a [write gate](#write-operation-gates). The complete write catalog (134 POST, 118 PUT, 89 DELETE) is in the [catalog](references/api-reference.md).
+
+| Purpose | Call | Scope needed |
+| --- | --- | --- |
+| Create issue | `POST /rest/api/3/issue` | POST |
+| Add comment | `POST /rest/api/3/issue/{issueIdOrKey}/comment` | POST |
+| Transition issue (status change) | `POST /rest/api/3/issue/{issueIdOrKey}/transitions` | POST |
+| Edit issue fields | `PUT /rest/api/3/issue/{issueIdOrKey}` | PUT |
+| Assign issue | `PUT /rest/api/3/issue/{issueIdOrKey}/assignee` | PUT |
+| Update comment | `PUT /rest/api/3/issue/{issueIdOrKey}/comment/{id}` | PUT |
+| Link two issues | `POST /rest/api/3/issueLink` | POST |
+| Add worklog | `POST /rest/api/3/issue/{issueIdOrKey}/worklog` | POST |
+| Add attachment | `POST /rest/api/3/issue/{issueIdOrKey}/attachments` | POST |
+| Delete comment | `DELETE /rest/api/3/issue/{issueIdOrKey}/comment/{id}` | DELETE |
+| Delete issue | `DELETE /rest/api/3/issue/{issueIdOrKey}` | DELETE |
+
+Request bodies for descriptions and comments use ADF (`{"body": {"type": "doc", "version": 1, "content": [...]}}`) — see [ADF](#parsing-adf-atlassian-document-format) and the [schema reference](references/schema-structure.md).
+
+### Write-Operation Gates
+
+Per [MANUAL_CONFIRMATION_GATES.md](../../directives/MANUAL_CONFIRMATION_GATES.md), before **any** POST/PUT/DELETE to Jira:
+
+1. Verify the method (and operation, when `allowed_operations` is non-empty) is within the install's scope. Out of scope → refuse and offer [re-scoping](references/setup-guide.md#7b--re-scoping-an-existing-install).
+2. Show the user: HTTP method, full URL (no auth), and a human-readable summary of the payload (e.g. the comment text, the fields being changed, the target status).
+3. Wait for explicit confirmation in chat. One confirmation covers one call — never batch-approve.
+4. `DELETE` calls additionally state what is destroyed and that it may be irreversible.
+5. Report the outcome (HTTP status, resulting key/ID) without the raw response body.
+
+In a **read-only install** (default scope `["GET"]`), the `comment DTT-115` command keeps its historical behaviour: generate the comment text locally for the user to paste into Jira manually.
+
 ## Parsing ADF (Atlassian Document Format)
 
-Jira Cloud descriptions and comments use ADF, a JSON tree. Parse recursively:
+Jira Cloud descriptions and comments use ADF, a JSON tree (spec: https://developer.atlassian.com/cloud/jira/platform/apis/document/structure/). Parse recursively:
 
 ```
 function parseADF(node):
@@ -321,20 +326,37 @@ function parseADF(node):
   default: recurse into node.content
 ```
 
+When **writing** ADF (comments, descriptions in write-scoped installs), build the same structure in reverse: wrap plain text in `{"type": "doc", "version": 1, "content": [{"type": "paragraph", "content": [{"type": "text", "text": "..."}]}]}`.
+
+## Full API Reference
+
+The complete, generated catalog of all **616 operations** grouped into 99 resource groups is in **[references/api-reference.md](references/api-reference.md)**:
+
+| Method | Count | Typical use |
+| --- | ---: | --- |
+| GET | 275 | Read issues, projects, fields, users, boards, configuration |
+| POST | 134 | Create issues/comments/links/worklogs, transitions, bulk operations, JQL search |
+| PUT | 118 | Update issues, fields, configuration, properties |
+| DELETE | 89 | Remove issues, comments, links, properties, configuration |
+
+How the OpenAPI spec is organised (paths, 970 component schemas, OAuth2 scopes, pagination, `x-experimental` markers) and all official documentation links are in **[references/schema-structure.md](references/schema-structure.md)**.
+
 ## Error Handling
 
-- Auth failures: report HTTP status only, suggest re-checking credentials
+- Auth failures (401/403): report HTTP status only, suggest re-checking credentials
 - 404 on ticket: report that the key was not found
-- Rate limiting (429): report and suggest waiting
+- 400 on writes: report the `errors`/`errorMessages` field names from the response (they are safe), not the full body
+- Rate limiting (429): honour `Retry-After` when present; report and suggest waiting (see [rate limiting](references/schema-structure.md#official-links))
 - Network errors: report the error type, not raw stack traces
 - **Never** include auth headers or tokens in error messages
-- **Never** retry with modified HTTP methods — all Jira calls are GET only
+- **Never** retry a failed call with a different HTTP method or a broadened scope — scope is fixed by the project tier, not by error recovery
 
 ## Security Rules
 
 - **Never** print auth headers, Basic auth strings, or API tokens in chat or files
 - **Never** store raw API tokens in tracked (committed) files
-- **Never** make POST, PUT, PATCH, or DELETE requests to the Jira API
+- **Never** make a POST, PUT, PATCH, or DELETE request outside the install's project-tier scope — and never any write without its [confirmation gate](#write-operation-gates)
+- **Never** widen `allowed_methods` yourself — only the user can re-scope, via the [re-scoping flow](references/setup-guide.md#7b--re-scoping-an-existing-install)
 - **Never** include raw sensitive payloads in local ticket files
 - Sanitize error responses before displaying (remove auth details)
 - All credential files live under `{USER_AGENTS}/` (outside the repo) and are inherently untracked — never copy them into a repo or commit their contents

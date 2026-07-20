@@ -4,7 +4,7 @@
 
 This file documents durable local environment and Salesforce org alias facts for this project. Read it before running org reads, validation, retrieve, deploy, or environment-specific analysis. Put verified aliases, environment purpose, local setup notes, secrets-handling constraints, and bootstrap rules here; never put tokens, credentials, personal email addresses, or org URLs containing client-identifying details here.
 
-**Live location — user-level, per developer**: the working copy of this file lives at `{REPO_STATE}/project/ENVIRONMENT.md` (on local machines: `{USER_AGENTS}/{repo_name}/project/ENVIRONMENT.md`) — outside the repo, so it persists across branches and stays personal. Environment details are **per developer**: each developer's org access, aliases, and auth status differ, so each developer fills in their own copy during bootstrap rather than inheriting another developer's. This file in the repo (`.agents/project/ENVIRONMENT.md`) is the **boilerplate template** that bootstrap copies to the user level.
+**Live location — user-level, per developer**: the working copy of this file lives at `{PROJECT_AGENTS}/project/ENVIRONMENT.md` (on local machines: `{PROJECT_AGENTS}/project/ENVIRONMENT.md`) — outside the repo, so it persists across branches and stays personal. Environment details are **per developer**: each developer's org access, aliases, and auth status differ, so each developer fills in their own copy during bootstrap rather than inheriting another developer's. This file in the repo (`.agents/documentation/ENVIRONMENT.md`) is the **boilerplate template** that bootstrap copies to the user level.
 
 This is a boilerplate template. Replace every `{client}` and `{project}` placeholder in the user-level copy with the actual values for this installation, then fill in the "Connected Orgs" table with verified facts. Do not commit real client names, org URLs, or usernames back to the master framework repository — see [AGENTIC_FRAMEWORK.md](../directives/AGENTIC_FRAMEWORK.md#sanitizing-instructions-before-any-master-framework-contribution).
 
@@ -16,7 +16,7 @@ Used as the `@author`/`@last modified by` value in every generated Apex and LWC 
 
 **Primary store (user-level, preferred):** `{USER_AGENTS}/identity.json` — `author_name` and `author_email`. This file lives outside the repo at `~/.agents/` (Unix) or `%USERPROFILE%\.agents\` (Windows) and is shared across all repos on this machine. The agent must check here first.
 
-**Secondary store (per-repo override):** the table below in the user-level copy of this file (`{REPO_STATE}/project/ENVIRONMENT.md`). Use this when a specific project needs a different author identity than the machine-wide default — e.g. a client-specific email. Leave blank to use `identity.json` for this repo.
+**Secondary store (per-project override):** the table below in the user-level copy of this file (`{PROJECT_AGENTS}/project/ENVIRONMENT.md`). Use this when a specific project needs a different author identity than the machine-wide default — e.g. a client-specific email. Leave blank to use `identity.json` for this project.
 
 Resolution order: if `{USER_AGENTS}/identity.json` has a non-empty `author_name`, use it. Otherwise fall back to the user-level copy of this file. If both are blank, ask the user for the identity before generating the first class/method comment header in the session, then ask separately whether to persist it to `identity.json` (user-level, shared across repos) or the user-level copy of this file (this repo only).
 

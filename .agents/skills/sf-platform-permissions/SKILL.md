@@ -23,6 +23,7 @@ metadata:
 ## When to Use This Skill
 
 Use when generating or editing permission set metadata, or when granting object, field, user, and app permissions. Also use this skill when `sf-platform-apex` asks the user which Permission Set should receive Apex Class Access for a newly generated top-level class, and the user names a Permission Set (or, less recommended, a Profile) — apply the access grant via this skill rather than hand-editing the class metadata.
+Use this skill whenever newly generated metadata needs to be reachable by different personas through profile, permission set, or permission set group access. If the access path is unclear, ask before generating final metadata. See `sf-platform-metadata-access`.
 
 ## Step 1: Define Core Properties
 
@@ -55,6 +56,12 @@ Add CRUD permissions for standard and custom objects:
     <object>Account</object>
 </objectPermissions>
 ```
+
+## Step 2b: Confirm Metadata Accessibility
+
+When a new custom object or custom metadata type is being introduced, confirm who must be able to read, create, edit, or assign it. Ask whether that access should come from a profile, permission set, or permission set group. If the access path is not already known, prompt the user before generating deployable access metadata.
+
+This is especially important for custom metadata types that ship with records: if the type itself is not granted, the deployment can succeed while the target users still cannot edit or create records in the target org.
 
 ## Step 3: Set Field-Level Security
 

@@ -6,9 +6,9 @@ This workflow defines the single Jira-facing operation: fetching a ticket from t
 
 This workflow does **not** own local ticket files, the agile board, analysis, implementation, deployment, testing, or comment generation. Those responsibilities belong to [PROJECT_TRACKING.md](PROJECT_TRACKING.md) and the framework's existing workflows.
 
-## Prime Directive — Read-Only
+## Prime Directive — Fetch Is Read-Only
 
-All Jira API calls are HTTP GET. No POST, PUT, PATCH, or DELETE requests to Jira are permitted. The `comment` command in [PROJECT_TRACKING.md](PROJECT_TRACKING.md) generates text locally for manual copy-paste — it does not post to Jira.
+Everything this workflow does is HTTP GET. Write access to Jira (POST/PUT/DELETE) exists only through the [Jira skill](../skills/jira-management/SKILL.md#capability--scoping-model) in installs whose project-tier scope allows it, and every write passes a per-call confirmation gate. In the default read-only scope, the `comment` command in [PROJECT_TRACKING.md](PROJECT_TRACKING.md) generates text locally for manual copy-paste — it does not post to Jira.
 
 ## Ticket Key Recognition
 
@@ -32,7 +32,7 @@ Commands other than `fetch` (`analyse`, `build`, `deploy`, `test`, `comment`) ar
    Check if the branch name contains the ticket key.
 
 2. **Load Jira config**
-   Resolve credentials using the [layered credential lookup](../skills/jira-management/SKILL.md#credential-loading): secret manager → env vars (`JIRA_BASE_URL`, `JIRA_EMAIL`, `JIRA_API_TOKEN`) → OS keychain → `{USER_AGENTS}/{repo_name}/.local-config.json` (local machines only) → interactive prompt. If no source yields complete credentials, run the install flow (see [SKILL.md Install / Setup Flow](../skills/jira-management/SKILL.md#install--setup-flow)).
+   Resolve credentials using the [layered credential lookup](../skills/jira-management/SKILL.md#credential-loading): secret manager → env vars (`JIRA_BASE_URL`, `JIRA_EMAIL`, `JIRA_API_TOKEN`) → OS keychain → `{PROJECT_AGENTS}/project/.local-config.json` (local machines only) → interactive prompt. If no source yields complete credentials, run the install flow (see [SKILL.md Install / Setup Flow](../skills/jira-management/SKILL.md#install--setup-flow)).
 
 3. **Test auth** (first call in session or after a failure)
    ```

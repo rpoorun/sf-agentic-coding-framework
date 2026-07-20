@@ -34,6 +34,7 @@ Use this skill when you need to:
 - Set up object features and capabilities
 - Troubleshoot deployment errors related to custom objects
 - **Add, update, or delete a field OR a validation rule on an existing object** — any of these may make the object's `<description>` stale, so you must refresh it (propose + confirm). This applies equally to validation-rule changes, not just fields. See Section 3.B.
+- When a new object or related setup metadata will be used by multiple personas, first ask which profiles or permission sets will grant access so the generated metadata is not deployable-but-inaccessible. Use `sf-platform-metadata-access` for that confirmation step.
 
 ## Specification
 
@@ -131,6 +132,8 @@ The agent must choose which features to enable based on the object's intended us
 **`<description>`**: **Mandatory** — every Custom Object MUST have one. It must read like human-written documentation, **never** a generic template ("Object used to track and manage...") or a metadata dump ("Contains 8 fields including `Project_Name__c`...").
 
 **Always compose an enriched description** — when creating the object, and again on **any** change to it: adding, updating, or deleting a field **or a validation rule** (so it never goes stale). The change — field or validation rule — is never "done" until you've refreshed the object's description. This is not optional; do not ask *whether* to add a description.
+
+Before generating a new custom object that will be used by different personas or roles, stop long enough to identify the intended access path. Ask whether the right users can reach it through profile, permission set, or permission set group, and if not, surface that gap before outputting final metadata. The object is not finished until both its schema and its access path have been thought through.
 
 **Confirm per change — every time.** Propose and confirm on **each** field/rule change separately. A previous "keep current" applies **only** to that one change; it is **never** standing permission to skip the proposal on a later change. Do not infer a preference from an earlier answer — re-propose and re-ask for every new change.
 
@@ -1439,6 +1442,7 @@ force-app/main/default/
 - Permission Set Groups **recalculate asynchronously** — changes may take minutes to apply
 - Custom Metadata Type records **cannot be created/updated via DML in production** — deploy only
 - Profiles are **notoriously merge-conflict-prone** — prefer Permission Sets for everything
+- New metadata can still be unusable if access is not planned. Before shipping a new object or setup surface, confirm which personas can actually reach it.
 
 ## References
 - [Schema Reference](references/schema-reference.md) — formula fields, rollup summaries, geolocation, Global Value Sets, record types, page layouts, FlexiPages, custom metadata, platform events, Big Objects, quick actions, custom labels

@@ -84,6 +84,7 @@ PMD and security gates do not disappear because a skill suggests a faster path.
 | Metadata deploy, retrieve, validation, CI/CD, package.xml, rollback | `sf-platform-deploy` | Dry-runs, validations, and Apex test runs are allowed verification actions; real deploys still require confirmation. Keep scope manifest-based or source-dir targeted. |
 | Salesforce data create/update/delete/import/export, bulk operations, migration | `sf-platform-data` | Default to script generation unless the user explicitly asks for remote execution; remote org data writes require confirmation and cleanup guidance. |
 | Custom object/field/tab/application metadata, schema scaffolding | `sf-platform-schema` | Follow [Org] naming, descriptions, help text, domain prefixes, and required client translation behavior. |
+| Metadata accessibility planning for personas, profile/permission set alignment | `sf-platform-metadata-access` | Ask who must use the generated metadata and whether the access path ships with it. |
 | Custom Lightning Types (Einstein/Agentforce action schemas) | `sf-platform-clt` | Use only when the task explicitly involves CLTs, widget renditions, or agent action input/output schemas. |
 | Lightning pages and FlexiPages | `sf-platform-flexipage` | Bootstrap or edit with valid Salesforce structure; do not handcraft broad XML unless editing a known existing file. |
 | List views | `sf-platform-listview` | Match existing filter/column conventions; confirm visibility (owner/all users) before widening. |
