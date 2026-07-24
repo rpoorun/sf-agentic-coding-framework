@@ -126,6 +126,15 @@ When generating the "baseline" (no skills) code, you MUST intentionally produce 
 
 This is NOT about writing bad code on purpose — it's about writing code the way a generic AI would without Salesforce domain expertise. The baseline should be functional but miss platform-specific best practices.
 
+## Agentic Skill Evaluation
+
+For generic, non-Salesforce skill quality work, delegate to [agentic-skill-eval](../agentic-skill-eval/SKILL.md). Use this skill when the benchmark task, rubric, or generated output is Salesforce-specific; use `agentic-skill-eval` for cross-model comparisons, reusable skill-quality criteria, prompt-context sensitivity, or methodology benchmarks adapted from `garrytan/gstack`.
+
+When evaluating this framework's Salesforce skills, combine both layers:
+
+- `sf-meta-eval` owns Salesforce correctness scoring: security, governor limits, bulkification, patterns, completeness.
+- `agentic-skill-eval` owns skill ergonomics scoring: activation clarity, evidence requirements, routing quality, failure modes, and transferability.
+
 ## References
 - [Benchmark Tasks](../../evals/benchmarks/tasks.json) — 15 evaluation tasks
 - [Scoring Rubric](../../evals/benchmarks/rubric.md) — 25-point quality rubric

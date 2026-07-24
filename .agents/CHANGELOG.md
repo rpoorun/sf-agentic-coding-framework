@@ -6,6 +6,27 @@ This file records all notable changes to `sf-agentic-coding-framework` in human-
 
 ---
 
+## [0.3.0] — 2026-07-23
+
+### Added (generic agentic skill family synthesized from gstack)
+- `AGENTIC_SKILLS.md` — new router, naming convention, source attribution, and mapping table for reusable `agentic-{name}` skills installed at the user tier.
+- New `agentic-*` skills: `agentic-requirement-discovery`, `agentic-plan-review`, `agentic-code-review`, `agentic-root-cause`, `agentic-design-review`, `agentic-devex-review`, `agentic-qa`, `agentic-documentation`, `agentic-context-handoff`, `agentic-diagram`, and `agentic-skill-eval`.
+- `SESSION_HANDOFF.md` — new workflow for context-save, context-restore, durable learning, retro, and handoff capture.
+
+### Changed (workflow, safety, review, QA, documentation)
+- `AGENTIC_FRAMEWORK.md` now documents `garrytan/gstack` as an MIT source, the non-Salesforce `agentic-{name}` synthesis convention, and lower-fit exclusions that must not be imported as standalone framework content.
+- `AGENT_GUARDRAILS.md`, `MANUAL_CONFIRMATION_GATES.md`, and `TRUST_DATA_SECURITY.md` now include scoped session safety modes, clearer destructive/branch/deploy/production gates, and prompt/memory hygiene for persisted learnings.
+- `WORKFLOW.md`, `IMPLEMENTATION_PLAN.md`, `DEVELOPMENT_GATE.md`, `TESTING.md`, `PULL_REQUEST.md`, and `DEPLOYMENT.md` now include requirement-discovery, plan-review, QA/regression/canary, code-review, ship-readiness, post-deploy health, rollback visibility, and landing-report checkpoints.
+- `DOCUMENTATION.md` adds Diataxis-style document selection and release-doc update rules while preserving source verification as the hard gate.
+- `LEAN_CODE_STANDARDS.md` adds root-cause-before-fix, review skepticism, scope reduction, and "do less better" guidance.
+- `SALESFORCE_SKILLS.md` and selected `sf-*` skills now cross-route to the new `agentic-*` skills where useful without overriding Salesforce metadata, security, or deploy authority.
+- `AGENTS.md` and `README.md` updated to version `0.3.0` with new skill/workflow references and gstack attribution.
+
+### Excluded
+- No gstack runtime code, browser daemon code, iOS tooling, setup scripts, raw slash-command folders, generated `.tmpl` files, Bun lockfiles, browser binaries, or temp clone content were vendored into this framework.
+
+---
+
 ## [0.2.3] — Unreleased
 
 ### Added (Prime Directive 10 — existing test methods are business requirements)

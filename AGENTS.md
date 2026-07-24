@@ -3,10 +3,10 @@
 | Field | Value |
 | --- | --- |
 | Framework | sf-agentic-coding-framework |
-| Version | 0.2.3 |
+| Version | 0.3.0 |
 | Author | Rishikesh Poorun |
 | Master repository | https://github.com/rpoorun/sf-agentic-coding-framework |
-| Last updated | 2026-07-18 |
+| Last updated | 2026-07-23 |
 | License | Apache License 2.0 |
 
 ## Framework Location
@@ -102,6 +102,7 @@ Never assume `{USER_AGENTS}` is writable — probe before writing and fall back 
 - For Salesforce source work, read [Project structure](.agents/documentation/PROJECT_STRUCTURE.md), `{USER_AGENTS}/standards/SALESFORCE_PROJECT_BEST_PRACTICES.md`, and the relevant workflow file.
 - For Apex work, read `{USER_AGENTS}/standards/SALESFORCE_APEX_STANDARDS.md` and `{USER_AGENTS}/standards/PMD_APEX_RULESET.md`.
 - For tool or skill routing, read `{USER_AGENTS}/skills/SALESFORCE_SKILLS.md`.
+- For generic agentic methods such as requirement discovery, plan review, QA, context handoff, diagrams, documentation, or skill evaluation, read `{USER_AGENTS}/skills/AGENTIC_SKILLS.md`.
 - For writing or updating project technical documentation (`docs/` describing implemented Apex, LWC, or config), read `{USER_AGENTS}/standards/DOCUMENTATION.md` first — never document anything without verifying it against source per that file.
 - For Jira setup or ticket fetching, read `{USER_AGENTS}/skills/jira-management/SKILL.md` and `{USER_AGENTS}/workflows/JIRA.md`. For local ticket management, agile board, and ticket-scoped commands (`analyse`, `build`, `deploy`, `test`, `comment`), read `{USER_AGENTS}/workflows/PROJECT_TRACKING.md` — it routes to the framework's existing workflows. To install Jira, follow the Install / Setup Flow in the Jira skill.
 
@@ -122,12 +123,13 @@ All framework files below are at `{USER_AGENTS}/` unless prefixed with `.agents/
 11. [Requirement and specification rules](.agents/documentation/SPECIFICATION.md) — in this repo
 12. `{USER_AGENTS}/standards/SALESFORCE_PROJECT_BEST_PRACTICES.md` — Salesforce project best practices
 13. `{USER_AGENTS}/skills/SALESFORCE_SKILLS.md` — Salesforce skills
-14. `{USER_AGENTS}/standards/SALESFORCE_APEX_STANDARDS.md` — Salesforce Apex standards
-15. `{USER_AGENTS}/standards/PMD_APEX_RULESET.md` — PMD Apex ruleset guide
-16. `{USER_AGENTS}/standards/LEAN_CODE_STANDARDS.md` — Lean code standards
-17. `{USER_AGENTS}/standards/APEX_TRIGGER_FRAMEWORK.md` — Apex trigger framework
-18. `{USER_AGENTS}/standards/APEX_CONSTANTS_FRAMEWORK.md` — Apex constants framework
-19. `{USER_AGENTS}/standards/DOCUMENTATION.md` — Documentation standards
+14. `{USER_AGENTS}/skills/AGENTIC_SKILLS.md` — generic agentic skill router
+15. `{USER_AGENTS}/standards/SALESFORCE_APEX_STANDARDS.md` — Salesforce Apex standards
+16. `{USER_AGENTS}/standards/PMD_APEX_RULESET.md` — PMD Apex ruleset guide
+17. `{USER_AGENTS}/standards/LEAN_CODE_STANDARDS.md` — Lean code standards
+18. `{USER_AGENTS}/standards/APEX_TRIGGER_FRAMEWORK.md` — Apex trigger framework
+19. `{USER_AGENTS}/standards/APEX_CONSTANTS_FRAMEWORK.md` — Apex constants framework
+20. `{USER_AGENTS}/standards/DOCUMENTATION.md` — Documentation standards
 
 ## Documentation Layout
 
@@ -237,6 +239,7 @@ All files in this table are at `{USER_AGENTS}/skills/`.
 | File | Intended purpose |
 | --- | --- |
 | `SALESFORCE_SKILLS.md` | Naming convention, synthesis procedure, and routing rules for the `sf-{cloud}-{name}` agent skills. |
+| `AGENTIC_SKILLS.md` | Naming convention, synthesis procedure, attribution, routing rules, and mapping table for generic `agentic-{name}` skills synthesized from reusable gstack methods. |
 | `jira-management/SKILL.md` | Jira Cloud REST API v3 integration: credential setup, ticket retrieval, ADF parsing, project prefix discovery, and the full 616-operation method catalog (`references/api-reference.md`). Method scope is set per project install (`jira.allowed_methods`, default GET-only); writes require per-call confirmation. Activate on "install Jira skills" or `fetch {KEY}`. Does not own local tracking, analysis, or deployment — those are handled by `{USER_AGENTS}/workflows/PROJECT_TRACKING.md` and the framework's existing workflows. |
 
 ## Workflow Reference Files
@@ -254,6 +257,7 @@ All files in this table are at `{USER_AGENTS}/workflows/`.
 | `IMPLEMENTATION_PLAN.md` | Delivery sequencing, dependency ordering, implementation planning, rollout steps, and open task tracking. |
 | `JIRA.md` | Jira fetch workflow: the single Jira-facing operation that retrieves a ticket and delivers parsed data to project tracking. |
 | `PROJECT_TRACKING.md` | Local ticket management: ticket files at `{PROJECT_AGENTS}/project/tickets/`, agile board, and ticket-scoped command routing (`analyse`, `build`, `deploy`, `test`, `comment`) that delegates to the framework's existing workflows. |
+| `SESSION_HANDOFF.md` | Context-save, context-restore, durable learning, retro, and handoff workflow for preserving session state without copying secrets or transient noise. |
 
 ## Documentation Reference Files (Repo Level)
 
@@ -335,6 +339,7 @@ This framework's skills and standards content is built by synthesizing, refactor
 | [Clientell-Ai/salesforce-skills](https://github.com/Clientell-Ai/salesforce-skills) | Clientell | Secondary/merged source for the same skills above (`sf-apex`, `sf-test`, `sf-flow`, `sf-lwc`, `sf-soql`, `sf-deploy`, `sf-data`, `sf-schema`, `sf-debug`, `sf-agentforce`, `sf-permissions`, `sf-integration`, `sf-docs`, `sf-diagram`, `sf-omnistudio`, `sf-find`, `sf-eval`, `sf-security`) — merged into the same synthesized skills, plus the sole source for `sf-security-audit`. |
 | [DietrichGebert/ponytail](https://github.com/DietrichGebert/ponytail) | Dietrich Gebert | Source doctrine (refactored, not copied) for the lean-coding decision ladder in `{USER_AGENTS}/standards/LEAN_CODE_STANDARDS.md`. |
 | [JuliusBrussee/caveman](https://github.com/JuliusBrussee/caveman) | Julius Brussee | Source doctrine (refactored, not copied) for the token-efficient communication and surgical-diff rules in `{USER_AGENTS}/standards/LEAN_CODE_STANDARDS.md`. |
+| [garrytan/gstack](https://github.com/garrytan/gstack) | Garry Tan / gstack contributors | Source methodology (refactored, not copied) for generic `agentic-*` skills, session safety/checkpoint workflows, plan/review/QA/documentation/handoff patterns, and lower-fit exclusion rules. |
 | [kevinohara80/sfdc-trigger-framework](https://github.com/kevinohara80/sfdc-trigger-framework) | Kevin M. O'Hara | `TriggerHandler` base class vendored verbatim (MIT License) — see `{USER_AGENTS}/standards/APEX_TRIGGER_FRAMEWORK.md`. |
 | [beyond-the-cloud-dev/apex-consts](https://github.com/beyond-the-cloud-dev/apex-consts) | Beyond The Cloud | `Constants`/`{SObject}Constants` pattern (MIT License), adapted with every class renamed from the upstream `Consts` abbreviation to the full word `Constants` — see `{USER_AGENTS}/standards/APEX_CONSTANTS_FRAMEWORK.md`. |
 

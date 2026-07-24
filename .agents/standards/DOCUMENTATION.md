@@ -56,6 +56,19 @@ cat force-app/main/default/standardValueSets/{ValueSet}.standardValueSet-meta.xm
 sf apex run test --target-org {alias} --code-coverage --result-format json
 ```
 
+## Document Type Selection
+
+Use a Diataxis-style split when generating new documentation, while keeping the source-verification rule above as the hard gate:
+
+| Need | Document type | Shape |
+| --- | --- | --- |
+| Help a user complete a task | Tutorial / how-to | Step-by-step path, prerequisites, expected result, verified commands |
+| Explain how the system works | Explanation | Concepts, architecture decisions, tradeoffs, source-grounded diagrams |
+| Record facts for lookup | Reference | Tables, API names, fields, metadata paths, commands, limits |
+| Ship or communicate a change | Release note | What changed, impact, validation, rollout/rollback notes |
+
+Do not mix all four into one blob by default. If a document must serve several audiences, start with a short overview and link to separate how-to, explanation, reference, and release sections.
+
 ## Documentation Tree
 
 Recommended structure for a project's `docs/` folder — adapt numbering and domain folder names to the project, but keep the shape:
@@ -158,6 +171,14 @@ See [Milestones and Deadlines](./milestones-deadlines.md) for the implementation
 Update the documentation when: a new feature is implemented and deployed, an existing configuration changes, an error is found in the existing documentation, or the org's Salesforce API version changes.
 
 Update procedure: verify the source (code/metadata) before editing → update the affected content → update the date/version in `00-index.md` → check and fix any cross-references the change affects.
+
+Release documentation updates are required when a change modifies user-visible behavior, metadata access, integration contracts, operational runbooks, deployment/rollback procedure, or known limitations. A release note must state:
+
+- Source evidence inspected.
+- User/admin/developer impact.
+- Validation run or explicitly skipped.
+- Rollout, rollback, and manual steps.
+- Links to updated reference/how-to docs when the change is not self-contained.
 
 ## Anti-Patterns
 

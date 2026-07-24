@@ -23,6 +23,15 @@ Before requesting review, verify the following gates that apply to the actual ch
 
 These gates share their quality themes with the [Development Gate](DEVELOPMENT_GATE.md), which runs earlier — before the deployment manifest is generated and before any deploy. A completed Development Gate record in the ticket file is valid evidence for the overlapping items below; re-verify only what changed after that record was written.
 
+Before requesting review, also apply `agentic-code-review` for a skeptical second pass when the diff is non-trivial, high-risk, security-sensitive, UI-visible, or release-critical. The review should look for behavioral regressions, missing tests, hidden scope expansion, and "looks correct but is unproven" claims before it polishes style.
+
+### Ship Readiness
+
+- Requirement, implementation, test evidence, deployment notes, and rollback/mitigation visibility are linked in the PR or final handoff.
+- A second-opinion review was completed or explicitly marked `N/A` with a reason.
+- The PR description distinguishes what shipped, what was validated, what is manual, and what remains intentionally out of scope.
+- Any landing or deploy follow-up names the exact target branch, environment, validation evidence, and approval still required.
+
 ### Scope And Staging
 
 - Stage only files that belong to the ticket or approved refactor.
@@ -104,3 +113,14 @@ Before final commit, PR creation, or back-merge:
 - Run or record the relevant tests, PMD/static checks, validations, or explain why they were not run.
 - Capture manual follow-ups, skipped validations, org-only steps, destructive package requirements, and deployment order in the PR body or final handoff.
 
+## Landing Report
+
+After merge, back-merge, or release landing, produce a short landing report instead of only saying "merged":
+
+- Branches touched and commit/merge identifiers.
+- Validation status at landing time.
+- Deployment or release action taken, if any.
+- Health/canary/smoke evidence available after landing.
+- Rollback, follow-up, or monitoring notes.
+
+If no merge or deploy was performed, state that clearly and omit fabricated release evidence.

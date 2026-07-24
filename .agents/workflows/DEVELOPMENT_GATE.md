@@ -18,6 +18,19 @@ This gate checks the **content quality** of what will be deployed — naming, de
 
 ---
 
+## Plan And Risk Review
+
+Before Gate A for non-trivial work, confirm there is evidence from [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) for:
+
+- Requirement discovery: accepted source, user intent, constraints, and exclusions are recorded.
+- Plan review: the selected approach was checked from product, engineering, design/UX, security, test, and deployment perspectives that apply to the scope.
+- Risk review: high-risk operations, large refactors, destructive metadata, production impact, data mutation, and branch/release actions are named with the relevant confirmation gate.
+- Scope reduction: simpler declarative, standard platform, or existing-code options were considered before new code or metadata was generated.
+
+If plan evidence is missing, pause Gate A and produce the smallest plan-review note needed to support the manifest. Do not use this checkpoint to create process theater for a trivial one-line fix; mark it `N/A - trivial scoped change` with the source evidence.
+
+---
+
 ## Best Practice Checklist
 
 ### Validation, Matching, And Duplicate Rules

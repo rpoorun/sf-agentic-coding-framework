@@ -4,6 +4,8 @@
 
 This file maps Salesforce task types to the synthesized skill folders installed under `.agents/skills/sf-<cloud>-<name>/` and explains the naming convention, the synthesis process used to build them, and how to adapt them to client-specific project rules. Read it when selecting a capability for Apex, tests, metadata, data, LWC, Flow, SLDS, security, Agentforce, integration, OmniStudio, or specialized platform work. Put capability-routing rules, local skill adaptations, and skill-specific delivery constraints here.
 
+For non-Salesforce-specific methods such as requirement discovery, plan review, root-cause investigation, QA matrices, documentation generation, handoff, diagrams, and skill evaluation, read [AGENTIC_SKILLS.md](AGENTIC_SKILLS.md). The `agentic-*` skills supplement Salesforce delivery; they do not override Salesforce metadata, security, deploy, or org-safety rules.
+
 ## Naming Convention
 
 Every installed skill folder is named `sf-{cloud}-{name}`:
@@ -22,6 +24,8 @@ The skills in this folder originated from two external catalogs:
 - [Clientell-Ai/salesforce-skills](https://github.com/Clientell-Ai/salesforce-skills) (folders originally named `sf-*`, e.g. `sf-apex`, `sf-flow`, `sf-lwc`).
 
 Both catalogs cover overlapping ground (for example, Apex generation existed as both `platform-apex-generate` and `sf-apex`). Installing both verbatim produced duplicate, inconsistently formatted instructions for the same task. Each skill below was therefore **synthesized**: the richer/more detailed source became the primary body, the other source's unique guidance was folded in under a "Merged Source Material" section inside the same `SKILL.md`, and a standardized frontmatter + header table was applied to every file. See [AGENTIC_FRAMEWORK.md](../directives/AGENTIC_FRAMEWORK.md#installing-this-framework-into-a-new-repository) for the mandatory synthesis procedure that must be repeated whenever new external skills are added.
+
+Generic agentic methods synthesized from [garrytan/gstack](https://github.com/garrytan/gstack) live in [AGENTIC_SKILLS.md](AGENTIC_SKILLS.md) and the `agentic-*` skill folders. They are intentionally separate from the `sf-*` family because their methods are reusable across repositories and should install at the user tier.
 
 ### Standard Skill File Format
 
@@ -109,20 +113,38 @@ PMD and security gates do not disappear because a skill suggests a faster path.
 | Lightning App coordination | Not yet installed; synthesize from `forcedotcom/sf-skills`'s `platform-lightning-app-coordinate` if needed | Use when sequencing multi-component Lightning App build-out across object, page, and nav-item changes. |
 | B2B Commerce / UI bundles / mobile / Data Cloud | Not installed by default | Use only when the repo contains those technologies; synthesize the matching `commerce-*`, `experience-ui-bundle-*`, `mobile-*`, or `data360-*` folder into `sf-commerce-*` / `sf-mobile-*` / `sf-data360-*` per the naming convention above. |
 
+## Agentic Cross-Routing
+
+Use these generic skills alongside the Salesforce router when the work type calls for horizontal agent discipline:
+
+| Salesforce situation | Add this `agentic-*` skill | Why |
+| --- | --- | --- |
+| Ticket is ambiguous, user story is thin, or acceptance criteria are missing | `agentic-requirement-discovery` | Converts questions, constraints, and exclusions into implementation-ready scope before touching metadata. |
+| Non-trivial Apex/LWC/Flow/schema plan, large refactor, or multi-file delivery | `agentic-plan-review` | Reviews product, engineering, design, security, QA, and rollout tradeoffs before build work. |
+| Bug diagnosis before code changes | `agentic-root-cause` | Keeps the investigation evidence-led before delegating the Salesforce-specific fix to `sf-platform-*`. |
+| PR readiness, second-opinion review, or release-critical diff | `agentic-code-review` | Adds skeptical review behavior before `PULL_REQUEST.md` handoff. |
+| LWC, FlexiPage, or SLDS-heavy UI work | `agentic-design-review` | Reviews UX intent, states, visual hierarchy, and manual/live evidence before SLDS validation. |
+| Tooling or framework ergonomics work | `agentic-devex-review` | Checks developer workflow, install/update friction, docs clarity, and failure modes. |
+| Full-ticket QA, regression matrix, browser/manual smoke checks, canary, health, benchmark evidence | `agentic-qa` | Builds the scenario matrix and evidence plan beyond Apex unit tests. |
+| Project docs, release notes, diagrams, or handoff artifacts | `agentic-documentation`, `agentic-diagram`, `agentic-context-handoff` | Keeps documentation source-grounded and session handoff durable. |
+| Skill library quality or benchmark comparison | `agentic-skill-eval` | Reuses cross-model and skill-quality evaluation concepts for framework evolution. |
+
 ## Adapted Delivery Workflow
 
 For any non-trivial Salesforce source change:
 
 1. Identify the task type and applicable `sf-{cloud}-{name}` skill via the router above (or `sf-meta-find` if ambiguous).
-2. Inspect current source conventions before introducing new patterns.
-3. Check whether client standards override [Org] defaults.
-4. Define the intended metadata and file scope.
-5. Make the smallest correct source change.
-6. Run local checks available without network or org mutation.
-7. Run PMD or Salesforce Code Analyzer (`sf-dx-analyzer`) when available and appropriate.
-8. Run deploy dry-runs, deploy validations, and Apex tests when the target org and scope are known.
-9. Stop before real deploy, data mutation, commit, push, or org config changes unless the user approved that action.
-10. Report changed files, metadata members, checks run, skipped approval-gated actions, and remaining risks.
+2. Run `agentic-requirement-discovery` when the requirement or acceptance criteria are not already clear.
+3. Inspect current source conventions before introducing new patterns.
+4. Check whether client standards override [Org] defaults.
+5. Define the intended metadata and file scope.
+6. Run `agentic-plan-review` for non-trivial, high-risk, UI-visible, security-sensitive, or multi-file work.
+7. Make the smallest correct source change.
+8. Run local checks available without network or org mutation.
+9. Run PMD or Salesforce Code Analyzer (`sf-dx-analyzer`) when available and appropriate.
+10. Run deploy dry-runs, deploy validations, Apex tests, and `agentic-qa` evidence when the target org and scope are known.
+11. Stop before real deploy, data mutation, commit, push, or org config changes unless the user approved that action.
+12. Report changed files, metadata members, checks run, skipped approval-gated actions, remaining risks, and any handoff captured through `agentic-context-handoff`.
 
 ## Apex Generation Constraints
 

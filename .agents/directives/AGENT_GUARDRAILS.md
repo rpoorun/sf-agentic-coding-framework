@@ -101,6 +101,17 @@ Before any approved Git write:
 7. Treat over-staging as dependency injection: it can introduce unapproved metadata dependencies into the commit, deployment, pull request, or release.
 8. Use task-specific commit messages if a commit is explicitly requested.
 
+## Session Safety Modes
+
+For high-risk work, agents may apply advisory safety modes inspired by the `agentic-*` skill family:
+
+- **Careful mode**: pause before any destructive command, force operation, broad file transform, deploy, data mutation, or action that changes production-like state. Name the exact target and consequence before requesting confirmation.
+- **Freeze mode**: when debugging or making a narrow fix, restrict edits to the smallest approved directory or file set. If the correct fix must leave that boundary, stop and explain why before editing outside it.
+- **Guard mode**: combine careful mode and freeze mode for production incidents, permission/security work, deploy preparation, or any task where accidental breadth would be costly.
+- **Unfreeze**: remove the edit boundary only after the user approves the broader scope or the task clearly moves into a new approved phase.
+
+These modes do not create new permission to mutate files, Git state, Salesforce orgs, data, dependencies, or production-like systems. They only make the existing confirmation gates easier to apply consistently.
+
 ## Salesforce Org Safety
 
 Agents may inspect local source by default. Org reads and writes depend on the user's instruction and environment.

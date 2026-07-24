@@ -21,6 +21,8 @@ metadata:
 
 The **Salesforce Lightning Design System (SLDS)** is a CSS framework with thousands of artifacts. This skill teaches agents how to find and correctly use them.
 
+Use [agentic-design-review](../agentic-design-review/SKILL.md) for the design-consultation decision flow before selecting SLDS artifacts when the UI direction is ambiguous, high-visibility, or tradeoff-heavy. Translate its recommendations into Lightning Base Components, SLDS Blueprints, verified hooks, and Salesforce accessibility constraints; do not import non-Salesforce CSS systems or override SLDS internals.
+
 > **Version:** This skill targets **SLDS v2**. Legacy `--lwc-*` tokens and `slds-*--modifier` syntax are deprecated.
 >
 > **Audit scope:** The companion `design-systems-slds-validate` skill analyzer only scans `.css`, `.html`, and `.js` files. Use it directly for LWC and similar HTML/CSS/JS components; treat it as a partial signal for JSX/TSX or other framework-specific template formats and supplement with manual review.
@@ -226,6 +228,7 @@ Identify:
 - What framework? (LWC, React, Vue, Angular, vanilla)
 - What data will it display?
 - What states does it need? (loading, empty, error, success)
+- What user intent, hierarchy, and tradeoff came out of `agentic-design-review`, if that review was needed?
 
 ### Phase 2: Select the Artifact
 
