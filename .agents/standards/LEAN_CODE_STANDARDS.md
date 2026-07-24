@@ -23,6 +23,23 @@ Before writing any Apex class, trigger, LWC component, or Flow-supporting code, 
 
 Bug fixes follow the same root-cause discipline: a ticket names a symptom, not necessarily the cause. Before patching, search for every caller of the function, trigger context, or wire/handler being touched. Fix the shared method or component once rather than patching only the path the ticket names and leaving a sibling caller broken.
 
+## Root-Cause And Review Skepticism
+
+Before changing code for a defect, prove the failure path:
+
+- Reproduce or identify the failing path from test output, debug logs, source traversal, or ticket evidence.
+- Name the root cause separately from the symptom.
+- Check sibling callers, trigger contexts, automation paths, permission contexts, and UI states that share the same code.
+- Prefer the smallest root fix over local patches that only hide the named symptom.
+- If evidence is incomplete, state the assumption and choose a reversible, low-scope diagnostic or ask for the missing fact.
+
+During reviews, be helpfully skeptical:
+
+- Look first for behavior regressions, missing tests, weak evidence, security gaps, and hidden scope expansion.
+- Challenge new abstraction unless the existing architecture already requires it.
+- Treat "this should work" as unverified until a test, static check, source trace, or org validation backs it.
+- Prefer "do less better": deliver the smallest complete slice with clear validation over a broad, under-verified rewrite.
+
 ## Lean Rules
 
 - No abstractions (new interfaces, base classes, wrapper layers, generic frameworks) that were not explicitly requested or already required by the existing layering pattern (Service/Selector/Domain, or the project's established LWC component structure).
@@ -33,6 +50,8 @@ Bug fixes follow the same root-cause discipline: a ticket names a symptom, not n
 - Question requests that imply more code than needed: if a user asks for a new Apex utility class for something a single SOQL bind variable or one Selector method already covers, say so before building it.
 - Where two equally-sized approaches exist, pick the bulkification-safe and CRUD/FLS-safe one. Lean means less code, not a weaker safety posture — see "Not Lazy About" below.
 - Mark an intentional simplification with a one-line comment naming its ceiling and the upgrade path (e.g. `// lean: single-batch only, no chaining; revisit if volume exceeds one batch window`) instead of silently under-building.
+
+- When scope balloons, split the work into a safe core change and named follow-ups instead of quietly widening the diff.
 
 ## Not Lazy About (Never Skip These For Leanness)
 

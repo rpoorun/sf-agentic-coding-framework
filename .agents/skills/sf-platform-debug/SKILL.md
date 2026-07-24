@@ -22,6 +22,8 @@ metadata:
 
 Use this skill when the user needs **root-cause analysis from debug logs**: governor-limit diagnosis, stack-trace interpretation, slow-query investigation, heap / CPU pressure analysis, or a reproduction-to-fix loop based on log evidence.
 
+For failures that are not Salesforce-log-specific, first use [agentic-root-cause](../agentic-root-cause/SKILL.md) to structure the investigation, evidence, hypotheses, and minimal reproduction. Return to this skill once the evidence points to Apex logs, governor limits, Salesforce automation order, or org runtime behavior.
+
 ## When This Skill Owns the Task
 
 Use `sf-platform-debug` when the work involves:
@@ -147,6 +149,7 @@ Verify: <test or rerun step>
 
 | Need | Delegate to | Reason |
 |---|---|---|
+| General failure investigation / reproduction discipline | [agentic-root-cause](../agentic-root-cause/SKILL.md) | evidence-led root cause before Salesforce-specific diagnosis |
 | Implement Apex fix | [sf-platform-apex](../sf-platform-apex/SKILL.md) | code change generation / review |
 | Reproduce via tests | [sf-platform-test](../sf-platform-test/SKILL.md) | test execution and coverage loop |
 | Deploy fix | [sf-platform-deploy](../sf-platform-deploy/SKILL.md) | deployment orchestration |

@@ -13,11 +13,11 @@ This file defines actions that require human approval in the current task before
 | Salesforce access | Permission assignments, profile changes, permission set group changes, user activation/freezing, password or MFA changes, sharing rule changes. |
 | Auth and integrations | Named Credentials, External Credentials, Connected Apps, certificates, SSO, remote site settings, CORS, CSP, integration endpoints. |
 | Salesforce org config | Switching default org globally, changing dev hub, installing Salesforce CLI plugins, creating scratch orgs, deleting scratch orgs, changing org settings. |
-| Git writes | Commit, push, merge, rebase, branch deletion, tag creation, worktree deletion, reset, restore, checkout that discards changes. |
-| Destructive local actions | Recursive delete, force delete, overwriting tracked files from generated output, deleting generated-but-unreviewed work. |
+| Git writes | Commit, push, merge, rebase, branch deletion, tag creation, worktree deletion, reset, restore, checkout that discards changes, force-push, or any force operation. |
+| Destructive local actions | Recursive delete, force delete, broad generated overwrite, overwriting tracked files from generated output, deleting generated-but-unreviewed work, or changing files outside an approved freeze/edit boundary. |
 | Existing test methods | Refactoring, deleting, renaming, or weakening any existing test class or test method (Prime Directive 10 in [AGENT_GUARDRAILS.md](AGENT_GUARDRAILS.md)) — requires **double validation**: (1) user approval of a consequence analysis listing each affected test method and the business requirement that loses executable coverage, then (2) a separate execution confirmation immediately before the change. Adding new test classes/methods needs no gate. |
 | Dependencies and CI | Package install/update, lockfile rewrite, CI/CD pipeline changes, release automation changes. |
-| Production-like systems | Any write operation against production, pre-production, UAT, client org, shared sandbox, or customer environment. |
+| Production-like systems | Any write operation against production, pre-production, UAT, client org, shared sandbox, or customer environment. Post-deploy health checks and canaries may read/inspect without confirmation when target and scope are known, but any remediation write still requires confirmation. |
 
 ## Confirmation Request Format
 
@@ -28,6 +28,7 @@ When asking for approval, include:
 - Expected files or metadata affected.
 - Whether the action is reversible.
 - Why the action is needed.
+- The current safety mode or edit boundary when one is active.
 
 Example:
 

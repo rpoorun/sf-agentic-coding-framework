@@ -4,7 +4,7 @@ A drop-in set of AI-agent operating instructions for Salesforce projects. Copy t
 
 | Field | Value |
 | --- | --- |
-| Version | 0.2.3 |
+| Version | 0.3.0 |
 | Author | Rishikesh Poorun |
 | License | [Apache License 2.0](LICENSE) |
 | Master repository | https://github.com/rpoorun/sf-agentic-coding-framework |
@@ -22,8 +22,8 @@ AI agents are good at writing Salesforce code, but left alone they'll happily in
 .agents/
 ├── directives/   # Non-negotiable rules: safety gates, confirmation requirements, framework governance
 ├── standards/    # Quality bar: Apex/LWC conventions, lean coding, ApexDoc, trigger/constants frameworks
-├── skills/       # Capability routing: 26 sf-{cloud}-{name} skills covering Apex, LWC, Flow, SOQL, deploy, etc.
-├── workflows/    # Repeatable processes: bootstrap interview, deployment gates, Git/PR flow, testing
+├── skills/       # Capability routing: sf-{cloud}-{name} Salesforce skills and generic agentic-* skills
+├── workflows/    # Repeatable processes: bootstrap, deployment gates, Git/PR flow, testing, handoff
 └── documentation/ # Boilerplate project facts template: org aliases, architecture, schema
 ```
 
@@ -39,7 +39,8 @@ AI agents are good at writing Salesforce code, but left alone they'll happily in
 - **A mandatory constants pattern** — no hardcoded picklist values; every object gets a `{SObject}Constants` singleton (`AccountConstants`, `LeadConstants`, …) exposed via `Constants.{OBJECT}`, adapted from [beyond-the-cloud-dev/apex-consts](https://github.com/beyond-the-cloud-dev/apex-consts). See [`APEX_CONSTANTS_FRAMEWORK.md`](.agents/standards/APEX_CONSTANTS_FRAMEWORK.md).
 - **Lean-coding discipline** — agents check declarative options and existing code before writing anything new, and keep their own chat narration to one short phrase while working (full detail only when you're asked to decide something). See [`LEAN_CODE_STANDARDS.md`](.agents/standards/LEAN_CODE_STANDARDS.md) and [`AGENT_GUARDRAILS.md`](.agents/directives/AGENT_GUARDRAILS.md).
 - **Full ApexDoc on everything** — every class and method gets a header with description, author, last-modified date, group, params/return, and a link to its test class. See [`SALESFORCE_APEX_STANDARDS.md`](.agents/standards/SALESFORCE_APEX_STANDARDS.md).
-- **26 synthesized Salesforce skills** — Apex, LWC, Flow, SOQL, metadata deploy/retrieve, permission sets, SLDS, security audit, Agentforce, OmniStudio, and more, each merged from multiple upstream skill libraries into one consistent format. See [`SALESFORCE_SKILLS.md`](.agents/skills/SALESFORCE_SKILLS.md).
+- **Synthesized Salesforce skills** — Apex, LWC, Flow, SOQL, metadata deploy/retrieve, permission sets, SLDS, security audit, Agentforce, OmniStudio, and more, each merged from multiple upstream skill libraries into one consistent format. See [`SALESFORCE_SKILLS.md`](.agents/skills/SALESFORCE_SKILLS.md).
+- **Generic agentic skills** — gstack-derived, framework-native methods for requirement discovery, plan review, root-cause investigation, code/design/devex review, QA, documentation, context handoff, diagrams, and skill evaluation. See [`AGENTIC_SKILLS.md`](.agents/skills/AGENTIC_SKILLS.md).
 - **Documentation standards** for writing accurate, source-verified project docs (never invented code samples or guessed picklist values). See [`DOCUMENTATION.md`](.agents/standards/DOCUMENTATION.md).
 
 ## Repository structure
@@ -52,8 +53,8 @@ sf-agentic-coding-framework/
 └── .agents/
     ├── directives/           # AGENTIC_FRAMEWORK, AGENT_GUARDRAILS, TRUST_DATA_SECURITY, MANUAL_CONFIRMATION_GATES
     ├── standards/             # Apex, lean-coding, trigger, constants, documentation, PMD, project-baseline standards
-    ├── skills/                # 26 sf-{cloud}-{name} skill folders + SALESFORCE_SKILLS.md router
-    ├── workflows/             # PROJECT_BOOTSTRAP, WORKFLOW, DEPLOYMENT, PULL_REQUEST, TESTING, IMPLEMENTATION_PLAN
+    ├── skills/                # sf-{cloud}-{name} and agentic-* skill folders + SALESFORCE_SKILLS/AGENTIC_SKILLS routers
+    ├── workflows/             # PROJECT_BOOTSTRAP, WORKFLOW, DEPLOYMENT, PULL_REQUEST, TESTING, IMPLEMENTATION_PLAN, SESSION_HANDOFF
     └── documentation/         # Boilerplate facts to fill in per installation (org aliases, architecture, schema, ...)
 ```
 
@@ -74,6 +75,7 @@ This framework's skills and standards are built by synthesizing, refactoring, or
 | [Clientell-Ai/salesforce-skills](https://github.com/Clientell-Ai/salesforce-skills) | Secondary/merged source for the same skills, plus `sf-security-audit` |
 | [DietrichGebert/ponytail](https://github.com/DietrichGebert/ponytail) | Lean-coding decision ladder doctrine |
 | [JuliusBrussee/caveman](https://github.com/JuliusBrussee/caveman) | Token-efficient communication and surgical-diff doctrine |
+| [garrytan/gstack](https://github.com/garrytan/gstack) | Generic agentic methods refactored into `agentic-*` skills, workflow checkpoints, and safety/QA/review/documentation guidance |
 | [kevinohara80/sfdc-trigger-framework](https://github.com/kevinohara80/sfdc-trigger-framework) | `TriggerHandler` base class (vendored verbatim, MIT) |
 | [beyond-the-cloud-dev/apex-consts](https://github.com/beyond-the-cloud-dev/apex-consts) | `Constants`/`{SObject}Constants` pattern (adapted, MIT) |
 

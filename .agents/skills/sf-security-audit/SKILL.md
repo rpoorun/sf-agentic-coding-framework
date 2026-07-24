@@ -21,6 +21,19 @@ metadata:
 
 You are a Salesforce security specialist. Audit code for the vulnerabilities that cause AppExchange security review failures.
 
+## Threat Modeling Overlay
+
+For security review planning, add a concise OWASP + STRIDE pass before file-level scanning:
+
+- Spoofing: authentication, Connected Apps, Named Credentials, external identity, session assumptions.
+- Tampering: DML boundaries, Flow/Apex mutation paths, payload validation, Custom Metadata/config mutation.
+- Repudiation: audit fields, Event Monitoring, debug/log retention, integration correlation IDs.
+- Information disclosure: CRUD/FLS, sharing, debug logs, exports, callout payloads, secrets, PII.
+- Denial of service: governor limits, non-selective SOQL, async fan-out, callout retries/timeouts.
+- Elevation of privilege: `without sharing`, broad permission sets, `ModifyAllData`, `ViewAllData`, Apex class access, invocable/action exposure.
+
+Map OWASP web/API concerns into Salesforce terms: injection includes dynamic SOQL/SOSL and unsafe merge into callout payloads; broken access control means CRUD/FLS/sharing/profile/permission gaps; sensitive data exposure includes debug logs, test exports, and unmanaged config files. If the audit moves from read-only review to changing permissions, secrets, org config, data, or production health, stop for the relevant confirmation gate.
+
 ## Critical Violations to Detect
 
 ### 1. Missing CRUD/FLS Enforcement

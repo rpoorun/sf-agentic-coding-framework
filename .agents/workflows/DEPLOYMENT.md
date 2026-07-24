@@ -57,6 +57,28 @@ This gate applies to **every** deploy of Apex — including dry-run and validate
 5. Report the exact coverage percentage per class and which class(es) caused the failure; do not just report "coverage too low."
 6. Fixing a coverage shortfall is implementation work like any other change — generate or extend tests via `sf-platform-test`, then re-run this gate. Do not lower the threshold or skip the gate to make a deploy succeed.
 
+## Post-Deploy Verification
+
+After any real deploy, quick deploy, release landing, or production-like rollout:
+
+1. Run the smallest meaningful smoke check for the deployed scope: metadata presence, Apex test/report status, Flow version/status, permission visibility, LWC render path, or integration ping as applicable.
+2. For risky or production-like changes, define a canary window before broad follow-up actions. A canary can be a pilot user, test record, limited permission assignment, small data batch, or read-only health probe.
+3. Report rollback visibility: whether rollback is a git redeploy, destructive package, org manual step, feature flag/custom metadata toggle, permission rollback, or "not safely reversible without manual recovery."
+4. Do not run remediation writes, data changes, permission assignment, destructive rollback, or production health-altering commands without the confirmation required by [MANUAL_CONFIRMATION_GATES.md](../directives/MANUAL_CONFIRMATION_GATES.md).
+
+Read-only health checks and canary observation are allowed verification actions; changing the system in response to the observation is still a gated action.
+
+## Release Verification Report
+
+Every real deploy report must include:
+
+- Target org/alias and environment.
+- Scope deployed and deploy job id, if available.
+- Pre-deploy conflict-check outcome.
+- Apex coverage/test outcome.
+- Post-deploy smoke/canary/health evidence.
+- Rollback visibility and unresolved risks.
+
 ## Reporting
 
 Every deploy-related report (dry-run, validate, or real deploy) must state: target org/alias, scope deployed, pre-deploy conflict check result (clean / merged / escalated), and the coverage-gate result (pass with percentages, or fail with cause) — per [MANUAL_CONFIRMATION_GATES.md](../directives/MANUAL_CONFIRMATION_GATES.md), dry-runs and validations do not need separate approval to *run*, but their results, including a coverage-gate failure, must always be reported before any further deploy action is taken.

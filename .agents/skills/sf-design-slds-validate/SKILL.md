@@ -21,6 +21,8 @@ metadata:
 
 Audit Lightning Web Components for SLDS compliance and produce an automated scorecard plus a required manual review gate. Combines SLDS linter output with supplementary static analysis to catch what the linter misses.
 
+Pair this skill with [agentic-design-review](../agentic-design-review/SKILL.md) when the work needs plan-stage UX critique, live visual audit, screenshot/browser evidence, responsive checks, or design-risk review. `agentic-design-review` evaluates whether the interface solves the right user problem; this skill evaluates whether the Salesforce/SLDS implementation is valid and ready.
+
 ## Scope
 
 Also valid for: auditing SLDS compliance across a project or component set, and before/after quality comparison after making changes.
@@ -143,6 +145,8 @@ These checks require understanding the component's purpose and cannot be automat
 | Disabled states | Do interactive elements visually and functionally handle disabled? |
 | Semantic HTML | Are `<nav>`, `<article>`, `<section>` used where appropriate? |
 | SLDS blueprint compliance | Do cards, modals, forms follow SLDS blueprint structure? |
+| Visual and responsive evidence | Were relevant desktop/mobile screenshots, browser observations, or manual notes reviewed when available? |
+| Design intent alignment | Does the implementation preserve the approved hierarchy, states, and tradeoffs from `agentic-design-review`? |
 
 > Manual review findings are not automated, but they do affect the final recommendation. Do not report an automated grade as the only verdict.
 

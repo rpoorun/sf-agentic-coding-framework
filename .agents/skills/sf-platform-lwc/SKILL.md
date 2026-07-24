@@ -28,6 +28,8 @@ The first time in a session you touch a given component, retrieve it from the de
 
 Use this skill when the user needs **Lightning Web Components**: LWC bundles, wire patterns, Apex/GraphQL integration, SLDS 2 styling, accessibility, performance work, or Jest unit tests.
 
+For UI-visible requirements, use [agentic-design-review](../agentic-design-review/SKILL.md) before or during design decisions and [agentic-qa](../agentic-qa/SKILL.md) for scenario/manual/browser verification. This skill remains authoritative for LWC bundle structure, wire patterns, SLDS-compatible implementation, Jest guidance, and Salesforce security boundaries.
+
 ## When This Skill Owns the Task
 
 Use `sf-platform-lwc` when the work involves:
@@ -171,6 +173,8 @@ Local Dev commands install just-in-time on first run. They are long-running proc
 
 | Need | Delegate to | Reason |
 |---|---|---|
+| UX intent, visual hierarchy, UI states, design alternatives | [agentic-design-review](../agentic-design-review/SKILL.md) | design decision flow before implementation details |
+| Manual/browser QA, regression matrix, canary/health checks | [agentic-qa](../agentic-qa/SKILL.md) | full-ticket verification beyond Jest/unit checks |
 | Apex controller or service | [sf-platform-apex](../sf-platform-apex/SKILL.md) | backend logic |
 | embed in Flow screens | [sf-platform-flow](../sf-platform-flow/SKILL.md) | declarative orchestration |
 | deploy component bundle | [sf-platform-deploy](../sf-platform-deploy/SKILL.md) | org rollout |
