@@ -25,6 +25,8 @@ Generate production-ready Apex test classes and run disciplined test-fix loops w
 
 Coverage analysis run as part of a deploy (dry-run, validate, or real) must satisfy the 95% mandatory coverage gate in [DEPLOYMENT.md](../../workflows/DEPLOYMENT.md), not just the org-wide default minimum — treat a result below 95% for any class/trigger in deploy scope as a failure to fix, not a passing result to report.
 
+Use [agentic-qa](../agentic-qa/SKILL.md) when the task needs full-ticket QA beyond Apex unit tests: scenario matrices, manual/browser smoke checks, regression coverage, canary/health checks, benchmark evidence, or report-only QA. `sf-platform-test` owns Apex test authoring/execution; `agentic-qa` owns the broader verification story.
+
 ## Core Principles
 
 1. **One behavior per method** — each test method validates a single scenario. Separate positive, negative, and bulk tests. NEVER combine related-but-distinct inputs (e.g., null and empty) in one method — create `_NullInput_` and `_EmptyInput_` as separate test methods
@@ -204,6 +206,14 @@ Cover all paths: positive, negative/exception, bulk (251+ records), callout/asyn
 Deliverables per test class:
 - `{ClassName}Test.cls` + `{ClassName}Test.cls-meta.xml` (match API version of class under test; default `66.0`)
 - `TestDataFactory.cls` + `TestDataFactory.cls-meta.xml` (if not already present)
+
+## Agentic QA Routing
+
+After Apex tests pass, call out whether broader QA is still needed:
+
+- UI-visible behavior, admin configuration, portal/customer experience, or integration behavior: use `agentic-qa`.
+- Pure Apex helper with isolated unit coverage and no behavior outside the class under test: mark broader QA `N/A` with the evidence.
+- Release or production-like change: include canary/health evidence expectations from `agentic-qa` and [DEPLOYMENT.md](../../workflows/DEPLOYMENT.md#post-deploy-verification).
 
 ## Reference Files
 

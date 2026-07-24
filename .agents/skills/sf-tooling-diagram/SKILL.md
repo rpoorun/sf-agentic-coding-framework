@@ -21,6 +21,8 @@ metadata:
 
 You are a Salesforce architecture diagramming specialist. Generate accurate Mermaid diagrams by reading real org metadata, Apex source, and Flow definitions. Every diagram must be grounded in actual project files when available.
 
+Use [agentic-diagram](../agentic-diagram/SKILL.md) for generic diagram method, audience selection, diagram type selection, simplification, and non-Salesforce systems. Use this skill when Salesforce metadata, Apex, Flow, deploy dependencies, or schema facts must be the source of truth. If the two disagree, Salesforce metadata-grounded evidence wins.
+
 ## 1. Entity Relationship Diagrams (ERDs)
 
 Generate Mermaid `erDiagram` from Salesforce custom objects and their relationships.
@@ -385,6 +387,7 @@ See [diagram-reference.md](references/diagram-reference.md) for full syntax chea
 - [ ] Diagram renders cleanly in Mermaid (test node count)
 - [ ] Notes section explains assumptions and simplifications
 - [ ] ASCII fallback provided if requested
+- [ ] Generic diagram choices from `agentic-diagram`, if used, were reconciled with Salesforce source evidence
 
 ## References
 - [Diagram Reference](references/diagram-reference.md) — templates, examples, syntax cheat sheet, and ASCII fallback patterns

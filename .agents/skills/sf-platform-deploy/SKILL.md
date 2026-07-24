@@ -26,6 +26,8 @@ Use this skill when the user needs **deployment orchestration**: dry-run validat
 
 Before any dry-run, validate-only, or real deploy to a sandbox/org, follow [DEPLOYMENT.md](../../workflows/DEPLOYMENT.md): run the mandatory pre-deploy org-conflict check (retrieve and diff the target org's current metadata; merge org-only elements into local before deploying, never overwrite an existing org feature outside scope) and the 95% Apex coverage gate (hard failure, cancels the deploy including dry-runs, if coverage is below 95% for any class/trigger in scope).
 
+For real deploys and release landings, include [DEPLOYMENT.md post-deploy verification](../../workflows/DEPLOYMENT.md#post-deploy-verification): smoke evidence, canary/health observation when risk warrants it, rollback visibility, and a release verification report. Use [agentic-qa](../agentic-qa/SKILL.md) for broader manual/regression/canary evidence and [agentic-context-handoff](../agentic-context-handoff/SKILL.md) when the release state needs durable handoff.
+
 ## When This Skill Owns the Task
 
 Use `sf-platform-deploy` when the work involves:
@@ -180,6 +182,8 @@ For full agent DevOps details, including `Agent:` pseudo metadata, publish/activ
 
 | Need | Delegate to | Reason |
 |---|---|---|
+| canary, health, smoke, regression evidence | [agentic-qa](../agentic-qa/SKILL.md) | release verification beyond deploy command output |
+| release handoff / landing report | [agentic-context-handoff](../agentic-context-handoff/SKILL.md) | preserve deploy state, risks, and follow-ups |
 | custom object creation | [platform-custom-object-generate](../platform-custom-object-generate/SKILL.md) | define objects before deploy |
 | custom field creation | [platform-custom-field-generate](../platform-custom-field-generate/SKILL.md) | define fields before deploy |
 | Apex authoring / fixes | [sf-platform-apex](../sf-platform-apex/SKILL.md) | code authoring and repair |
