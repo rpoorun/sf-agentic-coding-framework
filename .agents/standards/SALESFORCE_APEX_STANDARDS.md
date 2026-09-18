@@ -35,6 +35,7 @@ The `@author` / `@last modified by` value must be the project's configured human
 ```apex
 /**
  * @description       : {Ticket/requirement ID, if any} : {What this class does and why.}
+ * @instruction       : {Overall function and objective of the class for the next agent.}
  * @author            : {author_name} <{author_email}>
  * @group             : {Logical grouping, e.g. UTILS, Account Management, Trigger Handlers}
  * @last modified on  : {DD-MM-YYYY}
@@ -48,7 +49,7 @@ public with sharing class ExampleUtility {
 
 ```apex
     /**
-     * @description {What this method does and why, if non-obvious.}
+     * @description {Ticket/requirement ID, if any} : {What this method does and why, if non-obvious.}
      * @author      {author_name} - {author_org_or_team, if applicable}
      * @param       {paramName} {What it represents, not just its type.}
      * @param       {nextParamName} {...}
@@ -61,11 +62,13 @@ Rules:
 
 - Tag labels are left-padded to align their colons within each block, exactly as shown — this is a readability convention from the source format, not optional whitespace.
 - `@description` on the class may be prefixed with a ticket/requirement ID (e.g. `CASE-1234 : ...`) when the project tracks work that way; omit the prefix if there is no such ID.
+- Add `@instruction` on the class to capture the overall objective and operating intent for the next agent, especially when the class has non-obvious orchestration or boundary behavior.
 - `@last modified on` uses `DD-MM-YYYY` on the class header (matching the format above); update it every time the class body changes — it must reflect the most recent substantive edit, not the creation date.
 - `@group` is required on the class header; use a short, consistent grouping label so generated documentation stays navigable.
 - `@test` on the class header names the primary test class providing coverage (see [sf-platform-test](../skills/sf-platform-test/SKILL.md)) — this documents coverage, it does not replace having a real test class.
 - `@param` — one line per parameter, every parameter, named.
 - `@return` — required whenever the method's return type is not `void`.
+- Where a ticket or requirement ID exists, prefer including it in the `@description` text for both class and method headers so the provenance is visible to the next agent.
 - Add `@throws` (exception type and triggering condition) and `@example` (a short real call pattern) only where they add real value; omit otherwise.
 
 This requirement is independent of, and in addition to, the `@TestSetup`/coverage rules in [Test Rules](#test-rules) below — `@test` documents *which* test class provides coverage, it does not replace having one.
@@ -163,12 +166,14 @@ Design entry points in three clear tiers:
 
 ## Test Rules
 
+- Reusable fixture architecture is owned by the [Test Data Framework](../skills/sf-platform-test/references/test-data-factory.md). Keep generic core, object defaults/variants, and business/persona flows separate; use DML-free build operations and explicit all-or-none create operations.
+
 - Every Apex behavior change must include or update tests unless the user explicitly scoped the task away from tests.
 - Tests must include assertions.
 - Avoid `SeeAllData=true`.
-- Use `System.runAs` when permissions, sharing, or user context matters.
+- Execute every test method inside `System.runAs` with the required non-admin test user, except explicitly specified admin scenarios. This establishes user/sharing context; it does not itself enforce CRUD/FLS.
 - Cover positive, negative, empty, and bulk cases.
-- Use `@TestSetup` and test data factories when they reduce duplication.
+- Every generated test class must create its shared user and common graph in `@TestSetup` through the project factory. Re-query per method; never cache setup Ids in statics.
 - Use more than 200 records for trigger bulk tests when feasible.
 - Use `Test.startTest()` and `Test.stopTest()` around the behavior being verified.
 - Use record type developer names instead of record type labels.
@@ -176,6 +181,13 @@ Design entry points in three clear tiers:
 - Keep the first assert parameter as expected and the second as actual.
 - Test security behavior where CRUD/FLS/sharing is part of the requirement.
 - Keep test data local to the test unless using an approved test factory.
+- Generated test classes should include a class-level comment header that names the production Apex class, trigger handler, controller, batch, invocable, or Flow entry point under test.
+- Generated test methods should include method-level comments with `@description`, `@scenario`, and `@expectedResults`.
+- Shared test data should be created once in `@TestSetup`, including the reusable test user when user-context execution is required.
+- Default to executing test methods as a non-admin test user via `System.runAs` unless the requirement explicitly depends on admin context.
+- For externally reached entry points, validate bad-type, malformed, ineligible, null, and sanitization-sensitive inputs explicitly.
+- For Batch Apex, include bulk assertions that prove the post-run record state is correct and not skewed across the processed dataset.
+- For controllers, invocables, Flow adapters, REST endpoints, LWC/Aura entry points, and similar non-Apex callers, test input validation directly rather than assuming trusted callers.
 
 ## Review Checklist
 
@@ -190,3 +202,4 @@ Before considering Apex ready:
 - No hardcoded org-specific IDs or secrets exist.
 - Logs do not expose sensitive data.
 - Deployment scope and test class scope are known.
+- Generated or updated test classes follow the required class header, method headers, shared setup, user-context execution, and negative-path coverage rules.

@@ -67,6 +67,7 @@ All steps are sequential. Do not skip, merge, or reorder. If blocked, stop and a
    - Read the matching template from `assets/` before authoring (see Type-Specific Guidance for the file mapping)
    - When a `references/` example exists for the type, read it as a concrete style guide
    - For any test class work, always read and use `sf-platform-test` skill
+   - For fixture factories/helpers, follow its [Test Data Framework](../sf-platform-test/references/test-data-factory.md). Generic source templates are not org-installed classes: pre-development retrieval applies when integrating them into a project, not while editing framework assets. Do not request or grant end-user Apex access to test-support-only core types; preserve their test-execution guards.
 
 4. **Author with guardrails** -- apply every rule in the Rules section below
    - Generate `{ClassName}.cls` with ApexDoc
@@ -219,7 +220,8 @@ Class-level format:
 
 ```apex
 /**
- * @description       : {What this class does and why.}
+ * @description       : {Ticket/requirement ID, if any} : {What this class does and why.}
+ * @instruction       : {Overall function and objective of the class for the next agent.}
  * @author            : {author_name} <{author_email}>
  * @group             : {Logical grouping, e.g. UTILS}
  * @last modified on  : {DD-MM-YYYY}
@@ -233,12 +235,15 @@ Method-level format:
 
 ```apex
 /**
- * @description {What this method does and why, if non-obvious.}
+ * @description {Ticket/requirement ID, if any} : {What this method does and why, if non-obvious.}
  * @author      {author_name}
  * @param       address The street address to geocode.
  * @return      The resolved Geolocation, or null if the address could not be resolved.
  */
 ```
+
+- Where a ticket or requirement ID exists, include it in the `@description` text for both class and method headers so the provenance is visible to the next agent.
+- Add `@instruction` on the class header to summarize the overall function and objective for the next agent, especially when the class coordinates other classes or crosses a boundary.
 
 ### Code Structure & Architecture
 

@@ -79,9 +79,10 @@ Before requesting review, also apply `agentic-code-review` for a skeptical secon
 
 ### Apex Tests
 
+- Apply the [Apex test skill](../skills/sf-platform-test/SKILL.md) and [Test Data Framework contract](../skills/sf-platform-test/references/test-data-factory.md), including coverage headers, class-level `@instruction`, scenario/result tags, and applicable ticket references.
 - Every test method has at least one meaningful assertion.
-- Test data is created through `@TestSetup` or a test factory when reusable setup is appropriate.
-- Tests use `System.runAs` for user-context, permission, sharing, or portal behavior.
+- Every generated test class creates the shared test user and common graph through a project factory in `@TestSetup`; each method re-queries its isolated fixtures.
+- Every test method executes in the intended non-admin `System.runAs` context unless the requirement explicitly specifies admin behavior.
 - Positive, negative, empty, and bulk scenarios are covered according to risk.
 - Code coverage remains above the Salesforce minimum and does not regress meaningful behavior.
 - Test factories are updated for common or required-field changes.

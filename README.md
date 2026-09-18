@@ -43,6 +43,14 @@ AI agents are good at writing Salesforce code, but left alone they'll happily in
 - **Generic agentic skills** — gstack-derived, framework-native methods for requirement discovery, plan review, root-cause investigation, code/design/devex review, QA, documentation, context handoff, diagrams, and skill evaluation. See [`AGENTIC_SKILLS.md`](.agents/skills/AGENTIC_SKILLS.md).
 - **Documentation standards** for writing accurate, source-verified project docs (never invented code samples or guessed picklist values). See [`DOCUMENTATION.md`](.agents/standards/DOCUMENTATION.md).
 
+## Apex Test Data Framework
+
+The existing `sf-platform-test` skill includes a reusable fixture framework: a generic registry and helper contract, project-owned object defaults and variants, and typed flows for related records and user personas. `build` operations do not write data; `create` operations insert explicitly with all-or-none behavior.
+
+Start with the [strategy and adoption guide](.agents/skills/sf-platform-test/references/test-data-factory.md), then adapt the [core, examples, and contract tests](.agents/skills/sf-platform-test/assets/test-data-framework/). The 44 supplied test methods use shared setup users and non-admin execution, and exercise overrides, validation, bulk insertion, registry behavior, and dependency reuse.
+
+These are source templates, not automatically deployed Salesforce classes. Existing factories and tests stay in place until migration is explicitly approved. Target-org compilation, runtime tests, coverage, and the actual project persona must be verified before adoption. See the [Unreleased changelog](.agents/CHANGELOG.md#unreleased) for the next-release scope and validation limits.
+
 ## Repository structure
 
 ```

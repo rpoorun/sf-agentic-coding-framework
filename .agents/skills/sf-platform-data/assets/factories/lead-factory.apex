@@ -1,4 +1,7 @@
 /**
+ * @instruction Legacy example only. For new Apex test fixtures, follow
+ *              sf-platform-test/references/test-data-factory.md. Keep existing
+ *              callers compatible; do not copy boolean insert switches as the default.
  * Test Data Factory for Lead records
  * Supports bulk creation with status and source variations
  *

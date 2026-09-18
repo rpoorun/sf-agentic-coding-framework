@@ -1,6 +1,8 @@
 <!-- Parent: platform-apex-test-run/SKILL.md -->
 # Apex Testing Best Practices
 
+> For new Apex test fixtures, the [Test Data Framework](../test-data-factory.md) is authoritative: explicit build/create, project helpers and flows, shared setup user, and non-admin execution. The snippets below are historical examples to adapt, not a competing generation contract. Preserve existing caller semantics during approved migration.
+
 ## Overview
 
 This guide covers best practices for writing effective, maintainable Apex tests that ensure code quality and prevent regressions.

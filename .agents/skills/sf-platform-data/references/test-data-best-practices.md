@@ -1,6 +1,8 @@
 <!-- Parent: platform-data-manage/SKILL.md -->
 # Test Data Best Practices
 
+> For new Apex test fixtures, the [Test Data Framework](../../sf-platform-test/references/test-data-factory.md) is authoritative: explicit build/create, project helpers and flows, shared setup user, and non-admin execution. The snippets below are historical examples to adapt, not a competing generation contract. Preserve existing caller semantics during approved migration.
+
 Use this guide when creating or troubleshooting org data for demos, automation validation, integration checks, or post-deploy smoke testing.
 
 ## Describe-first rule
