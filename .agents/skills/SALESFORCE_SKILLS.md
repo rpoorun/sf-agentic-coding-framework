@@ -174,16 +174,19 @@ If the repo uses another established pattern, follow the repo pattern and docume
 
 When using `sf-platform-test`:
 
+- For reusable fixture generation, use the [Test Data Framework](sf-platform-test/references/test-data-factory.md): core registry, project object helpers, typed project flows, and explicit build/create operations. Do not copy legacy flat factories as the new default.
+
 - One Apex class should have at least one matching `ClassName_TEST` class unless project convention differs.
 - Test methods need meaningful names and assertions.
+- Test classes should declare the production Apex class, trigger handler, controller, batch, invocable, or Flow entry point they cover. Where possible, include the ticket/requirement ID in the `@description` text and use `@instruction` to explain the overall objective for the next agent.
+- Test methods should document `@description`, `@scenario`, and `@expectedResults`. Where possible, include the ticket/requirement ID in the `@description` text.
 - Use assertion messages.
 - Do not use existing org data.
-- Use `@TestSetup` and test factories for reusable data.
-- Create admin and non-admin users when permissions, sharing, or user-context behavior matters.
-- Use `System.runAs` when behavior depends on user context.
+- Every test class creates its shared user and fixtures in `@TestSetup` through the project factory, then re-queries them in each method.
+- Execute every test method using `System.runAs` with the intended non-admin persona unless the requirement explicitly specifies admin.
 - Use `Test.startTest()` and `Test.stopTest()` around the behavior under test.
-- Cover successful and failed paths.
-- Bulk-test trigger-sensitive behavior with more than 200 records when feasible.
+- Cover successful and failed paths, plus validation and sanitization failures for external entry points.
+- Bulk-test trigger-sensitive behavior with more than 200 records when feasible, and add bulk assertions for batch jobs.
 - Use record type developer names, not labels.
 - Add `ORDER BY` when asserting query order.
 

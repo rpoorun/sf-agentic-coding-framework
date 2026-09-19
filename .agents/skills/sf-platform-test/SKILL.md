@@ -2,7 +2,7 @@
 name: sf-platform-test
 description: "Generate and validate Apex test classes with TestDataFactory patterns, bulk testing (251+ records), mocking strategies, assertion best practices, and disciplined test-fix loops. Use this skill when creating new Apex test classes, improving test coverage, debugging and fixing failing Apex tests, running test execution and coverage analysis, or implementing testing patterns for triggers, services, controllers, batch jobs, queueables, and integrations. Triggers on *Test.cls, *_Test.cls files, sf apex run test workflows, coverage reports, test-fix loops. Do NOT trigger for production Apex code (use sf-platform-apex) or Jest/LWC tests."
 metadata:
-  version: "1.0"
+  version: "1.1"
   cloud: "Platform"
   synthesized: true
   sources:
@@ -17,7 +17,7 @@ metadata:
 | --- | --- |
 | Skill ID | `sf-platform-test` |
 | Cloud | Platform |
-| Version | 1.0 |
+| Version | 1.1 |
 | Synthesized | Yes — deduplicated and merged from the source(s) below |
 | Sources | forcedotcom/sf-skills :: platform-apex-test-generate; forcedotcom/sf-skills :: platform-apex-test-run; Clientell-Ai/salesforce-skills :: sf-test |
 
@@ -30,13 +30,27 @@ Use [agentic-qa](../agentic-qa/SKILL.md) when the task needs full-ticket QA beyo
 ## Core Principles
 
 1. **One behavior per method** — each test method validates a single scenario. Separate positive, negative, and bulk tests. NEVER combine related-but-distinct inputs (e.g., null and empty) in one method — create `_NullInput_` and `_EmptyInput_` as separate test methods
-2. **Bulkify tests** — test with 251+ records to cross the 200-record trigger batch boundary. **Batch Apex exception:** in test context only one `execute()` invocation runs, so set `batchSize >= testRecordCount`. See [references/async-testing.md](references/async-testing.md)
-3. **Isolate test data** — every `@TestSetup` must delegate record creation to a `TestDataFactory` class. If none exists, create one first. Never build record lists inline in `@TestSetup`. Never rely on org data (`SeeAllData=false`) or hardcoded IDs. For duplicate rule handling, see [references/test-data-factory.md](references/test-data-factory.md)
+2. **Bulkify tests** — use 251+ records where appropriate to cross the 200-record trigger batch boundary; do not multiply expensive external-user personas without a requirement. **Batch Apex exception:** in test context only one `execute()` invocation runs, so set `batchSize >= testRecordCount`. See [references/async-testing.md](references/async-testing.md)
+3. **Isolate test data** — reuse approved project factories; delegate shared setup to project-owned flows. For new reusable fixtures, use the [Test Data Framework](references/test-data-factory.md): generic registry/core, stateless object helpers, typed project flows. `build/buildMany` perform no DML; `create/createMany` persist explicitly. Never rely on existing business data (`SeeAllData=false`), hardcoded IDs, static setup caches, or silent duplicate-rule bypasses.
 4. **Assert meaningfully** — use exact expected values computed from test data setup. NEVER use range assertions or approximate counts when the value is deterministic. Always include failure messages. See [references/assertion-patterns.md](references/assertion-patterns.md)
 5. **Use `Assert` class only** — `Assert.areEqual`, `Assert.isTrue`, `Assert.fail`, etc. Never use legacy `System.assert`, `System.assertEquals`, or `System.assertNotEquals`
 6. **Mock external boundaries** — use `HttpCalloutMock` for callouts, `Test.setFixedSearchResults` for SOSL, DML mock classes for database isolation. Design for testability via constructor injection. See [references/mocking-patterns.md](references/mocking-patterns.md)
 7. **Test negative paths** — validate error handling and exception scenarios, not just happy paths
 8. **Wrap with start/stop** — pair `Test.startTest()` with `Test.stopTest()` to reset governor limits and force async execution
+
+## Test Class Generation Rules
+
+When generating or rewriting Apex test classes, apply these rules in addition to the core principles:
+
+- Add a class-level ApexDoc header comment that names the production Apex class(es), trigger handler(s), controller(s), batch class(es), or Flow entry-point function(s) covered by the test class. Keep the coverage mapping explicit so a reviewer can see what behavior the class protects. Where possible, include the ticket/requirement ID in the `@description` text and use `@instruction` to explain the overall objective for the next agent.
+- Add method-level ApexDoc comments for every test method with `@description`, `@scenario`, and `@expectedResults` entries. Use the tags to describe the behavior under test, the inputs or branch being exercised, and the expected outcome. Where possible, include the ticket/requirement ID in the `@description` text.
+- Every generated test class must have `@TestSetup` that creates its test user and any common fixture graph through the project factory. Each method re-queries its own isolated copy; no static Id or dataset cache survives setup.
+- Reuse the setup user through `System.runAs`; choose the actual persona/profile deliberately. Keep User/permission setup-object DML and business-data DML explicitly separated in the project flow. Do not silently grant access, substitute admin, or use async to conceal Mixed DML.
+- Execute every test method in the intended user context. Default to a non-admin test user and use `System.runAs(testUser)` for the behavior under test unless the requirement explicitly calls for admin context.
+- Cover both positive and negative branches for the targeted behavior. Include invalid inputs, null/empty inputs, boundary values, and sanitization or validation failures where the entry point accepts external or user-provided data.
+- For controllers, invocables, Flow-triggered Apex, LWC/Aura adapters and REST, map each input boundary to validation tests. Apex is statically typed: do not write uncompilable wrong-type method calls. Test malformed serialized input at the deserializer/REST boundary; verify Flow/LWC/Aura transport rejection using the appropriate caller-level test when it happens before Apex. In Apex, cover nulls, malformed IDs, ineligible records, unsafe text, and the specified safe failure response. Record unreachable paths with evidence.
+- For Batch Apex, include bulk tests that prove record volume is handled safely and that no data is skewed after execution.
+- Assert the requirement or acceptance criteria directly in every method. Every test method must contain at least one meaningful assertion tied to the business outcome.
 
 ## Test.startTest() / Test.stopTest()
 
@@ -84,60 +98,50 @@ Apply the structure, naming conventions, and patterns from the asset templates a
 </ApexClass>
 ```
 
-If no `TestDataFactory` exists in the project, create `TestDataFactory.cls` + `TestDataFactory.cls-meta.xml` using [assets/test-data-factory-template.cls](assets/test-data-factory-template.cls).
+Before adding factory source, check for existing class-name collisions and reuse the project implementation. For an approved new framework, use the [five core types, sample helpers, project facade and contract suites](references/test-data-factory.md#ownership-and-source-map). Keep project requirements out of generic core source. The older flat factory assets are compatibility examples, not the new generation default.
 
-#### @TestSetup Example
+#### Setup And Method Structure
+
+The [example project factory](assets/test-data-framework/examples/ExampleProjectTestDataFactory.cls) provides a small internal-user setup flow. Adapt it to the project's required persona; a Partner/Community Plus user requires an explicit project decision and prerequisites.
 
 ```apex
+/**
+ * @description Arrange the shared non-admin identity and relationship graph.
+ * @scenario Each test starts from the same isolated fixtures.
+ * @expectedResults One user and one Account/Contact graph exist.
+ */
 @TestSetup
-static void setupTestData() {
-    List<Account> accounts = TestDataFactory.createAccounts(251, true);
+static void setupData() {
+    ExampleProjectTestDataFactory.createContractSetup();
 }
-```
 
-#### Test Method Structure
-
-Use Given/When/Then:
-
-```apex
-@isTest
-static void shouldUpdateStatus_WhenValidInput() {
-    // Given
-    List<Account> accounts = [SELECT Id FROM Account];
-
-    // When
-    Test.startTest();
-    MyService.processAccounts(accounts);
-    Test.stopTest();
-
-    // Then
-    List<Account> updated = [SELECT Id, Status__c FROM Account];
-    Assert.areEqual(251, updated.size(), 'All accounts should be processed');
-}
-```
-
-#### Negative Test — Exception Pattern
-
-Use try/catch with `Assert.fail` to verify expected exceptions:
-
-```apex
-@isTest
-static void shouldThrowException_WhenInvalidInput() {
-    // Given
-    List<Account> emptyList = new List<Account>();
-
-    // When/Then
-    Test.startTest();
-    try {
-        MyService.processAccounts(emptyList);
-        Assert.fail('Expected MyCustomException to be thrown');
-    } catch (MyCustomException e) {
-        Assert.isTrue(e.getMessage().contains('cannot be empty'),
-            'Exception message should indicate empty input');
+/**
+ * @description Verify the example flow reuses the supplied Contact.
+ * @scenario Supply only a saved Contact.
+ * @expectedResults Its actual Account is returned and no DML occurs.
+ */
+@IsTest
+static void reuseContactAndItsParent() {
+    System.runAs(ExampleProjectTestDataFactory.getContractUser()) {
+        Contact contact = [SELECT Id, AccountId FROM Contact LIMIT 1];
+        ExampleProjectTestDataFactory.AccountContactOptions options =
+            new ExampleProjectTestDataFactory.AccountContactOptions();
+        options.contact = contact;
+        Test.startTest();
+        ExampleProjectTestDataFactory.AccountContactDataSet result =
+            ExampleProjectTestDataFactory.createAccountContactDataSet(options);
+        Integer dmlStatements = Limits.getDmlStatements();
+        Test.stopTest();
+        Assert.areEqual(contact.Id, result.contact.Id, 'Reuse the supplied Contact.');
+        Assert.areEqual(contact.AccountId, result.account.Id, 'Reuse its actual parent.');
+        Assert.areEqual(0, dmlStatements, 'Reusing dependencies must not write.');
     }
-    Test.stopTest();
 }
 ```
+
+Use Given/When/Then with the invocation and outcome assertions inside the intended user context. Complete class headers, including coverage mapping and `@instruction`, remain mandatory; add actual ticket references to class and method descriptions when applicable.
+
+For negative tests, catch the specific expected exception and use `Assert.fail` if the call succeeds. Assert the exact error/status and unchanged data, not merely that some exception occurred. The [flow contract tests](assets/test-data-framework/tests/TestDataFlowContractTest.cls) demonstrate unsaved, deleted, parentless, and mismatched dependencies.
 
 #### Naming Convention
 
@@ -173,7 +177,7 @@ When tests fail, run a disciplined fix loop (max 3 iterations — stop and surfa
 
 1. Read the failing test class and the class under test
 2. Identify root cause from error messages and stack traces
-3. Apply fix — adjust test data or assertions for test-side issues; delegate production code issues to the `sf-platform-apex` skill
+3. Apply the diagnosed fix; delegate production code issues to `sf-platform-apex`. Existing test methods are business requirements: do not delete, refactor, or weaken their assertions without the guardrails' double validation. Prefer new regression methods.
 4. Rerun the focused test before broader regression
 5. Repeat until all tests pass, iteration limit reached, or root cause requires design change
 
@@ -185,27 +189,29 @@ When tests fail, run a disciplined fix loop (max 3 iterations — stop and surfa
 | **This framework's deploy gate** | **95%** | Enforced for every deploy including dry-runs — see [DEPLOYMENT.md](../../workflows/DEPLOYMENT.md#apex-test-coverage-gate-mandatory) |
 | Critical paths | 100% | Business-critical code |
 
-Cover all paths: positive, negative/exception, bulk (251+ records), callout/async.
+Cover all paths: positive, negative/exception, bulk (251+ records), callout/async, validation, sanitization, and user-context behavior.
 
 ## What to Test by Component
 
 | Component | Key Test Scenarios |
 |-----------|-------------------|
-| Trigger | Bulk insert/update/delete, recursion guard, field change detection |
-| Service | Valid/invalid inputs, bulk operations, exception handling |
-| Controller | Page load, action methods, view state |
-| Batch | start/execute/finish, scope matching (batch size >= record count), `Database.Stateful` tracking, error handling, chaining (separate methods — `finish()` calling `Database.executeBatch()` throws `UnexpectedException`) |
-| Queueable | Chaining (only first job runs in tests), bulkification, error handling, callout mocks before `Test.startTest()` |
-| Callout | Success response, error response, timeout |
+| Trigger | Bulk insert/update/delete, recursion guard, field change detection, user-context assertions where sharing or CRUD/FLS matter |
+| Service | Valid/invalid inputs, bulk operations, exception handling, sanitization of user-provided data |
+| Controller | Page load, action methods, view state, input validation, bad-type and ineligible payload handling |
+| Batch | start/execute/finish, scope matching (batch size >= record count), `Database.Stateful` tracking, bulk correctness, error handling, chaining (separate methods — `finish()` calling `Database.executeBatch()` throws `UnexpectedException`) |
+| Queueable | Chaining (only first job runs in tests), bulkification, error handling, callout mocks before `Test.startTest()`, user-context execution when relevant |
+| Callout | Success response, error response, timeout, malformed payload handling |
 | Selector | Valid/null/empty inputs, bulk (251+), field population, sort order, `WITH USER_MODE` via `System.runAs` |
 | Scheduled | Direct execution via `execute(null)`, CRON registration via `CronTrigger` query |
 | Platform Event | `Test.enableChangeDataCapture()`, `Test.getEventBus().deliver()`, verify subscriber side effects |
+| Flow-invoked Apex | Wrong data type, missing required fields, ineligible data, and safe failure or skip behavior |
 
 ## Output Expectations
 
 Deliverables per test class:
 - `{ClassName}Test.cls` + `{ClassName}Test.cls-meta.xml` (match API version of class under test; default `66.0`)
-- `TestDataFactory.cls` + `TestDataFactory.cls-meta.xml` (if not already present)
+- Only the missing, approved factory/core/helper/flow types with matching metadata; never overwrite an existing factory or migrate tests implicitly.
+- Contract-test results for newly adopted fixture APIs, with target org/API and any unresolved persona prerequisites.
 
 ## Agentic QA Routing
 
@@ -221,375 +227,25 @@ Load on demand for detailed patterns:
 
 | Reference | When to use |
 |-----------|-------------|
-| [references/test-data-factory.md](references/test-data-factory.md) | TestDataFactory patterns, field overrides, duplicate rule handling |
+| [references/test-data-factory.md](references/test-data-factory.md) | Canonical core/helper/flow contract, source templates, persona/Mixed DML decisions, and adoption checks |
 | [references/assertion-patterns.md](references/assertion-patterns.md) | Assertion best practices, anti-patterns, common pitfalls |
 | [references/mocking-patterns.md](references/mocking-patterns.md) | HttpCalloutMock, DML mocking, StubProvider, SOSL, Email, Platform Events |
 | [references/async-testing.md](references/async-testing.md) | Batch, Queueable, Future, Scheduled job testing |
 
 ---
 
-## Merged Source Material
-
-The sections below are retained from the secondary source(s) for completeness. Treat the primary guidance above as authoritative; use this section only for details not already covered above, and reconcile any conflicts in favor of the primary source.
-
-### Supplemental Guidance from `platform-apex-test-run` (forcedotcom/sf-skills :: platform-apex-test-run)
-
-# platform-apex-test-run: Salesforce Test Execution & Coverage Analysis
-
-Use this skill when the user needs **Apex test execution and failure analysis**: running tests, checking coverage, interpreting failures, improving coverage, and managing a disciplined test-fix loop for Salesforce code.
-
-## When This Skill Owns the Task
-
-Use `sf-platform-test` when the work involves:
-- `sf apex run test` workflows
-- Apex unit-test failures
-- code coverage analysis
-- identifying uncovered lines and missing test scenarios
-- structured test-fix loops for Apex code
-
-Delegate elsewhere when the user is:
-- writing or refactoring production Apex → `sf-platform-apex` skill
-- testing Agentforce agents → `agentforce-test` skill
-- testing LWC with Jest → [sf-platform-lwc](../sf-platform-lwc/SKILL.md)
-
----
-
-## Required Context to Gather First
-
-Ask for or infer:
-- target org alias
-- desired test scope: single class, specific methods, suite, or local tests
-- coverage threshold expectation
-- whether the user wants diagnosis only or a test-fix loop
-- whether related test data factories already exist
-
----
-
-## Recommended Workflow
-
-### 1. Discover test scope
-Identify:
-- existing test classes
-- target production classes
-- test data factories / setup helpers
-
-### 2. Run the smallest useful test set first
-Start narrow when debugging a failure; widen only after the fix is stable.
-
-### 3. Analyze results
-Focus on:
-- failing methods
-- exception types and stack traces
-- uncovered lines / weak coverage areas
-- whether failures indicate bad test data, brittle assertions, or broken production logic
-
-### 4. Run a disciplined fix loop
-When the issue is code or test quality:
-- delegate code fixes to `sf-platform-apex` skill when needed
-- add or improve tests
-- rerun focused tests before broader regression
-
-### 5. Improve coverage intentionally
-Cover:
-- positive path
-- negative / exception path
-- bulk path (251+ records where appropriate)
-- callout or async path when relevant
-
----
-
-## High-Signal Rules
-
-| Rule | Rationale |
-|------|-----------|
-| Default to `SeeAllData=false` | Ensures test isolation; prevents reliance on org-specific data |
-| Every test must assert meaningful outcomes | Tests with no assertions prove nothing and give false confidence |
-| Test bulk behavior with 251+ records | Triggers process in batches of 200; 251 records crosses the boundary |
-| Use factories / `@TestSetup` when they improve clarity | Consistent data creation in one place; rolled back between test methods |
-| Pair `Test.startTest()` with `Test.stopTest()` for async | Ensures async operations (queueable, future) complete before assertions |
-| Do not hide flaky org dependencies inside tests | Prevents intermittent failures tied to org state |
-
----
-
-## Gotchas
-
-| Issue | Resolution |
-|-------|------------|
-| Test passes locally but fails in CI org | Check for `SeeAllData=true` or undeclared dependencies on org-specific records |
-| Coverage drops unexpectedly after refactor | Run focused class-level tests first, then widen to `RunLocalTests` to confirm |
-| "Uncommitted work pending" error in callout test | DML and HTTP callouts cannot be mixed in the same test context without `Test.startTest()` wrapping |
-| Mock not taking effect in test | Ensure `Test.setMock()` is called before the code that makes the callout |
-| `@TestSetup` data missing in test method | `@TestSetup` data is committed per test method — re-query it; do not store in static variables |
-
----
-
-## Output Format
-
-When finishing, report in this order:
-1. **What tests were run**
-2. **Pass/fail summary**
-3. **Coverage result**
-4. **Root-cause findings**
-5. **Fix or next-run recommendation**
-
-Suggested shape:
-
-```text
-Test run: <scope>
-Org: <alias>
-Result: <passed / partial / failed>
-Coverage: <percent / key classes>
-Issues: <highest-signal failures>
-Next step: <fix class, add test, rerun scope, or widen regression>
-```
-
----
-
-## Cross-Skill Integration
-
-| Need | Delegate to | Reason |
-|------|-------------|--------|
-| Fix production code or author test classes | `sf-platform-apex` skill | Code generation and repair |
-| Create bulk / edge-case test data | [sf-platform-data](../sf-platform-data/SKILL.md) | Realistic test datasets |
-| Deploy updated tests to org | [sf-platform-deploy](../sf-platform-deploy/SKILL.md) | Deployment workflows |
-| Inspect detailed runtime logs | [sf-platform-debug](../sf-platform-debug/SKILL.md) | Deeper failure analysis |
-
----
-
-## Reference File Index
-
-| File | When to read |
-|------|-------------|
-| `references/cli-commands.md` | All `sf apex run test` command flags, output formats, async execution, and coverage commands |
-| `references/test-patterns.md` | Test class templates — basic, bulk (251+), mock callout, and data factory patterns |
-| `references/testing-best-practices.md` | Core testing principles — AAA pattern, naming conventions, bulk, negative, and mock strategies |
-| `references/test-fix-loop.md` | Agentic test-fix loop implementation and failure analysis decision tree |
-| `references/mocking-patterns.md` | HttpCalloutMock, DML mocking, StubProvider, and selector mocking patterns |
-| `references/performance-optimization.md` | Techniques to reduce test execution time — DML mocking, SOQL mocking, loop optimizations |
-| `assets/basic-test.cls` | Template: standard test class with `@TestSetup`, positive / negative / bulk / edge-case methods |
-| `assets/bulk-test.cls` | Template: bulk test with 251+ records that crosses the 200-record trigger batch boundary |
-| `assets/mock-callout-test.cls` | Template: HTTP callout mock using `HttpCalloutMock` |
-| `assets/test-data-factory.cls` | Template: reusable `TestDataFactory` with create and insert helpers |
-| `assets/dml-mock.cls` | Template: `IDML` interface + `DMLMock` implementation for database-free unit tests |
-| `assets/stub-provider-example.cls` | Template: `StubProvider`-based dependency injection stub |
-| `hooks/scripts/parse-test-results.py` | Post-tool hook — parses `sf apex run test` JSON output and formats failures for the auto-fix loop |
-
----
-
-## Score Guide
-
-| Score | Meaning |
-|---|---|
-| 108+ | strong production-grade test confidence |
-| 96–107 | good test suite with minor gaps |
-| 84–95 | acceptable but strengthen coverage / assertions |
-| < 84 | below standard; revise before relying on it |
-
-### Supplemental Guidance from `sf-test` (Clientell-Ai/salesforce-skills :: sf-test)
-
-# Apex Test Class Generator
-
-You are a Salesforce test class specialist. Generate comprehensive test classes that achieve 85%+ code coverage with meaningful assertions.
-
-## Test Class Structure
-
-### Required Pattern
-```apex
-@IsTest
-private class MyClassTest {
-
-    @TestSetup
-    static void makeData() {
-        // Use TestFactory for all record creation
-        List<Account> accounts = TestDataFactory.createAccounts(200);
-        insert accounts;
-
-        List<Contact> contacts = TestDataFactory.createContacts(accounts);
-        insert contacts;
-    }
-
-    @IsTest
-    static void testMethodName_positiveScenario() {
-        // Arrange
-        List<Account> accounts = [SELECT Id, Name FROM Account WITH USER_MODE];
-
-        // Act
-        Test.startTest();
-        MyClass.myMethod(accounts);
-        Test.stopTest();
-
-        // Assert
-        List<Account> results = [SELECT Id, Status__c FROM Account WITH USER_MODE];
-        System.assertEquals(200, results.size(), 'All accounts should be processed');
-        for (Account acc : results) {
-            System.assertNotEquals(null, acc.Status__c, 'Status should be set');
-        }
-    }
-}
-```
-
-### Test Scenarios (generate ALL of these)
-
-1. **Positive tests**: Happy path with valid data
-2. **Negative tests**: Invalid data, null inputs, empty lists
-3. **Bulk tests**: 200+ records to verify bulkification
-4. **Permission tests**: Test with restricted user profile
-5. **Boundary tests**: Edge cases (0 records, 1 record, max records)
-
-### Permission Testing Pattern
-```apex
-@IsTest
-static void testMethod_restrictedUser() {
-    User restrictedUser = TestDataFactory.createStandardUser();
-    insert restrictedUser;
-
-    System.runAs(restrictedUser) {
-        Test.startTest();
-        try {
-            MyClass.myMethod(testData);
-            System.assert(false, 'Should have thrown exception');
-        } catch (SecurityException e) {
-            System.assert(e.getMessage().contains('access'),
-                'Should throw security exception');
-        }
-        Test.stopTest();
-    }
-}
-```
-
-### Callout Mock Pattern
-```apex
-@IsTest
-private class MyCalloutClassTest {
-
-    private class MockHttpResponse implements HttpCalloutMock {
-        private Integer statusCode;
-        private String body;
-
-        MockHttpResponse(Integer statusCode, String body) {
-            this.statusCode = statusCode;
-            this.body = body;
-        }
-
-        public HttpResponse respond(HttpRequest req) {
-            HttpResponse res = new HttpResponse();
-            res.setStatusCode(this.statusCode);
-            res.setBody(this.body);
-            return res;
-        }
-    }
-
-    @IsTest
-    static void testCallout_success() {
-        Test.setMock(HttpCalloutMock.class, new MockHttpResponse(200, '{"status":"ok"}'));
-
-        Test.startTest();
-        String result = MyCalloutClass.makeCallout();
-        Test.stopTest();
-
-        System.assertEquals('ok', result, 'Should return success status');
-    }
-
-    @IsTest
-    static void testCallout_failure() {
-        Test.setMock(HttpCalloutMock.class, new MockHttpResponse(500, '{"error":"fail"}'));
-
-        Test.startTest();
-        try {
-            MyCalloutClass.makeCallout();
-            System.assert(false, 'Should throw on 500');
-        } catch (CalloutException e) {
-            System.assert(true, 'Exception expected on server error');
-        }
-        Test.stopTest();
-    }
-}
-```
-
-## Rules
-- NEVER hardcode record IDs — always query or create in @TestSetup
-- ALWAYS use `Test.startTest()` and `Test.stopTest()` to reset governor limits
-- ALWAYS use `System.assertEquals` / `System.assertNotEquals` with descriptive messages
-- ALWAYS test with 200 records minimum for bulk scenarios
-- Use `@TestVisible` on private methods/variables instead of making them public
-- Create a `TestDataFactory` class if one doesn't exist
-- NEVER use `SeeAllData=true` unless testing specific platform features
-- Test both synchronous and asynchronous paths (future, queueable, batch)
-
-## TestDataFactory Pattern
-```apex
-@IsTest
-public class TestDataFactory {
-
-    public static List<Account> createAccounts(Integer count) {
-        List<Account> accounts = new List<Account>();
-        for (Integer i = 0; i < count; i++) {
-            accounts.add(new Account(
-                Name = 'Test Account ' + i
-            ));
-        }
-        return accounts;
-    }
-
-    public static User createStandardUser() {
-        Profile p = [SELECT Id FROM Profile WHERE Name = 'Standard User' LIMIT 1];
-        return new User(
-            FirstName = 'Test',
-            LastName = 'User',
-            Email = 'testuser@example.com',
-            Username = 'testuser' + DateTime.now().getTime() + '@example.com',
-            Alias = 'tuser',
-            TimeZoneSidKey = 'America/Los_Angeles',
-            LocaleSidKey = 'en_US',
-            EmailEncodingKey = 'UTF-8',
-            ProfileId = p.Id,
-            LanguageLocaleKey = 'en_US'
-        );
-    }
-}
-```
-
-### Async Testing Patterns
-- **@future**: Runs after `Test.stopTest()` — assert side effects after stopTest
-- **Batch**: Call `Database.executeBatch()` between `Test.startTest()` / `Test.stopTest()`
-- **Queueable**: Call `System.enqueueJob()` between startTest/stopTest — chaining limited to depth 1 in test
-- **Schedulable**: Call `System.schedule()` between startTest/stopTest — assert CronTrigger afterward
-
-### Platform Event & CDC Testing
-- Platform Events: Call `Test.getEventBus().deliver()` after publishing to force synchronous delivery
-- Change Data Capture: Call `Test.enableChangeDataCapture()` in test setup, then `Test.getEventBus().deliver()` after DML
-
-### Stub API (Dependency Injection)
-Use `System.StubProvider` interface + `Test.createStub()` to mock dependencies without hitting the database.
-
-### Test.loadData()
-Load bulk test data from CSV in a Static Resource: `Test.loadData(Account.sObjectType, 'TestAccounts')`
-
-### Mixed DML Workaround
-Use `System.runAs()` to separate setup object DML (User, Profile) from non-setup objects in the same test.
-
-### Special Object Testing
-- Use `Test.getStandardPricebookId()` for Product2/PricebookEntry tests
-- Use `RestContext.request = new RestRequest()` for @RestResource endpoint tests
-
-## Gotchas
-- `@TestSetup` data is shared (NOT isolated) across test methods — each method gets a copy that resets
-- `SeeAllData=true` exposes production data — almost never use it
-- Future/Batch/Queueable execute AFTER `Test.stopTest()`, not during
-- Callout mock (`Test.setMock()`) must be registered BEFORE `Test.startTest()`
-- Platform Event ordering is NOT guaranteed in tests
-- `Test.startTest()` / `Test.stopTest()` can only be called ONCE per test method
-- Batch Apex `finish()` method also runs after `Test.stopTest()`
-- Mixed DML throws `MIXED_DML_OPERATION` — use `System.runAs()` to workaround
-
-## Workflow
-1. Read the class under test using Read/Glob tools
-2. Identify all public/global methods and code paths
-3. Check if TestDataFactory exists; create if not
-4. Generate test class with all scenario types
-5. Run tests: `sf apex run test -n MyClassTest --synchronous --code-coverage`
-6. Report coverage and fix any failures
-
-## References
-- [Test Patterns](references/test-patterns.md) — async testing, Platform Events, CDC, Stub API, REST endpoints, mixed DML, Flow test coverage
-- [Governor Limits](../../references/governor-limits.md) — per-transaction limits for test context
+## Supplemental Reference Routing
+
+Upstream attribution is retained in the skill metadata. Use these focused references instead of copying conflicting legacy generation instructions. This skill and the Test Data Framework contract take precedence over their historical snippets: required headers, shared setup user, non-admin `System.runAs`, `Assert` methods, explicit build/create semantics, and the 95% deployment gate still apply.
+
+| Reference | Purpose |
+| --- | --- |
+| [CLI commands](references/from-platform-apex-test-run/cli-commands.md) | Test execution flags, async results and coverage retrieval. |
+| [Test patterns](references/from-platform-apex-test-run/test-patterns.md) | Scenario ideas; adapt older snippets to current rules. |
+| [Extended patterns](references/from-sf-test/test-patterns.md) | REST, events, Flow and mocking scenarios. |
+| [Test-fix loop](references/from-platform-apex-test-run/test-fix-loop.md) | Root-cause analysis; never weaken existing requirements to make tests pass. |
+| [Performance](references/from-platform-apex-test-run/performance-optimization.md) | Isolate expensive boundaries without hiding integration behavior. |
+| [Basic scaffold](assets/test-class-template.cls) | Required headers, shared user and explicit acceptance placeholders. |
+| [Legacy flat factory](assets/test-data-factory-template.cls) | Compatibility only; do not introduce new boolean insertion switches. |
+
+For async assertions, observe the supported test execution boundary and assert persisted effects after `Test.stopTest()`; test chained stages separately where necessary. Fixture helpers must never use async to avoid Mixed DML. See [async testing](references/async-testing.md).
