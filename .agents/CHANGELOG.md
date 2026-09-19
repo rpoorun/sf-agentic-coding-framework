@@ -6,6 +6,24 @@ This file records all notable changes to `sf-agentic-coding-framework` in human-
 
 ---
 
+## [Unreleased]
+
+### Added
+- **Apex Test Data Framework**, distributed within `sf-platform-test`: five reusable core types (`TestDataFactory`, `SObjectTestDataHelper`, `AbstractSObjectTestDataHelper`, `TestRecordOptions`, and `TestDataFrameworkException`), example Account/Contact/User helpers, and a project-owned Account/Contact flow with typed dependencies and results. The source templates include matching Apex metadata files and three contract suites containing 44 test methods.
+- [Canonical strategy and adoption guide](skills/sf-platform-test/references/test-data-factory.md): stateless object helpers, lazy registry initialization, DML-free `build`/`buildMany`, explicit all-or-none `create`/`createMany`, exact field overrides including null, dependency reuse, intentional personas, and project-owned Mixed DML boundaries.
+
+### Changed
+- `sf-platform-test` now defaults to the core/helper/project-flow model for new reusable fixtures. Existing flat factories remain compatibility examples; no existing project factory or test is migrated automatically.
+- Apex generation and review instructions require explicit coverage mapping, class-level `@instruction`, test-method `@description`/`@scenario`/`@expectedResults`, applicable ticket references, shared setup users, non-admin execution by default, acceptance-based assertions, negative/input-validation paths, and bulk correctness checks.
+- Salesforce skill routing, Apex/data skills, testing and PR workflows, the root agent router, README, and legacy example notices now point to the canonical test-data contract. Existing `agentic-qa` routing is retained.
+
+### Validation And Adoption
+- Local PMD validation of the 12 new Apex types reports zero violations, with one documented method-level suppression for test-only fixture DML. Metadata pairing, test-context structure, and local reference links were checked.
+- Target-org compilation, runtime test results, and coverage remain unverified. Adopters must resolve class-name collisions, project API version, actual user personas, and automation dependencies, then run the contract suites and representative consuming tests before deployment. The Python skill validator could not run because PyYAML was unavailable.
+- This is a next-release contribution, not a Salesforce deployment or external-library installation. No permission grants, customer data changes, or test migrations are included. Keep existing factories/callers until an explicit migration is approved; projects that have not adopted the new templates need no rollback action.
+
+---
+
 ## [0.3.0] — 2026-07-23
 
 ### Added (generic agentic skill family synthesized from gstack)

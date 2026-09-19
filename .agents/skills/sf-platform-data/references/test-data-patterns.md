@@ -1,6 +1,8 @@
 <!-- Parent: platform-data-manage/SKILL.md -->
 # Test Data Patterns Guide
 
+> For new Apex test fixtures, the [Test Data Framework](../../sf-platform-test/references/test-data-factory.md) is authoritative: explicit build/create, project helpers and flows, shared setup user, and non-admin execution. The snippets below are historical examples to adapt, not a competing generation contract. Preserve existing caller semantics during approved migration.
+
 Best practices for creating realistic and effective test data.
 
 ## Factory Pattern
@@ -37,7 +39,7 @@ public class TestDataFactory_Account {
 ### Key Principles
 
 1. **Always create in lists** - Support bulk operations
-2. **Provide doInsert parameter** - Caller controls insertion
+2. **Separate build from create** - New fixtures use explicit APIs; keep `doInsert` only in existing compatibility wrappers.
 3. **Track IDs for cleanup** - Return inserted records
 4. **Use realistic data** - Valid picklist values
 

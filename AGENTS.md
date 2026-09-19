@@ -3,10 +3,10 @@
 | Field | Value |
 | --- | --- |
 | Framework | sf-agentic-coding-framework |
-| Version | 0.3.0 |
+| Version | 0.4.0 |
 | Author | Rishikesh Poorun |
 | Master repository | https://github.com/rpoorun/sf-agentic-coding-framework |
-| Last updated | 2026-07-23 |
+| Last updated | 2026-09-18 |
 | License | Apache License 2.0 |
 
 ## Framework Location
@@ -101,6 +101,7 @@ Never assume `{USER_AGENTS}` is writable — probe before writing and fall back 
 - For requirement analysis, read [Specification rules](.agents/documentation/SPECIFICATION.md) before implementation feasibility.
 - For Salesforce source work, read [Project structure](.agents/documentation/PROJECT_STRUCTURE.md), `{USER_AGENTS}/standards/SALESFORCE_PROJECT_BEST_PRACTICES.md`, and the relevant workflow file.
 - For Apex work, read `{USER_AGENTS}/standards/SALESFORCE_APEX_STANDARDS.md` and `{USER_AGENTS}/standards/PMD_APEX_RULESET.md`.
+- For Apex test generation and reusable fixtures, read `{USER_AGENTS}/skills/sf-platform-test/SKILL.md` and its `references/test-data-factory.md`. The core/helper/project-flow templates ship inside that skill; they do not authorize automatic project migration or org deployment.
 - For tool or skill routing, read `{USER_AGENTS}/skills/SALESFORCE_SKILLS.md`.
 - For generic agentic methods such as requirement discovery, plan review, QA, context handoff, diagrams, documentation, or skill evaluation, read `{USER_AGENTS}/skills/AGENTIC_SKILLS.md`.
 - For writing or updating project technical documentation (`docs/` describing implemented Apex, LWC, or config), read `{USER_AGENTS}/standards/DOCUMENTATION.md` first — never document anything without verifying it against source per that file.
@@ -233,6 +234,8 @@ All files in this table are at `{USER_AGENTS}/standards/`.
 | `DOCUMENTATION.md` | How to write and maintain project technical documentation describing actual Apex, LWC, and configuration — source-verification rules, doc-tree structure, style, and content inclusion/exclusion. |
 
 ## Skill Reference Files
+
+The Apex Test Data Framework is owned by `sf-platform-test/SKILL.md` and `sf-platform-test/references/test-data-factory.md`; reusable source templates are under `sf-platform-test/assets/test-data-framework/`. Keep these together when installing or updating the skill.
 
 All files in this table are at `{USER_AGENTS}/skills/`.
 

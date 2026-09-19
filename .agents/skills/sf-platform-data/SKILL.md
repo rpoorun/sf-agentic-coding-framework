@@ -24,6 +24,8 @@ Use this skill when the user needs **Salesforce data work**: record CRUD, bulk i
 
 ## When This Skill Owns the Task
 
+For reusable Apex unit-test fixtures, use the canonical [Test Data Framework](../sf-platform-test/references/test-data-factory.md) with `sf-platform-test`. Its test-only core is not an anonymous-Apex org-seeding tool. Flat `doInsert` factory examples below and in this skill's assets are legacy compatibility material; new test fixtures use explicit build/create operations, stateless object helpers, typed project flows, and an intentional test persona.
+
 Use `sf-platform-data` when the work involves:
 - `sf data` CLI commands
 - record creation, update, delete, upsert, export, or tree import/export

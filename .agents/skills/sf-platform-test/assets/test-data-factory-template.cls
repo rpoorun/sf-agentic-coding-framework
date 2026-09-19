@@ -1,4 +1,7 @@
 /**
+ * @instruction Legacy example only. For new Apex test fixtures, follow
+ *              sf-platform-test/references/test-data-factory.md. Keep existing
+ *              callers compatible; do not copy boolean insert switches as the default.
  * @description Centralized factory for creating test data with sensible defaults.
  *              All methods accept a doInsert flag for flexibility.
  *              Bulk methods create multiple records; single-record methods delegate to bulk.

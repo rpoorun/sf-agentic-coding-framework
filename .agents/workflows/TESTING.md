@@ -6,7 +6,30 @@ This file owns repeatable verification and testing workflow guidance. Read it be
 
 ## Current Notes
 
-Use the narrowest meaningful checks available and follow the relevant Salesforce and Apex standards. Use `agentic-qa` when the task needs scenario design, manual/browser verification, report-only QA, canary checks, performance comparison, or regression mapping.
+Use `agentic-qa` for the broader scenario matrix, manual/browser verification, canary checks and regression evidence. It complements the Apex-specific rules below.
+
+Use the `sf-platform-test` skill for Apex test generation, test-fix loops, and coverage work.
+
+For reusable test data, follow the [Test Data Framework](../skills/sf-platform-test/references/test-data-factory.md) and its core/helper/flow templates. Reuse existing project factories rather than migrating existing tests implicitly.
+
+When writing or reviewing Apex tests, align with these framework expectations:
+
+- Class-level comment headers should name the production Apex class, trigger handler, controller, batch, invocable, or Flow entry point under test. Where possible, include the ticket/requirement ID in the `@description` text and use `@instruction` to explain the overall objective for the next agent.
+- Method-level comments should include `@description`, `@scenario`, and `@expectedResults`. Where possible, include the ticket/requirement ID in the `@description` text.
+- Every generated class creates its shared test user and common graph in `@TestSetup` through the project factory; test methods re-query their isolated fixtures.
+- Default to `System.runAs` with a non-admin test user unless the requirement explicitly depends on admin context.
+- Cover happy path, negative path, bulk path, and validation or sanitization failures for external entry points.
+- For Batch Apex, prove the post-run data state is correct after bulk execution.
+- Keep assertions meaningful and tied to the requirement or acceptance criteria.
+
+## Fixture Adoption Checks
+
+- Confirm the real persona/profile and required project graph before implementing user flows. Partner and Community Plus are not interchangeable defaults; unresolved licensing/profile/role prerequisites remain explicit decisions.
+- Run the supplied helper, registry and flow contract suites in the approved target org/API after adaptation. Include zero-DML builds, fresh records from reused helpers, null overrides, native invalid-value errors, 251-record bulk insertion, rollback and dependency reuse/rejection.
+- Verify Mixed DML behavior through both standalone tests and the approved deployment validation. Separate User/permission setup DML from business-data DML in the project flow; never hide it in helpers or async jobs.
+- Fixture arrangement may deliberately use system-mode DML. Keep production security checks unchanged and assert CRUD/FLS/sharing outcomes separately under the actual user context.
+- For wrong-type inputs rejected before Apex, test the actual Flow/LWC/Aura/REST transport boundary and retain caller-level evidence. Do not generate Apex calls that cannot compile.
+- Record test results, coverage, unresolved prerequisites and any untested platform paths. Static analysis alone is not Apex compilation or runtime proof.
 
 ## Verification Modes
 
